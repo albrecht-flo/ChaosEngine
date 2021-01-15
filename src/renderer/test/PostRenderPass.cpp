@@ -1,0 +1,297 @@
+#include "PostRenderPass.h"
+
+#include <iostream>
+#include <stdexcept>
+#include <cstring>
+
+/* Configures the render pass with the attachments and subpasses */
+PostRenderPass::PostRenderPass(VulkanDevice *device,
+                               VulkanMemory *vulkanMemory, VulkanSwapChain *swapChain) :
+        VulkanRenderPass(device, vulkanMemory, swapChain) {
+    // Create the render pass
+    createRenderPass();
+
+    // This descriptor set contains the textures for composition
+    m_descriptorSetLayout = VulkanDescriptor::createDescriptorSetLayout(
+            *m_device,
+            {
+                    VkDescriptorSetLayoutBinding{ // Color attachment from main scene
+                            .binding=0,
+                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            .descriptorCount=1,
+                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
+                            .pImmutableSamplers=nullptr
+                    },
+                    VkDescriptorSetLayoutBinding{ // Depth attachment from main scene
+                            .binding=1,
+                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            .descriptorCount=1,
+                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
+                            .pImmutableSamplers=nullptr
+                    },
+                    VkDescriptorSetLayoutBinding{ // Background texture
+                            .binding=2,
+                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            .descriptorCount=1,
+                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
+                            .pImmutableSamplers=nullptr
+                    },
+                    VkDescriptorSetLayoutBinding{ // ImGui framebuffer texture
+                            .binding=3,
+                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                            .descriptorCount=1,
+                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
+                            .pImmutableSamplers=nullptr
+                    },
+            });
+
+
+    // Pipeline layout
+    m_postprocessingPipelineLayout = PipelineLayout{
+            .layouts = {
+                    m_descriptorSetLayout
+            },
+            .pushConstants = {
+                    VkPushConstantRange{
+                            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
+                            .offset = 0,
+                            .size = sizeof(float) * 2
+                    }
+            }
+    };
+
+
+    // Create descriptor pool
+    m_descriptorPool = VulkanDescriptor::createPool(*m_device,
+                                                    {
+                                                            VkDescriptorPoolSize{ // Color attachment from main scene pass
+                                                                    .type = m_descriptorSetLayout.bindings[0].descriptorType,
+                                                                    .descriptorCount = 1
+                                                            },
+                                                            VkDescriptorPoolSize{ // Depth attachment form main scene pass
+                                                                    .type = m_descriptorSetLayout.bindings[1].descriptorType,
+                                                                    .descriptorCount = 1
+                                                            },
+                                                            VkDescriptorPoolSize{ // Background texture
+                                                                    .type = m_descriptorSetLayout.bindings[2].descriptorType,
+                                                                    .descriptorCount = 1
+                                                            },
+                                                            VkDescriptorPoolSize{ // ImGui framebuffer texture
+                                                                    .type = m_descriptorSetLayout.bindings[3].descriptorType,
+                                                                    .descriptorCount = 1
+                                                            },
+                                                    });
+
+    m_descriptorSet = VulkanDescriptor::allocateDescriptorSet(*m_device,
+                                                              m_descriptorSetLayout, m_descriptorPool);
+
+    // Create the samplers for the attachments of previous passes
+    m_framebufferSampler = VulkanSampler::create(*m_device);
+    m_depthBufferSampler = VulkanSampler::create(*m_device);
+    m_imGuiImageSampler = VulkanSampler::create(*m_device);
+
+    m_backgroundTexture = VulkanTexture::createTexture(*m_device, *m_vulkanMemory, "textures/sky.jpg");
+}
+
+void PostRenderPass::setImageBufferViews(VkImageView framebufferView,
+                                         VkImageView depthbufferView, VkImageView imGuiImageView) {
+    m_framebufferView = framebufferView;
+    m_depthBufferView = depthbufferView;
+    m_imGuiImageView = imGuiImageView;
+    createPipelineAndDescriptors();
+}
+
+/* Creates the vulkan render pass, describing all attachments, subpasses and subpass dependencies. */
+void PostRenderPass::createRenderPass() {
+    // Configures color attachment processing
+    VkAttachmentDescription colorAttachment = {};
+    colorAttachment.format = m_swapChain->getFormat();
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // no multisampling so only 1
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // clear before new frame
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // store results instead of discarding them
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // should be presented in the swap chain
+
+    // Subpasses references one or more color attachments
+    VkAttachmentReference colorAttachmentRef = {};
+    colorAttachmentRef.attachment = 0; // reference to the attachments array passed to the subpass
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // color buffer attachment
+
+    // For the moment we only have 1 subpass
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+    subpass.pDepthStencilAttachment = nullptr;
+
+    // Configure subpass dependency
+    // We want our subpass to wait for the previous stage to finish reading the color attachment
+    VkSubpassDependency dependency = {};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // implicit prior subpass
+    dependency.dstSubpass = 0; // ! must be higher than srcSubpass, VK_SUBPASS_EXTERNAL would be implicit next subpass
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // want to wait for swap chain to finish reading framebuffer
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // make following color subpasses wait for this one to finish
+    dependency.srcAccessMask = 0;
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+
+    // Combine subpasses, dependencies and attachments to render pass
+    std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
+
+    if (vkCreateRenderPass(m_device->getDevice(), &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("VULKAN: failed to create render pass!");
+    }
+
+#ifdef M_DEBUG
+    std::cout << "PostRenderPass: created render pass (" << m_renderPass << ")" << std::endl;
+#endif
+}
+
+void PostRenderPass::createPipelineAndDescriptors() {
+    // Pipeline creation
+    auto attributeDescription = Vertex::getAttributeDescriptions();
+    m_postprocessingPipeline = VulkanPipeline::create(*m_device,
+                                                      Vertex::getBindingDescription(),
+                                                      attributeDescription.data(),
+                                                      static_cast<uint32_t>(attributeDescription.size()),
+                                                      m_swapChain->getExtent(), m_postprocessingPipelineLayout,
+                                                      m_renderPass,
+                                                      "post", false
+    );
+
+    // Fill the descriptor set
+    VulkanDescriptor::writeDescriptorSet(*m_device, m_descriptorSet,
+                                         {}, // No buffers
+                                         {
+                                                 DescriptorImageInfo{
+                                                         .descriptorInfo = VkDescriptorImageInfo{
+                                                                 .sampler =   m_framebufferSampler,
+                                                                 .imageView = m_framebufferView,
+                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                                                         },
+                                                         .binding = 0,
+                                                         .arrayElement = 0,
+                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                         .count = 1
+                                                 },
+                                                 DescriptorImageInfo{
+                                                         .descriptorInfo = VkDescriptorImageInfo{
+                                                                 .sampler =   m_depthBufferSampler,
+                                                                 .imageView = m_depthBufferView,
+                                                                 .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                                         },
+                                                         .binding = 1,
+                                                         .arrayElement = 0,
+                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                         .count = 1
+                                                 },
+                                                 DescriptorImageInfo{
+                                                         .descriptorInfo = VkDescriptorImageInfo{
+                                                                 .sampler =   m_backgroundTexture.sampler,
+                                                                 .imageView = m_backgroundTexture.imageView,
+                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                                                         },
+                                                         .binding = 2,
+                                                         .arrayElement = 0,
+                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                         .count = 1
+                                                 },
+                                                 DescriptorImageInfo{
+                                                         .descriptorInfo = VkDescriptorImageInfo{
+                                                                 .sampler =   m_imGuiImageSampler,
+                                                                 .imageView = m_imGuiImageView,
+                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                                                         },
+                                                         .binding = 3,
+                                                         .arrayElement = 0,
+                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                         .count = 1
+                                                 }
+                                         }
+    );
+}
+
+// Rendering stuff
+/* Begin the render pass and setup all general descriptors . */
+void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
+
+    // Define render pass to draw with
+    VkRenderPassBeginInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = m_renderPass; // the renderpass to use
+    renderPassInfo.framebuffer = framebuffer; // the attatchment
+    renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
+    renderPassInfo.renderArea.extent = m_swapChain->getExtent(); // based on swap chain
+
+    // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
+    std::array<VkClearValue, 2> clearValues;
+    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(cmdBuf, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
+
+    // Now vkCmd... can be written do define the draw call
+    // Bind the pipline as a graphics pipeline
+    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_postprocessingPipeline.pipeline);
+
+    // Bind the descriptor set to the pipeline
+    vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            m_postprocessingPipeline.pipelineLayout,
+                            0, 1, &m_descriptorSet, 0, nullptr);
+
+    vkCmdPushConstants(cmdBuf, m_postprocessingPipeline.pipelineLayout,
+                       VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float) * 2, &m_camera.near);
+}
+
+/* Setup all descriptors and push commands for this render object. */
+void PostRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) {
+    // TODO
+}
+
+/* End this render pass. */
+void PostRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
+    // Finish the render pass
+    vkCmdEndRenderPass(cmdBuf);
+}
+
+void PostRenderPass::destroySwapChainDependent() {
+    // The pipeline, layouts and render pass also deppend on the number of swapchain images and the framebuffers
+    m_postprocessingPipeline.destroy(*m_device);
+
+    vkDestroyRenderPass(m_device->getDevice(), m_renderPass, nullptr);
+
+}
+
+/* Recreates this render pass to fit the new swap chain. */
+void PostRenderPass::recreate() {
+    // Recreate the render pass, because swap chain format has changed
+    createRenderPass();
+}
+
+void PostRenderPass::destroy() {
+
+    // These uniform buffers are per frame and therefore depend on the number of swapchain images
+    VulkanSampler::destroy(*m_device, m_framebufferSampler);
+    VulkanSampler::destroy(*m_device, m_depthBufferSampler);
+    VulkanSampler::destroy(*m_device, m_imGuiImageSampler);
+
+    // The descriptor pool and sets depend also on the number of images in the swapchain
+    vkDestroyDescriptorPool(m_device->getDevice(), m_descriptorPool,
+                            nullptr); // this also destroys the descriptor sets of this pools
+
+    VulkanTexture::destroy(*m_device, m_backgroundTexture);
+
+    vkDestroyDescriptorSetLayout(m_device->getDevice(), m_descriptorSetLayout.vDescriptorSetLayout, nullptr);
+}

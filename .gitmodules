@@ -1,0 +1,24 @@
+[submodule "dep/glm"]
+	path = dep/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "dep/glfw"]
+	path = dep/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule ".\\cmake\\thirdparty\\googletest"]
+	path = .\\cmake\\thirdparty\\googletest
+	url = https://github.com/google/googletest.git
+[submodule ".\\dep\\stb"]
+	path = .\\dep\\stb
+	url = https://github.com/nothings/stb.git
+[submodule "dep/tinyply"]
+	path = dep/tinyply
+	url = https://github.com/syoyo/tinyobjloader.git
+[submodule "dep/imgui"]
+	path = dep/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "dep/tinyobjloader"]
+	path = dep/tinyobjloader
+	url = https://github.com/syoyo/tinyobjloader.git
+[submodule "dep/stb"]
+	path = dep/stb
+	url = https://github.com/nothings/stb.git

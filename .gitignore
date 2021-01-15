@@ -1,0 +1,16 @@
+
+cmake-build-*
+
+/dep/vulkan/
+/dep/glfw/
+/dep/glm/
+/dep/lib/
+/dep/imgui/
+/dep/stb/
+/dep/tinyobjloader/
+/dep/tinyply/
+/cmake/thirdparty/
+
+.idea/
+
+*.spv
