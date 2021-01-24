@@ -9,9 +9,10 @@
 
 class VulkanMemory {
 public:
-    VulkanMemory(VulkanDevice &device, const VkCommandPool &cmdPool);
+   explicit VulkanMemory(VulkanDevice &device);
+    ~VulkanMemory() = default;
 
-    ~VulkanMemory();
+    void init(VkCommandPool cmdPool);
 
     void destroy();
 
@@ -41,6 +42,6 @@ public:
 
 private:
     VulkanDevice &m_device;
-    const VkCommandPool &m_commandPool;
+    VkCommandPool m_commandPool;
 };
 

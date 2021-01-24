@@ -20,27 +20,28 @@
 
 class PostRenderPass : public VulkanRenderPass {
 public:
-    PostRenderPass() = default;
-
-    PostRenderPass(VulkanDevice *device, VulkanMemory *vulkanMemory, VulkanSwapChain *swapChain);
+    PostRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain);
 
     ~PostRenderPass() = default;
 
-    void setImageBufferViews(VkImageView framebufferView, VkImageView depthbufferView, VkImageView imGuiImageView);
+    void
+    setImageBufferViews(VkImageView newFramebufferView, VkImageView newDepthBufferView, VkImageView imGuiImageView);
 
-    void updateCamera(Camera &camera) { m_camera = camera; }
+    void updateCamera(const Camera &newCamera) { camera = newCamera; }
 
-    virtual void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
+    void init() override;
 
-    virtual void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
+    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
 
-    virtual void cmdEnd(VkCommandBuffer &cmdBuf) override;
+    void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
-    virtual void recreate() override;
+    void cmdEnd(VkCommandBuffer &cmdBuf) override;
 
-    virtual void destroy() override;
+    void recreate() override;
 
-    virtual void destroySwapChainDependent() override;
+    void destroy() override;
+
+    void destroySwapChainDependent() override;
 
 private:
     void createRenderPass();
@@ -49,21 +50,21 @@ private:
 
 private:
     // Pipelines
-    DescriptorSetLayout m_descriptorSetLayout = {};
-    PipelineLayout m_postprocessingPipelineLayout;
-    VulkanPipeline m_postprocessingPipeline;
+    DescriptorSetLayout descriptorSetLayout{};
+    PipelineLayout postprocessingPipelineLayout{};
+    VulkanPipeline postprocessingPipeline{};
 
-    VkImageView m_framebufferView;
-    VkSampler m_framebufferSampler;
-    VkImageView m_depthBufferView;
-    VkSampler m_depthBufferSampler;
-    VkImageView m_imGuiImageView;
-    VkSampler m_imGuiImageSampler;
+    VkImageView framebufferView{};
+    VkSampler framebufferSampler{};
+    VkImageView depthBufferView{};
+    VkSampler depthBufferSampler{};
+    VkImageView imGuiImageView{};
+    VkSampler imGuiImageSampler{};
     // The objects for uniform buffer linking
-    VkDescriptorPool m_descriptorPool = {};
-    VkDescriptorSet m_descriptorSet;
+    VkDescriptorPool descriptorPool{};
+    VkDescriptorSet descriptorSet{};
 
-    Camera m_camera;
-    VulkanTexture m_backgroundTexture;
+    Camera camera{};
+    VulkanTexture backgroundTexture{};
 };
 

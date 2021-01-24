@@ -15,36 +15,39 @@ static void check_imgui_vk_result(VkResult result) {
 }
 
 /* Configures the render pass with the attachments and subpasses */
-ImGuiRenderPass::ImGuiRenderPass(VulkanDevice *device,
-                                 VulkanMemory *vulkanMemory, VulkanSwapChain *swapChain, Window *window) :
-        VulkanRenderPass(device, vulkanMemory, swapChain), m_window(window) {
+ImGuiRenderPass::ImGuiRenderPass(VulkanDevice &device,
+                                 VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window) :
+        VulkanRenderPass(device, vulkanMemory, swapChain), window(window) {
+}
+
+void ImGuiRenderPass::init() {
     createRenderPass();
 
     // Create descriptor pool for ImGui
-    m_descriptorPool = VulkanDescriptor::createPool(*m_device,
-                                                    {
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-                                                            VkDescriptorPoolSize{
-                                                                    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                                                                                 1000},
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                                                                                 1000},
-                                                            VkDescriptorPoolSize{
-                                                                    VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-                                                            VkDescriptorPoolSize{
-                                                                    VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                                 1000},
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                                                                                 1000},
-                                                            VkDescriptorPoolSize{
-                                                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-                                                            VkDescriptorPoolSize{
-                                                                    VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-                                                            VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-                                                                                 1000}
-                                                    });
+    descriptorPool = VulkanDescriptor::createPool(device,
+                                                  {
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                                                          VkDescriptorPoolSize{
+                                                                  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+                                                                               1000},
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+                                                                               1000},
+                                                          VkDescriptorPoolSize{
+                                                                  VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                                          VkDescriptorPoolSize{
+                                                                  VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                                               1000},
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                                                                               1000},
+                                                          VkDescriptorPoolSize{
+                                                                  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                                          VkDescriptorPoolSize{
+                                                                  VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+                                                                               1000}
+                                                  });
 
     // Initialize ImGui
 
@@ -60,27 +63,27 @@ ImGuiRenderPass::ImGuiRenderPass(VulkanDevice *device,
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsClassic();
     // Init imgui window
-    ImGui_ImplGlfw_InitForVulkan(m_window->getWindow(), true);
+    ImGui_ImplGlfw_InitForVulkan(window.getWindow(), true);
 
     // Setup vulkan for ImGui
     ImGui_ImplVulkan_InitInfo init_info = {};
-    init_info.Instance = m_device->getInstance()->getInstance();
-    init_info.PhysicalDevice = m_device->getPhysicalDevice();
-    init_info.Device = m_device->getDevice();
-    init_info.QueueFamily = m_device->getPresentQueueFamily();
-    init_info.Queue = m_device->getPresentQueue();
+    init_info.Instance = device.getInstance()->getInstance();
+    init_info.PhysicalDevice = device.getPhysicalDevice();
+    init_info.Device = device.getDevice();
+    init_info.QueueFamily = device.getPresentQueueFamily();
+    init_info.Queue = device.getPresentQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = m_descriptorPool;
+    init_info.DescriptorPool = descriptorPool;
     init_info.Allocator = nullptr;
-    init_info.MinImageCount = m_swapChain->size();
-    init_info.ImageCount = m_swapChain->size();
+    init_info.MinImageCount = swapChain.size();
+    init_info.ImageCount = swapChain.size();
     init_info.CheckVkResultFn = check_imgui_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, m_renderPass);
+    ImGui_ImplVulkan_Init(&init_info, renderPass);
 
     // Upload font texture
-    VkCommandBuffer cmdBuf = m_vulkanMemory->beginSingleTimeCommands();
+    VkCommandBuffer cmdBuf = vulkanMemory.beginSingleTimeCommands();
     ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
-    m_vulkanMemory->endSingleTimeCommands(cmdBuf);
+    vulkanMemory.endSingleTimeCommands(cmdBuf);
 }
 
 /* Creates the vulkan render pass, describing all attachments, subpasses and subpass dependencies. */
@@ -135,12 +138,12 @@ void ImGuiRenderPass::createRenderPass() {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
     renderPassInfo.pDependencies = dependencies.data();
 
-    if (vkCreateRenderPass(m_device->getDevice(), &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create ImGui render pass!");
     }
 
 #ifdef M_DEBUG
-    std::cout << "ImGuiRenderPass: created render pass (" << m_renderPass << ")" << std::endl;
+    std::cout << "ImGuiRenderPass: created render pass (" << renderPass << ")" << std::endl;
 #endif
 }
 
@@ -150,13 +153,13 @@ void ImGuiRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, V
     // Define render pass to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = m_renderPass; // the renderpass to use
+    renderPassInfo.renderPass = renderPass; // the renderpass to use
     renderPassInfo.framebuffer = framebuffer; // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
-    renderPassInfo.renderArea.extent = m_swapChain->getExtent(); // based on swap chain
+    renderPassInfo.renderArea.extent = swapChain.getExtent(); // based on swap chain
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
-    std::array<VkClearValue, 1> clearValues;
+    std::array<VkClearValue, 1> clearValues{};
     clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -183,15 +186,15 @@ void ImGuiRenderPass::destroySwapChainDependent() {
 
 /* Recreates this render pass to fit the new swap chain. */
 void ImGuiRenderPass::recreate() {
-    ImGui_ImplVulkan_SetMinImageCount(m_swapChain->size());
+    ImGui_ImplVulkan_SetMinImageCount(swapChain.size());
 }
 
 void ImGuiRenderPass::destroy() {
     // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(m_device->getDevice(), m_descriptorPool,
+    vkDestroyDescriptorPool(device.getDevice(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
 
-    vkDestroyRenderPass(m_device->getDevice(), m_renderPass, nullptr);
+    vkDestroyRenderPass(device.getDevice(), renderPass, nullptr);
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();

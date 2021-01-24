@@ -11,34 +11,32 @@
 
 class VulkanSwapChain {
 public:
-    VulkanSwapChain();
+    VulkanSwapChain(VulkanDevice &mDevice, VkSurfaceKHR &mSurface, Window &mWindow);
 
-    ~VulkanSwapChain();
+    ~VulkanSwapChain() = default;
 
-    void init(VulkanDevice *device, Window *window, VkSurfaceKHR *surface);
+    void init();
 
     void destroy();
 
     void reinit();
 
-    uint32_t size() const { return static_cast<uint32_t>(m_swapChainImages.size()); }
+    uint32_t size() const { return static_cast<uint32_t>(swapChainImages.size()); }
 
-    VkSwapchainKHR vSwapChain() const { return m_swapChain; }
+    VkSwapchainKHR vSwapChain() const { return swapChain; }
 
-    VkFormat getFormat() const { return m_swapChainImageFormat; }
+    VkFormat getFormat() const { return swapChainImageFormat; }
 
-    VkExtent2D getExtent() const { return m_swapChainExtent; }
+    VkExtent2D getExtent() const { return swapChainExtent; }
 
-    std::vector<VkImageView> &getImageViews() { return m_swapChainImageViews; }
+    std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
 
 private:
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(
+    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
             const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
-    VkPresentModeKHR chooseSwapPresentMode(
+    static VkPresentModeKHR chooseSwapPresentMode(
             const std::vector<VkPresentModeKHR> &availablePresentModes);
-
-    void createSurface();
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
@@ -47,14 +45,14 @@ private:
     void createImageViews();
 
 private:
-    VulkanDevice *m_device;
-    Window *m_window;
-    VkSurfaceKHR *m_surface;
+    VulkanDevice &device;
+    Window &window;
+    VkSurfaceKHR &surface;
 
     // All objects regarding the swapchain
-    VkSwapchainKHR m_swapChain = {};
-    std::vector<VkImage> m_swapChainImages;
-    VkFormat m_swapChainImageFormat = {};
-    VkExtent2D m_swapChainExtent = {};
-    std::vector<VkImageView> m_swapChainImageViews;
+    VkSwapchainKHR swapChain = {};
+    std::vector<VkImage> swapChainImages;
+    VkFormat swapChainImageFormat = {};
+    VkExtent2D swapChainExtent = {};
+    std::vector<VkImageView> swapChainImageViews;
 };

@@ -18,11 +18,11 @@
 
 class VulkanRenderPass {
 public:
-    VulkanRenderPass() = default;
-
-    VulkanRenderPass(VulkanDevice *device, VulkanMemory *vulkanMemory, VulkanSwapChain *swapChain);
+    VulkanRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain);
 
     ~VulkanRenderPass() = default;
+
+    virtual void init() = 0;
 
     virtual void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) = 0;
 
@@ -36,15 +36,15 @@ public:
 
     virtual void destroySwapChainDependent() = 0;
 
-    VkRenderPass getVkRenderPass() const { return m_renderPass; }
+    VkRenderPass getVkRenderPass() const { return renderPass; }
 
 protected:
     // The common pointers to the vulkan context objects
-    VulkanDevice *m_device;
-    VulkanMemory *m_vulkanMemory;
-    VulkanSwapChain *m_swapChain;
+    VulkanDevice &device;
+    VulkanMemory &vulkanMemory;
+    VulkanSwapChain &swapChain;
 
     // This vulkan render pass
-    VkRenderPass m_renderPass = {};
+    VkRenderPass renderPass = {};
 
 };

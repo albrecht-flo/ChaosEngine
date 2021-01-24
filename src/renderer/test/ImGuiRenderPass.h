@@ -20,30 +20,30 @@
 
 class ImGuiRenderPass : public VulkanRenderPass {
 public:
-    ImGuiRenderPass() = default;
-
-    ImGuiRenderPass(VulkanDevice *device, VulkanMemory *vulkanMemory, VulkanSwapChain *swapChain, Window *window);
+    ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window);
 
     ~ImGuiRenderPass() = default;
 
-    virtual void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
+    void init() override;
 
-    virtual void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
+    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
 
-    virtual void cmdEnd(VkCommandBuffer &cmdBuf) override;
+    void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
-    virtual void recreate() override;
+    void cmdEnd(VkCommandBuffer &cmdBuf) override;
 
-    virtual void destroy() override;
+    void recreate() override;
 
-    virtual void destroySwapChainDependent() override;
+    void destroy() override;
+
+    void destroySwapChainDependent() override;
 
 private:
     void createRenderPass();
 
 private:
+    Window &window;
     // The objects for uniform buffer linking
-    VkDescriptorPool m_descriptorPool = {};
-    Window *m_window;
+    VkDescriptorPool descriptorPool = {};
 };
 

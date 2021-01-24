@@ -3,15 +3,13 @@
 #include <stdexcept>
 #include <cstring>
 
-VulkanMemory::VulkanMemory(VulkanDevice &device, const VkCommandPool &cmdPool) :
-        m_device(device), m_commandPool(cmdPool) {
-
+VulkanMemory::VulkanMemory(VulkanDevice &device) :
+        m_device(device){
 }
 
-VulkanMemory::~VulkanMemory() {
-
+void VulkanMemory::init(VkCommandPool cmdPool){
+    m_commandPool = cmdPool;
 }
-
 void VulkanMemory::destroy(VulkanBuffer buffer) {
     vkDestroyBuffer(m_device.getDevice(), buffer.buffer, nullptr);
     vkFreeMemory(m_device.getDevice(), buffer.memory, nullptr);

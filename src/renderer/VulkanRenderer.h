@@ -32,10 +32,10 @@ protected:
     virtual void destroyResources() = 0;
 
 protected:
-    Window &m_window;
+    Window &window;
 
-    VulkanInstance m_instance;
-    VkSurfaceKHR m_surface = {};
+    VulkanInstance instance;
+    VkSurfaceKHR surface = {};
 
-    VulkanDevice m_device;
+    VulkanDevice device;
 };

@@ -10,16 +10,18 @@
 #include "../data/ModelLoader.h"
 
 TestRenderer::TestRenderer(Window &w) :
-        VulkanRenderer(w) {
-}
-
-TestRenderer::~TestRenderer() {}
+        VulkanRenderer(w),
+        swapChain(device, surface, window),
+        vulkanMemory(device),
+        mainGraphicsPass(device, vulkanMemory, swapChain),
+        imGuiRenderPass(device, vulkanMemory, swapChain, window),
+        postRenderPass(device, vulkanMemory, swapChain) {}
 
 void TestRenderer::init() {
     // Vulkan Instance and Device are handled by VulkanRenderer constructor
 
     // Swap chain creation
-    m_swapChain.init(&m_device, &m_window, &m_surface);
+    swapChain.init();
 
     // GPU communication
     createCommandPool();
@@ -29,57 +31,56 @@ void TestRenderer::init() {
     createSyncObjects();
 
     // Initialize memory manager
-    m_vulkanMemory = std::make_unique<VulkanMemory>(m_device, m_commandPool);
+    vulkanMemory.init(commandPool);
 
     // requires memory manager for depth image creation
     createDepthResources();
     createImageBuffers();
 
     // Render pass
-    m_mainGraphicsPass = MainSceneRenderPass(&m_device, m_vulkanMemory.get(), &m_swapChain);
-    m_imGuiRenderPass = ImGuiRenderPass(&m_device, m_vulkanMemory.get(), &m_swapChain, &m_window);
-    m_postRenderPass = PostRenderPass(&m_device, m_vulkanMemory.get(), &m_swapChain);
-    m_postRenderPass.setImageBufferViews(m_offscreenImageView, m_depthImageView, m_imGuiImageView);
+    mainGraphicsPass.init();
+    imGuiRenderPass.init();
+    postRenderPass.init();
+    postRenderPass.setImageBufferViews(offscreenImageView, depthImageView, imGuiImageView);
 
     createFramebuffers();
 
     auto quad = ModelLoader::getQuad();
-    // createMaterial(TexturePhongMaterial{"Waves.jpg", 64.0f});
-    m_quadMesh = uploadMesh(quad);
-    m_quadRobj.mesh = &m_quadMesh;
-    m_quadRobj.modelMat = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -3.0f));
+    quadMesh = uploadMesh(quad);
+    quadRobj.mesh = &quadMesh;
+    quadRobj.modelMat = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -3.0f));
 }
 
 
 /* Creates command pool to contain comman buffers */
 void TestRenderer::createCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = m_device.findQueueFamilies();
+    QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies();
 
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // We want the buffers to be able to reset them
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-    if (vkCreateCommandPool(m_device.getDevice(), &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create graphics command pool!");
     }
 }
 
 /* Creates the command buffers for all frames from the command pool. */
 void TestRenderer::createCommandBuffers() {
-    m_commandBuffers.clear();
-    m_commandBuffers.reserve(m_swapChain.size());
+    commandBuffers.clear();
+    commandBuffers.reserve(swapChain.size());
 
-    for (size_t i = 0; i < m_swapChain.size(); i++) {
-        m_commandBuffers.emplace_back(VulkanCommandBuffer(m_device, m_commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+    for (size_t i = 0; i < swapChain.size(); i++) {
+        commandBuffers.emplace_back(VulkanCommandBuffer(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
     }
 }
 
 /* Creates the objects for synchronization between frames. */
 void TestRenderer::createSyncObjects() {
-    m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-    m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -89,11 +90,11 @@ void TestRenderer::createSyncObjects() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) !=
+        if (vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
             VK_SUCCESS ||
-            vkCreateSemaphore(m_device.getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) !=
+            vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
             VK_SUCCESS ||
-            vkCreateFence(m_device.getDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
+            vkCreateFence(device.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
             throw std::runtime_error("VULKAN: failed to create synchronization objects for a frame!");
         }
     }
@@ -101,63 +102,63 @@ void TestRenderer::createSyncObjects() {
 
 /* Creates the depth resources for depth buffering. */
 void TestRenderer::createDepthResources() {
-    VkFormat depthFormat = VulkanImage::getDepthFormat(m_device);
+    VkFormat depthFormat = VulkanImage::getDepthFormat(device);
 
-    m_depthImage = VulkanImage::createDepthBufferImage(
-            m_device, *m_vulkanMemory, m_swapChain.getExtent().width,
-            m_swapChain.getExtent().height,
-            depthFormat, m_depthImageMemory);
-    m_depthImageView = VulkanImageView::create(m_device, m_depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    depthImage = VulkanImage::createDepthBufferImage(
+            device, vulkanMemory, swapChain.getExtent().width,
+            swapChain.getExtent().height,
+            depthFormat, depthImageMemory);
+    depthImageView = VulkanImageView::create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 /* Creates images and imageviews for offscreen buffers. */
 void TestRenderer::createImageBuffers() {
     // Offscreen main scene rendering
-    m_offscreenImage =
-            VulkanImage::createRawImage(m_device,
-                                        *m_vulkanMemory, m_swapChain.getExtent().width, m_swapChain.getExtent().height,
+    offscreenImage =
+            VulkanImage::createRawImage(device,
+                                        vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
                                         VK_FORMAT_R8G8B8A8_UNORM,
-                                        m_offscreenImageMemory);
-    m_offscreenImageView =
-            VulkanImageView::create(m_device,
-                                    m_offscreenImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+                                        offscreenImageMemory);
+    offscreenImageView =
+            VulkanImageView::create(device,
+                                    offscreenImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
     // Offscreen ImGui rendering
-    m_imGuiImage =
-            VulkanImage::createRawImage(m_device,
-                                        *m_vulkanMemory, m_swapChain.getExtent().width, m_swapChain.getExtent().height,
+    imGuiImage =
+            VulkanImage::createRawImage(device,
+                                        vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
                                         VK_FORMAT_R8G8B8A8_UNORM,
-                                        m_imGuiImageMemory);
-    m_imGuiImageView =
-            VulkanImageView::create(m_device,
-                                    m_imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+                                        imGuiImageMemory);
+    imGuiImageView =
+            VulkanImageView::create(device,
+                                    imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 /* Creates framebuffers for offscreen render passes and final composit pass. */
 void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
-    m_offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
-            m_device,
-            {m_offscreenImageView, m_depthImageView},
-            m_mainGraphicsPass.getVkRenderPass(),
-            m_swapChain.getExtent().width, m_swapChain.getExtent().height
+    offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
+            device,
+            {offscreenImageView, depthImageView},
+            mainGraphicsPass.getVkRenderPass(),
+            swapChain.getExtent().width, swapChain.getExtent().height
     );
     // Create offscreen ImGui framebuffer
-    m_imGuiFramebuffer = VulkanFramebuffer::createFramebuffer(
-            m_device,
-            {m_imGuiImageView},
-            m_imGuiRenderPass.getVkRenderPass(),
-            m_swapChain.getExtent().width, m_swapChain.getExtent().height
+    imGuiFramebuffer = VulkanFramebuffer::createFramebuffer(
+            device,
+            {imGuiImageView},
+            imGuiRenderPass.getVkRenderPass(),
+            swapChain.getExtent().width, swapChain.getExtent().height
     );
 
     // Create framebuffers for swap chain
-    m_swapChainFramebuffers.resize(m_swapChain.size());
-    for (uint32_t i = 0; i < m_swapChain.size(); i++) {
-        m_swapChainFramebuffers[i] = VulkanFramebuffer::createFramebuffer(
-                m_device,
-                {m_swapChain.getImageViews()[i]},
-                m_postRenderPass.getVkRenderPass(),
-                m_swapChain.getExtent().width, m_swapChain.getExtent().height
+    swapChainFramebuffers.resize(swapChain.size());
+    for (uint32_t i = 0; i < swapChain.size(); i++) {
+        swapChainFramebuffers[i] = VulkanFramebuffer::createFramebuffer(
+                device,
+                {swapChain.getImageViews()[i]},
+                postRenderPass.getVkRenderPass(),
+                swapChain.getExtent().width, swapChain.getExtent().height
         );
     }
 }
@@ -171,23 +172,22 @@ void TestRenderer::updateUniformBuffer(uint32_t currentImage) {
             .lightPos = glm::vec4(+100.0f, 100.0f, 0.0f, 500.0f),
             .lightColor = glm::vec4(1.0f, 1.0f, 0.9f, 0.5f)
     };
-    m_mainGraphicsPass.updateUniformBuffer(currentImage, m_camera, worldLight);
-    m_postRenderPass.updateCamera(m_camera);
+    mainGraphicsPass.updateUniformBuffer(currentImage, camera, worldLight);
+    postRenderPass.updateCamera(camera);
 }
 
 void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // Implicitly resets the command buffer.
-    m_commandBuffers[currentImage].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+    commandBuffers[currentImage].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-    VkCommandBuffer cmdBuf = m_commandBuffers[currentImage].getBuffer();
+    VkCommandBuffer cmdBuf = commandBuffers[currentImage].getBuffer();
 
     // Let the render pass setup general descriptors
-    m_mainGraphicsPass.cmdBegin(cmdBuf, currentImage, m_offscreenFramebuffer);
+    mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer);
 
-    for (size_t i = 0; i < m_renderObjects.size(); i++) {
-        RenderObject &robj = m_renderObjects[i];
+    for (auto &robj : renderObjects) {
         // Let the render pass setup per model descriptors
-        m_mainGraphicsPass.cmdRender(cmdBuf, robj);
+        mainGraphicsPass.cmdRender(cmdBuf, robj);
 
         // Bind the vertex buffer
         VkBuffer vertexBuffers[]{robj.mesh->vertexBuffer.buffer};
@@ -199,35 +199,35 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     }
 
     // End this render pass
-    m_mainGraphicsPass.cmdEnd(cmdBuf);
+    mainGraphicsPass.cmdEnd(cmdBuf);
 
     // !!! Transition of image layouts performed by attachment final layouts
-    // !!! synchronization done by m_mainGraphicsPass->dependency.dstSubPass EXTERNAL
-    // !!!							m_imGuiRenderPass->dependency.srcSubPass EXTERNAL
+    // !!! synchronization done by mainGraphicsPass->dependency.dstSubPass EXTERNAL
+    // !!!							imGuiRenderPass->dependency.srcSubPass EXTERNAL
 
-    m_imGuiRenderPass.cmdBegin(cmdBuf, currentImage, m_imGuiFramebuffer);
+    imGuiRenderPass.cmdBegin(cmdBuf, currentImage, imGuiFramebuffer);
     // No more needed, ImGui rendering is called in cmdBegin
-    m_imGuiRenderPass.cmdEnd(cmdBuf);
+    imGuiRenderPass.cmdEnd(cmdBuf);
 
     // !!! Transition of image layouts performed by attachment final layouts
-    // !!! synchronization done by m_imGuiRenderPass->dependency.dstSubPass EXTERNAL
-    // !!!							m_postRenderPass->dependency.srcSubPass EXTERNAL
+    // !!! synchronization done by imGuiRenderPass->dependency.dstSubPass EXTERNAL
+    // !!!							postRenderPass->dependency.srcSubPass EXTERNAL
 
     // Start post processing render pass
-    m_postRenderPass.cmdBegin(cmdBuf, currentImage, m_swapChainFramebuffers[currentImage]);
+    postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage]);
     // Bind previous color attachment to fragment shader sampler
-    m_postRenderPass.cmdRender(cmdBuf, m_quadRobj);
+    postRenderPass.cmdRender(cmdBuf, quadRobj);
     // Bind a screen filling quad to render the previous render passes to
-    VkBuffer vertexBuffers[]{m_quadRobj.mesh->vertexBuffer.buffer};
+    VkBuffer vertexBuffers[]{quadRobj.mesh->vertexBuffer.buffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(cmdBuf, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(cmdBuf, m_quadRobj.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmdBuf, quadRobj.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
     // Draw a fullscreen quad and composit the final image
-    vkCmdDrawIndexed(cmdBuf, m_quadRobj.mesh->indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(cmdBuf, quadRobj.mesh->indexCount, 1, 0, 0, 0);
 
-    m_postRenderPass.cmdEnd(cmdBuf);
+    postRenderPass.cmdEnd(cmdBuf);
 
-    m_commandBuffers[currentImage].end();
+    commandBuffers[currentImage].end();
 }
 
 /* Draws a frame and handles the update and synchronization of frames.
@@ -236,14 +236,14 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
 */
 void TestRenderer::drawFrame() {
     // Wait for the old frame to finish rendering
-    vkWaitForFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     // Aquire the next image to draw to from the swapchain
     // Specifies the sync objects to be notified when the image is ready
     uint32_t imageIndex; // index of available image
-    VkResult result = vkAcquireNextImageKHR(m_device.getDevice(),
-                                            m_swapChain.vSwapChain(), UINT64_MAX /*timeout*/,
-                                            m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(device.getDevice(),
+                                            swapChain.vSwapChain(), UINT64_MAX /*timeout*/,
+                                            imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) { // swap chain has been invalidated
         recreateSwapChain();
@@ -260,7 +260,7 @@ void TestRenderer::drawFrame() {
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]}; // wait for the image to be available
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]}; // wait for the image to be available
     VkPipelineStageFlags waitStages[] = {
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // wait for the image to be writeable before writing the color output
     // This means that the vertex shader stage etc. can already be executed
@@ -268,19 +268,19 @@ void TestRenderer::drawFrame() {
     submitInfo.pWaitSemaphores = waitSemaphores; // semaphore to wait for before executing
     submitInfo.pWaitDstStageMask = waitStages; // stages to wait for before executing
     // Specify the command buffers to submit for this draw call
-    std::array<VkCommandBuffer, 1> activeCommandBuffers = {m_commandBuffers[imageIndex].getBuffer()};
+    std::array<VkCommandBuffer, 1> activeCommandBuffers = {commandBuffers[imageIndex].getBuffer()};
     submitInfo.commandBufferCount = static_cast<uint32_t>(activeCommandBuffers.size());
     submitInfo.pCommandBuffers = activeCommandBuffers.data();
     // Specify semaphore to notify after finishing
-    VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     // Reset the finish fence
-    vkResetFences(m_device.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
+    vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame]);
 
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
-    if (vkQueueSubmit(m_device.getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
+    if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to submit draw command buffer!");
     }
 
@@ -291,24 +291,24 @@ void TestRenderer::drawFrame() {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
     // Specify the swapchain for presentation
-    VkSwapchainKHR swapChains[] = {m_swapChain.vSwapChain()};
+    VkSwapchainKHR swapChains[] = {swapChain.vSwapChain()};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     // Specify the image to present
     presentInfo.pImageIndices = &imageIndex;
     // Present the frame
-    result = vkQueuePresentKHR(m_device.getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(device.getPresentQueue(), &presentInfo);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-        m_window.getFrameBufferResize()) { // swapchain is invalid
-        m_window.setFrameBufferResized(false);
+        window.getFrameBufferResize()) { // swapchain is invalid
+        window.setFrameBufferResized(false);
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to present swap chain image!");
     }
 
     // Counter for current frame
-    m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 /* Recreates the swap chain after e.g. a window resize. */
@@ -318,29 +318,29 @@ void TestRenderer::recreateSwapChain() {
     // Get new dimensions
     int width = 0, height = 0;
     while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(m_window.getWindow(), &width, &height);
+        glfwGetFramebufferSize(window.getWindow(), &width, &height);
         glfwWaitEvents();
     }
 
     // Wait for current rendering to finish
-    m_device.waitIdle();
+    device.waitIdle();
 
     // Destroy old objects
     cleanupSwapChain();
 
     // Create new createSyncObjects
-    m_swapChain.reinit();
+    swapChain.reinit();
 
     // Recreate the render pass attachments
     createDepthResources();
     createImageBuffers();
 
     // Recreate the render passes that depend on the swap chain
-    m_mainGraphicsPass.recreate();
-    m_imGuiRenderPass.recreate();
-    m_postRenderPass.recreate();
+    mainGraphicsPass.recreate();
+    imGuiRenderPass.recreate();
+    postRenderPass.recreate();
     // Update the attachment views
-    m_postRenderPass.setImageBufferViews(m_offscreenImageView, m_depthImageView, m_imGuiImageView);
+    postRenderPass.setImageBufferViews(offscreenImageView, depthImageView, imGuiImageView);
 
 
     // Recreate the framebuffers for the render passes
@@ -353,35 +353,35 @@ void TestRenderer::recreateSwapChain() {
 void TestRenderer::cleanupSwapChain() {
 
     // The framebuffers depend on the image views of the swap chain
-    for (auto framebuffer : m_swapChainFramebuffers) {
-        VulkanFramebuffer::destroy(m_device, framebuffer);
+    for (auto framebuffer : swapChainFramebuffers) {
+        VulkanFramebuffer::destroy(device, framebuffer);
     }
 
     // Destroy offscreen main scene framebuffer
-    VulkanFramebuffer::destroy(m_device, m_offscreenFramebuffer);
+    VulkanFramebuffer::destroy(device, offscreenFramebuffer);
     // Destroy offscreen main scene image buffer
-    VulkanImage::destroy(m_device, m_offscreenImage, m_offscreenImageMemory);
-    VulkanImageView::destroy(m_device, m_offscreenImageView);
+    VulkanImage::destroy(device, offscreenImage, offscreenImageMemory);
+    VulkanImageView::destroy(device, offscreenImageView);
     // Destroy offscreen main scene depth buffer
-    VulkanImage::destroy(m_device, m_depthImage, m_depthImageMemory);
-    VulkanImageView::destroy(m_device, m_depthImageView);
+    VulkanImage::destroy(device, depthImage, depthImageMemory);
+    VulkanImageView::destroy(device, depthImageView);
 
     // Destroy offscreen ImGui framebuffer
-    VulkanFramebuffer::destroy(m_device, m_imGuiFramebuffer);
+    VulkanFramebuffer::destroy(device, imGuiFramebuffer);
     // Destroy offscreen ImGui image buffer
-    VulkanImage::destroy(m_device, m_imGuiImage, m_imGuiImageMemory);
-    VulkanImageView::destroy(m_device, m_imGuiImageView);
+    VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
+    VulkanImageView::destroy(device, imGuiImageView);
 
     // The command buffers depend on the ammount of swapchain images
-    for (auto cmdBuffer : m_commandBuffers) {
+    for (auto cmdBuffer : commandBuffers) {
         cmdBuffer.destroy();
     }
 
-    m_mainGraphicsPass.destroySwapChainDependent();
-    m_imGuiRenderPass.destroySwapChainDependent();
-    m_postRenderPass.destroySwapChainDependent();
+    mainGraphicsPass.destroySwapChainDependent();
+    imGuiRenderPass.destroySwapChainDependent();
+    postRenderPass.destroySwapChainDependent();
 
-    m_swapChain.destroy();
+    swapChain.destroy();
 }
 
 /* Cleans up all Vulkan objects in the propper order. */
@@ -389,55 +389,55 @@ void TestRenderer::destroyResources() {
     cleanupSwapChain();
 
     // Finish cleaning up the render passes, partly done in cleanupSwapChain()
-    m_mainGraphicsPass.destroy();
-    m_imGuiRenderPass.destroy();
-    m_postRenderPass.destroy();
+    mainGraphicsPass.destroy();
+    imGuiRenderPass.destroy();
+    postRenderPass.destroy();
 
     // Free the model buffers
-    for (auto &m : m_meshes) {
-        m_vulkanMemory->destroy(m.vertexBuffer);
-        m_vulkanMemory->destroy(m.indexBuffer);
+    for (auto &m : meshes) {
+        vulkanMemory.destroy(m.vertexBuffer);
+        vulkanMemory.destroy(m.indexBuffer);
     }
 
     // Destroy the synchronization objects
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(m_device.getDevice(), m_renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(m_device.getDevice(), m_imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(m_device.getDevice(), m_inFlightFences[i], nullptr);
+        vkDestroySemaphore(device.getDevice(), renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(device.getDevice(), imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(device.getDevice(), inFlightFences[i], nullptr);
     }
 
     // Cleanup all other allocations
-    m_vulkanMemory->destroy();
+    vulkanMemory.destroy();
 
     // Destroy the command pool
-    vkDestroyCommandPool(m_device.getDevice(), m_commandPool, nullptr);
+    vkDestroyCommandPool(device.getDevice(), commandPool, nullptr);
 }
 
 // Data management
 
 RenderMesh TestRenderer::uploadMesh(Mesh &mesh) {
-    VulkanBuffer vertexBuffer = m_vulkanMemory->createInputBuffer(
+    VulkanBuffer vertexBuffer = vulkanMemory.createInputBuffer(
             mesh.vertices.size() * sizeof(mesh.vertices[0]), mesh.vertices.data(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    VulkanBuffer indexBuffer = m_vulkanMemory->createInputBuffer(
+    VulkanBuffer indexBuffer = vulkanMemory.createInputBuffer(
             mesh.indices.size() * sizeof(mesh.indices[0]), mesh.indices.data(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
     RenderMesh rmesh{.vertexBuffer=vertexBuffer, .indexBuffer=indexBuffer,
             .indexCount=static_cast<uint32_t>(mesh.indices.size())};
-    m_meshes.emplace_back(rmesh);
+    meshes.emplace_back(rmesh);
     return rmesh;
 }
 
 RenderObjectRef TestRenderer::addObject(RenderMesh &rmesh, glm::mat4 modelMat, MaterialRef material) {
-    m_renderObjects.emplace_back(RenderObject{.mesh=&rmesh, .modelMat=modelMat, .material=material});
-    return m_renderObjects.size() - 1;
+    renderObjects.emplace_back(RenderObject{.mesh=&rmesh, .modelMat=modelMat, .material=material});
+    return renderObjects.size() - 1;
 }
 
 bool TestRenderer::setModelMatrix(uint32_t robjID, glm::mat4 modelMat) {
-    if (robjID >= m_renderObjects.size())
+    if (robjID >= renderObjects.size())
         return false;
 
-    m_renderObjects[robjID].modelMat = modelMat;
+    renderObjects[robjID].modelMat = modelMat;
     return true;
 }
 
@@ -445,14 +445,14 @@ bool TestRenderer::setModelMatrix(uint32_t robjID, glm::mat4 modelMat) {
 	has not been loaded before. 
 	*/
 MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial material) {
-    return m_mainGraphicsPass.createMaterial(material);
+    return mainGraphicsPass.createMaterial(material);
 }
 
 
 void TestRenderer::setViewMatrix(const glm::mat4 &view) {
-    m_camera.view = view;
+    camera.view = view;
 }
 
 void TestRenderer::setCameraAngle(float angle) {
-    m_camera.angle = angle;
+    camera.angle = angle;
 }

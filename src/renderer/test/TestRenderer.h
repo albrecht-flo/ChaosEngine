@@ -37,9 +37,10 @@
 
 class TestRenderer : public VulkanRenderer {
 public:
-    TestRenderer(Window &w);
+    explicit TestRenderer(Window &w);
 
-    ~TestRenderer();
+    ~TestRenderer() = default;
+
 // Virtual methods of super class
 public:
     void drawFrame() override;
@@ -56,22 +57,22 @@ public: // RenderObject handling
 
     bool setModelMatrix(uint32_t robjID, glm::mat4 modelMat);
 
-    MaterialRef createMaterial(const TexturePhongMaterial material);
+    MaterialRef createMaterial(TexturePhongMaterial material);
 
     // Camera handling
     void setViewMatrix(const glm::mat4 &view);
 
     void setCameraAngle(float angle);
 
-    glm::mat4 getViewMatrix() const { return m_camera.view; }
+    glm::mat4 getViewMatrix() const { return camera.view; }
 
 private: // RenderObject data
-    std::vector<RenderMesh> m_meshes;
-    std::vector<RenderObject> m_renderObjects;
-    RenderMesh m_quadMesh;
-    RenderObject m_quadRobj{nullptr, glm::mat4(), 0};
+    std::vector<RenderMesh> meshes;
+    std::vector<RenderObject> renderObjects;
+    RenderMesh quadMesh{};
+    RenderObject quadRobj{nullptr, glm::mat4(), 0};
 
-    Camera m_camera{
+    Camera camera{
             .view = glm::mat4(),
             .angle = 45.0f,
             .near = 0.1f,
@@ -103,45 +104,45 @@ private:
 
 private:
     // The swap chain
-    VulkanSwapChain m_swapChain;
-    std::vector<VkFramebuffer> m_swapChainFramebuffers;
-    // Frame ressources for offscreen scene rendering
-    VkFramebuffer m_offscreenFramebuffer;
-    VkImage m_offscreenImage;
-    VkDeviceMemory m_offscreenImageMemory;
-    VkImageView m_offscreenImageView;
+    VulkanSwapChain swapChain;
+    std::vector<VkFramebuffer> swapChainFramebuffers;
+    // Frame resources for offscreen scene rendering
+    VkFramebuffer offscreenFramebuffer{};
+    VkImage offscreenImage{};
+    VkDeviceMemory offscreenImageMemory{};
+    VkImageView offscreenImageView{};
 
-    // Frame ressources for offscreen ImGui renering
-    VkFramebuffer m_imGuiFramebuffer;
-    VkImage m_imGuiImage;
-    VkDeviceMemory m_imGuiImageMemory;
-    VkImageView m_imGuiImageView;
+    // Frame resources for offscreen ImGui rendering
+    VkFramebuffer imGuiFramebuffer{};
+    VkImage imGuiImage{};
+    VkDeviceMemory imGuiImageMemory{};
+    VkImageView imGuiImageView{};
 
     // The command pool, TOBE moved
-    VkCommandPool m_commandPool = {};
+    VkCommandPool commandPool{};
+
+    // The memory management object
+    VulkanMemory vulkanMemory;
 
     // Render passes
-    MainSceneRenderPass m_mainGraphicsPass;
-    PostRenderPass m_postRenderPass;
-    ImGuiRenderPass m_imGuiRenderPass;
-
-    // The memeory management object
-    std::unique_ptr<VulkanMemory> m_vulkanMemory;
+    MainSceneRenderPass mainGraphicsPass;
+    ImGuiRenderPass imGuiRenderPass;
+    PostRenderPass postRenderPass;
 
     // Depth resources
-    VkImage m_depthImage;
-    VkDeviceMemory m_depthImageMemory;
-    VkImageView m_depthImageView;
+    VkImage depthImage{};
+    VkDeviceMemory depthImageMemory{};
+    VkImageView depthImageView{};
 
     // The buffers containing the queue commands
-    std::vector<VulkanCommandBuffer> m_commandBuffers;
+    std::vector<VulkanCommandBuffer> commandBuffers{};
 
     // The sync objects
-    std::vector<VkSemaphore> m_imageAvailableSemaphores;
-    std::vector<VkSemaphore> m_renderFinishedSemaphores;
-    std::vector<VkFence> m_inFlightFences;
+    std::vector<VkSemaphore> imageAvailableSemaphores{};
+    std::vector<VkSemaphore> renderFinishedSemaphores{};
+    std::vector<VkFence> inFlightFences{};
 
     // Counter
-    size_t m_currentFrame = 0;
+    size_t currentFrame = 0;
 };
 
