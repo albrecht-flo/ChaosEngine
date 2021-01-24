@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <string>
+#include <optional>
 
 #include "Mesh.h"
 
@@ -18,17 +19,10 @@ public:
 
     void cleanup();
 
-    bool cleanup(Mesh *mesh);
+    static std::optional<std::unique_ptr<Mesh>> loadMeshFromOBJ(const std::string &filename);
 
-    Mesh *loadMeshFromOBJ(const std::string &filename);
+    static std::optional<std::unique_ptr<Mesh>> loadMeshFromPLY(const std::string &filename);
 
-    Mesh *loadMeshFromPLY(const std::string &filename);
+    static Mesh getQuad();
 
-    static Mesh *getQuad();
-
-private:
-    // Meshes
-    std::vector<Mesh *> m_meshes;
-    // Special often used meshes
-    static Mesh *m_quadMesh;
-};  
+};

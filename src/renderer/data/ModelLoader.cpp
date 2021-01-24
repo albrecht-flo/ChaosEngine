@@ -9,13 +9,13 @@
 #include <tinyply.h>
 
 #include <iostream>
+#include <optional>
+#include <memory>
 #include <stdexcept>
 #include <unordered_map>
 
 // For debugging prints
 // #define M_DEBUG_MODELLOADER
-
-Mesh *ModelLoader::m_quadMesh = nullptr;
 
 ///////////////////////////////// HELPER //////////////////////////////////////
 
@@ -62,27 +62,9 @@ struct memory_stream : virtual memory_buffer, public std::istream {
 ///////////////////////////////// CLASS ///////////////////////////////////////
 
 void ModelLoader::cleanup() {
-    for (Mesh *m : m_meshes)
-        delete m;
-    m_meshes.clear();
-
-    if (m_quadMesh != nullptr)
-        delete m_quadMesh;
 }
 
-bool ModelLoader::cleanup(Mesh *mesh) {
-    printf("clean mesh %p\n", mesh);
-    for (auto it = m_meshes.begin(); it != m_meshes.end(); ++it) {
-        if (*it == mesh) {
-            delete *it;
-            m_meshes.erase(it);
-            return true;
-        }
-    }
-    return false;
-}
-
-Mesh *ModelLoader::loadMeshFromOBJ(const std::string &filename) {
+std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromOBJ(const std::string &filename) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -102,7 +84,7 @@ Mesh *ModelLoader::loadMeshFromOBJ(const std::string &filename) {
         throw std::runtime_error("TinyObjloader: " + err);
     }
 
-    Mesh *mesh = new Mesh();
+    auto mesh = std::make_unique<Mesh>();
     std::unordered_map<Vertex, uint32_t> verticesMap = {};
 
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -139,11 +121,10 @@ Mesh *ModelLoader::loadMeshFromOBJ(const std::string &filename) {
     std::cout << "Loaded mesh(" << filename << ") with "
               << mesh->vertices.size() << " vertices" << std::endl;
 
-    m_meshes.emplace_back(mesh);
-    return mesh;
+    return std::make_optional(std::move(mesh));
 }
 
-Mesh *ModelLoader::loadMeshFromPLY(const std::string &filename) {
+std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::string &filename) {
     using namespace tinyply;
 #ifdef M_DEBUG_MODELLOADER
     std::cout << "........................................................................\n";
@@ -249,15 +230,15 @@ Mesh *ModelLoader::loadMeshFromPLY(const std::string &filename) {
 
         // TODO reuse vertices
 
-        float *vertexBuffer = (float *) vertices->buffer.get();
-        float *normalBuffer = (float *) normals->buffer.get();
-        uint8_t *colorBuffer = (uint8_t *) colors->buffer.get();
-        float *texcoordBuffer = (float *) texcoords->buffer.get();
+        auto *vertexBuffer = (float *) vertices->buffer.get();
+        auto *normalBuffer = (float *) normals->buffer.get();
+        auto *colorBuffer = (uint8_t *) colors->buffer.get();
+        auto *texcoordBuffer = (float *) texcoords->buffer.get();
 
-        Mesh *mesh = new Mesh();
+        auto mesh = std::make_unique<Mesh>();
 
         for (size_t i = 0; i < vertices->count; i++) {
-            Vertex vertex;
+            Vertex vertex{};
 
             vertex.pos = glm::vec3(
                     vertexBuffer[i * 3 + 0],
@@ -289,19 +270,14 @@ Mesh *ModelLoader::loadMeshFromPLY(const std::string &filename) {
         std::cout << "Loaded mesh(" << filename << ") with "
                   << mesh->vertices.size() << " vertices and " << mesh->indices.size() / 3 << " faces" << std::endl;
 
-        m_meshes.emplace_back(mesh);
-
-        return mesh;
+        return std::make_optional(std::move(mesh));
     } catch (const std::exception &e) {
         std::cerr << "Caught tinyply exception: " << e.what() << std::endl;
-        return nullptr;
+        return std::nullopt;
     }
 }
 
-Mesh *ModelLoader::getQuad() {
-    if (m_quadMesh != nullptr)
-        return m_quadMesh;
-
+Mesh ModelLoader::getQuad() {
     const std::vector<Vertex> vertices = {
             {{-1.0f, -1.0f, +0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
             {{+1.0f, -1.0f, +0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
@@ -314,9 +290,9 @@ Mesh *ModelLoader::getQuad() {
     };
 
 
-    m_quadMesh = new Mesh;
-    m_quadMesh->vertices = vertices;
-    m_quadMesh->indices = indices;
+    Mesh m_quadMesh;
+    m_quadMesh.vertices = vertices;
+    m_quadMesh.indices = indices;
 
     return m_quadMesh;
 }

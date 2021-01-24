@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <stdexcept>
 #include <cstdlib>
 #include <cstring>
@@ -28,8 +29,7 @@ void TestRenderer::init() {
     createSyncObjects();
 
     // Initialize memory manager
-    m_vulkanMemory = std::unique_ptr<VulkanMemory>(
-            new VulkanMemory(m_device, m_commandPool));
+    m_vulkanMemory = std::make_unique<VulkanMemory>(m_device, m_commandPool);
 
     // requires memory manager for depth image creation
     createDepthResources();
@@ -43,9 +43,9 @@ void TestRenderer::init() {
 
     createFramebuffers();
 
-    Mesh *quad = ModelLoader::getQuad();
+    auto quad = ModelLoader::getQuad();
     // createMaterial(TexturePhongMaterial{"Waves.jpg", 64.0f});
-    m_quadMesh = uploadMesh(*quad);
+    m_quadMesh = uploadMesh(quad);
     m_quadRobj.mesh = &m_quadMesh;
     m_quadRobj.modelMat = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -3.0f));
 }

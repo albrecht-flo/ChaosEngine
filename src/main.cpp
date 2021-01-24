@@ -1,6 +1,6 @@
 
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan is using 0 to 1
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -97,16 +97,16 @@
 
 void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
     // Setup models
-    Mesh *mesh = modelLoader.loadMeshFromOBJ("models/monkey.obj");
-    Mesh *island = modelLoader.loadMeshFromPLY("models/Low_Poly_island.ply");
-    Mesh *islandWater = modelLoader.loadMeshFromPLY("models/Low_Poly_island_water.ply");
-    if (island == nullptr) {
+    auto mesh = ModelLoader::loadMeshFromOBJ("models/monkey.obj");
+    auto island = ModelLoader::loadMeshFromPLY("models/Low_Poly_island.ply");
+    auto islandWater = ModelLoader::loadMeshFromPLY("models/Low_Poly_island_water.ply");
+    if (!mesh || !island || !islandWater) {
         throw std::runtime_error("Unabel to load meshes.");
     }
 
-    RenderMesh rmesh = renderer.uploadMesh(*mesh);
-    RenderMesh islandRMesh = renderer.uploadMesh(*island);
-    RenderMesh islandWaterRMesh = renderer.uploadMesh(*islandWater);
+    RenderMesh rmesh = renderer.uploadMesh(**mesh);
+    RenderMesh islandRMesh = renderer.uploadMesh(**island);
+    RenderMesh islandWaterRMesh = renderer.uploadMesh(**islandWater);
     // Setup materials
     TexturePhongMaterial testMaterial1 = {
             .textureFile = "noTex.jpg",
