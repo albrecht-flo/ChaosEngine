@@ -4,17 +4,15 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <utility>
 
 VulkanInstance::VulkanInstance() :
-        m_instance(VK_NULL_HANDLE), m_debugMessenger(VK_NULL_HANDLE) {
+        instance(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE) {
 }
 
 VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                               const std::vector<const char *> validationLayers) :
-        m_instance(instance), m_debugMessenger(debugMessenger), m_validationLayers(validationLayers) {
-}
-
-VulkanInstance::~VulkanInstance() {
+                               std::vector<const char *> validationLayers) :
+        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {
 }
 
 /* Checks if the driver supports validation layers. */
@@ -43,7 +41,7 @@ bool VulkanInstance::checkValidationLayerSupport(const std::vector<const char *>
     return true;
 }
 
-/* Gets the necessary extensiond from glfw. */
+/* Gets the necessary extension from glfw. */
 std::vector<const char *> VulkanInstance::getRequiredExtensions(bool enableValidationLayers) {
     uint32_t glfwExtensionCount = 0;
     const char **glfwExtensions;
@@ -58,11 +56,11 @@ std::vector<const char *> VulkanInstance::getRequiredExtensions(bool enableValid
     return extensions;
 }
 
-/* Debug callback to print debug messages emmited by vulkan. */
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
+/* Debug callback to print debug messages emitted by vulkan. */
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
+                                                    VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                                                    void *pUserData) {
+                                                    void */*pUserData*/) {
     std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
@@ -137,7 +135,7 @@ VulkanInstance VulkanInstance::create(std::vector<const char *> validationLayers
     return VulkanInstance(instance, debugMessenger, validationLayers);
 }
 
-/* Creates and attatches the debug messenger. */
+/* Creates and attaches the debug messenger. */
 void VulkanInstance::setupDebugMessenger(VkInstance instance,
                                          VkDebugUtilsMessengerEXT &debugMessenger,
                                          VkDebugUtilsMessengerCreateInfoEXT createInfo) {
@@ -161,15 +159,15 @@ VulkanInstance::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugU
     }
 }
 
-/* Destroies the instance and if present the debug messenger. */
+/* Destroys the instance and if present the debug messenger. */
 void VulkanInstance::destroy(VulkanInstance &instance) {
-    if (instance.m_debugMessenger != VK_NULL_HANDLE) {
+    if (instance.debugMessenger != VK_NULL_HANDLE) {
         // Get destroy function
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
-                vkGetInstanceProcAddr(instance.m_instance, "vkDestroyDebugUtilsMessengerEXT");
+                vkGetInstanceProcAddr(instance.instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) { // if extension is present
-            func(instance.m_instance, instance.m_debugMessenger, nullptr);
+            func(instance.instance, instance.debugMessenger, nullptr);
         }
     }
-    vkDestroyInstance(instance.m_instance, nullptr);
+    vkDestroyInstance(instance.instance, nullptr);
 }

@@ -20,35 +20,27 @@
 #include "renderer/data/RenderObject.h"
 #include "renderer/data/ModelLoader.h"
 
-/* TODOs::w
+/* TODOs:
  *
 	Current:
+        - Proper logging
+
 		- Learn about image layouts
 		- layout transitions
-		- dependencies
 		- pipeline Parameters
-		- Offscreen rendering
-			- refactor render passes
-				x subclass
-				- attachment handling
-					- sub pass dependencies
-			- render to framebuffers
-			- render multiple framebuffers to final framebuffer
-		- Alpha blending
-		- Sky box
+
 		- add tinyobjloader library
 			x model loading
 			- material loading
-		- add phong shading model
-			x basic shading
-			x multiple lights
-			- dynamic lights
-		- Group pipeline and Descriptor layout stuff into super class 
+		- Group pipeline and Descriptor layout stuff into super class
 			-> extend this to create different shaders
 		- renderobjects by material / reuse material 
 			-> DescriptorSet management
-	To Think:
+
+    To Think:
 		- use factory Create() instead of init (https://abseil.io/tips/42)
+        - Consider PIMPL pattern https://oliora.github.io/2015/12/29/pimpl-and-rule-of-zero.html
+
 	Refactor:
 		- Migrate to C++ headers
 		- Memory management
@@ -67,6 +59,9 @@
 				- Descriptor sets for multi object (camera) -> changes often = buffered, TODO constantly mapped
 				- Descriptor sets for multi object (lights) -> changes not often = buffer switch
 			- Textures
+        - Render Passes
+            - attachment handling
+            - sub pass dependencies
 		- Pipeline handling
 			- Shaders
 			- Pipeline
@@ -77,12 +72,14 @@
 
 	Features:
 		General:
-		- Ressource management
+		- ECS (entt or self implemented, probably switchable)
+		- Resource management
 			- Model loading
 			- Texture loading
 		- Noise functions
 		Rendering:
-		- Alpha blending
+		- Sky box
+		- Transparent Pass (Alpha blending)
 		- Lighting
 		- GUI with ImGui
 		- Post processing
@@ -93,6 +90,7 @@
 		- Particles
 		- Shadows
 		- Reflections
+		- PBR
 */
 
 void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {

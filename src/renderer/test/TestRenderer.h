@@ -57,7 +57,7 @@ public: // RenderObject handling
 
     bool setModelMatrix(uint32_t robjID, glm::mat4 modelMat);
 
-    MaterialRef createMaterial(TexturePhongMaterial material);
+    MaterialRef createMaterial(const TexturePhongMaterial& material);
 
     // Camera handling
     void setViewMatrix(const glm::mat4 &view);

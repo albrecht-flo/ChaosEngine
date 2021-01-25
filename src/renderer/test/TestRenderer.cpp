@@ -27,7 +27,7 @@ void TestRenderer::init() {
     createCommandPool();
     // Create per frame command buffers
     createCommandBuffers();
-    // Sync objects for draing frames
+    // Sync objects for drawing frames
     createSyncObjects();
 
     // Initialize memory manager
@@ -52,7 +52,7 @@ void TestRenderer::init() {
 }
 
 
-/* Creates command pool to contain comman buffers */
+/* Creates command pool to contain command buffers */
 void TestRenderer::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies();
 
@@ -111,7 +111,7 @@ void TestRenderer::createDepthResources() {
     depthImageView = VulkanImageView::create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
-/* Creates images and imageviews for offscreen buffers. */
+/* Creates images and image views for offscreen buffers. */
 void TestRenderer::createImageBuffers() {
     // Offscreen main scene rendering
     offscreenImage =
@@ -134,7 +134,7 @@ void TestRenderer::createImageBuffers() {
                                     imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-/* Creates framebuffers for offscreen render passes and final composit pass. */
+/* Creates framebuffers for offscreen render passes and final composite pass. */
 void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
     offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
@@ -222,7 +222,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(cmdBuf, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(cmdBuf, quadRobj.mesh->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-    // Draw a fullscreen quad and composit the final image
+    // Draw a fullscreen quad and composite the final image
     vkCmdDrawIndexed(cmdBuf, quadRobj.mesh->indexCount, 1, 0, 0, 0);
 
     postRenderPass.cmdEnd(cmdBuf);
@@ -372,7 +372,7 @@ void TestRenderer::cleanupSwapChain() {
     VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
     VulkanImageView::destroy(device, imGuiImageView);
 
-    // The command buffers depend on the ammount of swapchain images
+    // The command buffers depend on the amount of swapchain images
     for (auto cmdBuffer : commandBuffers) {
         cmdBuffer.destroy();
     }
@@ -384,7 +384,7 @@ void TestRenderer::cleanupSwapChain() {
     swapChain.destroy();
 }
 
-/* Cleans up all Vulkan objects in the propper order. */
+/* Cleans up all Vulkan objects in the proper order. */
 void TestRenderer::destroyResources() {
     cleanupSwapChain();
 
@@ -441,10 +441,10 @@ bool TestRenderer::setModelMatrix(uint32_t robjID, glm::mat4 modelMat) {
     return true;
 }
 
-/* Creates a material contianing only one texture and loads the texture if it
+/* Creates a material containing only one texture and loads the texture if it
 	has not been loaded before. 
 	*/
-MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial material) {
+MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial& material) {
     return mainGraphicsPass.createMaterial(material);
 }
 

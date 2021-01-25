@@ -46,21 +46,21 @@ public:
     void destroy();
 
     // Getter
-    VulkanInstance *getInstance() { return m_instance; };
+    VulkanInstance *getInstance() { return instance; };
 
-    VkDevice getDevice() const { return m_device; }
+    VkDevice getDevice() const { return device; }
 
-    VkQueue getGraphicsQueue() const { return m_graphicsQueue; }
+    VkQueue getGraphicsQueue() const { return graphicsQueue; }
 
-    VkQueue getPresentQueue() const { return m_presentQueue; }
+    VkQueue getPresentQueue() const { return presentQueue; }
 
-    VkPhysicalDevice getPhysicalDevice() const { return m_physicalDevice; }
+    VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
 
-    VkPhysicalDeviceProperties getProperties() const { return m_properties; }
+    VkPhysicalDeviceProperties getProperties() const { return properties; }
 
-    uint32_t getGraphicsQueueFamily() const { return m_graphicsQueueFamily; }
+    uint32_t getGraphicsQueueFamily() const { return graphicsQueueFamily; }
 
-    uint32_t getPresentQueueFamily() const { return m_presentQueueFamily; }
+    uint32_t getPresentQueueFamily() const { return presentQueueFamily; }
 
     // Wrapper for external calls
     bool checkDeviceExtensionSupport();
@@ -93,20 +93,20 @@ private:
 
 private:
 
-    VulkanInstance *m_instance = nullptr;
+    VulkanInstance *instance = nullptr;
 
-    VkSurfaceKHR m_surface = {};
+    VkSurfaceKHR surface = {};
 
-    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
-    VkDevice m_device = {};
+    VkDevice device = {};
 
-    uint32_t m_graphicsQueueFamily;
-    uint32_t m_presentQueueFamily;
+    uint32_t graphicsQueueFamily;
+    uint32_t presentQueueFamily;
 
-    VkQueue m_graphicsQueue = {};
-    VkQueue m_presentQueue = {};
+    VkQueue graphicsQueue = {};
+    VkQueue presentQueue = {};
 
-    VkPhysicalDeviceProperties m_properties = {};
+    VkPhysicalDeviceProperties properties = {};
 };
 

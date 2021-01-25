@@ -14,7 +14,7 @@ void VulkanSwapChain::init() {
     createImageViews();
 }
 
-/* Destories frame buffers, image views and swap chain. */
+/* Stories frame buffers, image views and swap chain. */
 void VulkanSwapChain::destroy() {
     for (auto imageView : swapChainImageViews) {
         VulkanImageView::destroy(device, imageView);
