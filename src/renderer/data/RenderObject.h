@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "../memory/VulkanBuffer.h"
+#include "../vulkan/memory/VulkanBuffer.h"
 
 typedef const uint32_t RenderObjectRef;
 typedef const uint32_t MaterialRef;

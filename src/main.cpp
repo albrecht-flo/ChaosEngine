@@ -13,9 +13,9 @@
 #include <iostream>
 #include <chrono>
 
-#include "renderer/window/Window.h"
-#include "renderer/test/TestRenderer.h"
 
+#include "renderer/window/Window.h"
+#include "renderer/vulkan/test/TestRenderer.h"
 #include "renderer/data/Mesh.h"
 #include "renderer/data/RenderObject.h"
 #include "renderer/data/ModelLoader.h"

@@ -1,33 +1,33 @@
 set(RENDER_ENGINE_SOURCES
         renderer/window/Window.cpp
-        renderer/VulkanRenderer.cpp
-        renderer/VulkanRenderPass.cpp
+        renderer/vulkan/VulkanRenderer.cpp
+        renderer/vulkan/VulkanRenderPass.cpp
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
-        renderer/data/VulkanTexture.cpp
-        renderer/general/VulkanDevice.cpp
-        renderer/general/VulkanInstance.cpp
-        renderer/general/VulkanSwapChain.cpp
-        renderer/general/VulkanCommandBuffer.cpp
-        renderer/image/VulkanImage.cpp
-        renderer/image/VulkanSampler.cpp
-        renderer/image/VulkanFramebuffer.cpp
-        renderer/image/VulkanImageView.cpp
-        renderer/memory/VulkanMemory.cpp
-        renderer/pipeline/VulkanDescriptor.cpp
-        renderer/pipeline/VulkanPipeline.cpp
-        renderer/test/TestRenderer.cpp
-        renderer/test/MainSceneRenderPass.cpp
-        renderer/test/PostRenderPass.cpp
-        renderer/test/ImGuiRenderPass.cpp
-        renderer/vendor/imgui/imgui.cpp
-        renderer/vendor/imgui/imgui_impl_glfw.cpp
-        renderer/vendor/imgui/imgui_impl_vulkan.cpp
-        renderer/vendor/imgui/imgui_demo.cpp
-        renderer/vendor/imgui/imgui_draw.cpp
-        renderer/vendor/imgui/imgui_widgets.cpp
-        renderer/vendor/imgui/imgui_tables.cpp
+        renderer/vulkan/image/VulkanTexture.cpp
+        renderer/vulkan/context/VulkanDevice.cpp
+        renderer/vulkan/context/VulkanInstance.cpp
+        renderer/vulkan/context/VulkanSwapChain.cpp
+        renderer/vulkan/context/VulkanCommandBuffer.cpp
+        renderer/vulkan/image/VulkanImage.cpp
+        renderer/vulkan/image/VulkanSampler.cpp
+        renderer/vulkan/image/VulkanFramebuffer.cpp
+        renderer/vulkan/image/VulkanImageView.cpp
+        renderer/vulkan/memory/VulkanMemory.cpp
+        renderer/vulkan/pipeline/VulkanDescriptor.cpp
+        renderer/vulkan/pipeline/VulkanPipeline.cpp
+        renderer/vulkan/test/TestRenderer.cpp
+        renderer/vulkan/test/MainSceneRenderPass.cpp
+        renderer/vulkan/test/PostRenderPass.cpp
+        renderer/vulkan/test/ImGuiRenderPass.cpp
+        vendor/imgui/imgui.cpp
+        vendor/imgui/imgui_impl_glfw.cpp
+        vendor/imgui/imgui_impl_vulkan.cpp
+        vendor/imgui/imgui_demo.cpp
+        vendor/imgui/imgui_draw.cpp
+        vendor/imgui/imgui_widgets.cpp
+        vendor/imgui/imgui_tables.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
