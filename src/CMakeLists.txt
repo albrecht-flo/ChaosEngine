@@ -8,6 +8,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/test/VulkanRenderer.cpp
         renderer/vulkan/pass/VulkanRenderPass.cpp
         renderer/vulkan/image/VulkanTexture.cpp
+        renderer/vulkan/context/VulkanContext.cpp
         renderer/vulkan/context/VulkanDevice.cpp
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp

@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include <stdexcept>
+
 void Window::framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*height*/) {
     auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
     w->setFrameBufferResized(true);
@@ -10,33 +12,44 @@ Window::Window(uint32_t width, uint32_t height) {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    m_window = glfwCreateWindow(width, height, "RenderEngine", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "RenderEngine", nullptr, nullptr);
 
-    glfwSetWindowUserPointer(m_window, this);
+    glfwSetWindowUserPointer(window, this);
 
     // Setup callbacks
-    glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
+    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
-
-Window::~Window() {}
 
 void Window::poolEvents() {
     glfwPollEvents();
 
     double x, y;
-    glfwGetCursorPos(m_window, &x, &y);
+    glfwGetCursorPos(window, &x, &y);
     Window::lastMousePos = Window::mousePos;
     Window::mousePos.x = static_cast<int>(x);
     Window::mousePos.y = static_cast<int>(y);
 }
 
-
-void Window::setFrameBufferResized(bool b) {
-    m_framebufferResized = b;
-}
-
 void Window::cleanup() {
-    glfwDestroyWindow(m_window);
+    glfwDestroyWindow(window);
 
     glfwTerminate();
+}
+
+void Window::setFrameBufferResized(bool b) {
+    framebufferResized = b;
+}
+
+WindowDimensions Window::getFrameBufferSize() {
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    return WindowDimensions{width, height};
+}
+
+
+/* Creates the Vulkan surface from the window. */
+void Window::createSurface(const VkInstance &instance, VkSurfaceKHR *surface) {
+    if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+        throw std::runtime_error("VULKAN: failed to create window surface!");
+    }
 }

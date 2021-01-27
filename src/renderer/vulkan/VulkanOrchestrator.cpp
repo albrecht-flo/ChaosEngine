@@ -1,15 +1,12 @@
-//
-// Created by flori on 27.01.2021.
-//
-
 #include "VulkanOrchestrator.h"
 
-VulkanOrchestrator::VulkanOrchestrator(Window &window) {
-    // : vulkanContext(),
+VulkanOrchestrator::VulkanOrchestrator(Window &window, VulkanContext &&context) : context(std::move(context)) {
     // vulkanDataManager(vulkanContext),
 }
 
-VulkanOrchestrator::~VulkanOrchestrator() = default;
+VulkanOrchestrator::~VulkanOrchestrator() {
+
+}
 
 void VulkanOrchestrator::init() {
     // vulkanContext.init();
@@ -61,5 +58,11 @@ RendererAPI::MeshRef VulkanOrchestrator::loadMesh() {
 RendererAPI::MaterialRef VulkanOrchestrator::loadMaterial() {
     return RendererAPI::MaterialRef();
 }
+
+VulkanOrchestrator VulkanOrchestrator::Create(Window &window) {
+    VulkanContext context = VulkanContext::Create(window);
+    return VulkanOrchestrator(window, std::move(context));
+}
+
 
 

@@ -1,12 +1,14 @@
 #pragma once
 
+#include <src/renderer/vulkan/context/VulkanContext.h>
 #include "src/renderer/RendererAPI.h"
 #include "src/renderer/window/Window.h"
 
 class VulkanOrchestrator : public RendererAPI {
+private:
+    VulkanOrchestrator(Window &window, VulkanContext&& context);
 public:
-    explicit VulkanOrchestrator(Window &window);
-
+    static VulkanOrchestrator Create(Window &window);
     ~VulkanOrchestrator() override;
 
     // Lifecycle
@@ -55,4 +57,6 @@ public:
      */
     MaterialRef loadMaterial(/*Resource definition*/) override;
 
+private: // Fields
+    VulkanContext context;
 };

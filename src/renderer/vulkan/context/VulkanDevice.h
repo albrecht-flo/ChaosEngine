@@ -8,6 +8,8 @@
 
 #include "VulkanInstance.h"
 
+// TODO: Refactor
+
 /* Stores the required queues. */
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
