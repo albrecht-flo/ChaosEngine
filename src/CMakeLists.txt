@@ -1,5 +1,6 @@
 set(RENDER_ENGINE_SOURCES
         renderer/window/Window.cpp
+        renderer/RendererAPI.cpp
         renderer/vulkan/VulkanRenderer.cpp
         renderer/vulkan/VulkanRenderPass.cpp
         renderer/data/Mesh.cpp

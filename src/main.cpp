@@ -12,6 +12,7 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
+#include <src/renderer/RendererAPI.h>
 
 
 #include "renderer/window/Window.h"
@@ -211,6 +212,8 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
         // Update camera
         renderer.setViewMatrix(glm::lookAt(origin, origin + target, cameraUp));
 
+        // TODO: Render Entities using the RendererAPI
+
         // Render the frame
         renderer.drawFrame();
     }
@@ -218,6 +221,49 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
     renderer.waitIdle();
 
 }
+
+// TODO: this is just a dummy for api development
+struct RenderComponent {
+    glm::mat4 modelMat; // Would be in Transform Component
+    RendererAPI::ShaderRef shader;
+    RendererAPI::MeshRef mesh;
+    RendererAPI::MaterialRef material;
+};
+
+std::vector<RenderComponent> setupRendering(RendererAPI &renderer) {
+    std::vector<RenderComponent> components;
+
+    RenderComponent comp{};
+    comp.modelMat = glm::identity<glm::mat4>();
+    comp.shader = renderer.loadShader();
+    comp.mesh = renderer.loadMesh();
+    comp.material = renderer.loadMaterial();
+
+    components.emplace_back(comp);
+    return std::move(components);
+}
+
+int render(RendererAPI &renderer, const std::vector<RenderComponent> &components) {
+    renderer.beginScene(/*Set Camera*/);
+
+    for (const auto &comp : components) {
+        renderer.useShader(comp.shader);
+        renderer.renderObject(comp.mesh, comp.material, comp.modelMat);
+    }
+
+    renderer.endScene(/*Post Processing config*/);
+
+    // ImGui Code
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow();
+    ImGui::Render();
+
+    renderer.flush();
+    return 0;
+}
+
 
 int main() {
     std::cout << "Renderer starting..." << std::endl;
