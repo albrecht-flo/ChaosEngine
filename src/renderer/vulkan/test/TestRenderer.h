@@ -19,7 +19,7 @@
 #include "PostRenderPass.h"
 #include "ImGuiRenderPass.h"
 
-#include "src/renderer/vulkan/VulkanRenderer.h"
+#include "VulkanRenderer.h"
 #include "src/renderer/vulkan/context/VulkanCommandBuffer.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"

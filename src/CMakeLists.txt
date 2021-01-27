@@ -1,11 +1,12 @@
 set(RENDER_ENGINE_SOURCES
         renderer/window/Window.cpp
         renderer/RendererAPI.cpp
-        renderer/vulkan/VulkanRenderer.cpp
-        renderer/vulkan/VulkanRenderPass.cpp
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
+        renderer/vulkan/VulkanOrchestrator.cpp
+        renderer/vulkan/test/VulkanRenderer.cpp
+        renderer/vulkan/pass/VulkanRenderPass.cpp
         renderer/vulkan/image/VulkanTexture.cpp
         renderer/vulkan/context/VulkanDevice.cpp
         renderer/vulkan/context/VulkanInstance.cpp

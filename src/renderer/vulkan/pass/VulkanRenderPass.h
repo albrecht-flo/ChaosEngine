@@ -9,9 +9,9 @@
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
-#include "image/VulkanImage.h"
-#include "pipeline/VulkanPipeline.h"
-#include "pipeline/VulkanDescriptor.h"
+#include "src/renderer/vulkan/image/VulkanImage.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
 #include "src/renderer/data/Mesh.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/RenderObject.h"

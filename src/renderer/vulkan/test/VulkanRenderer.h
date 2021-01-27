@@ -6,9 +6,9 @@
 
 #include "src/renderer/window/Window.h"
 
-#include "context/VulkanInstance.h"
-#include "context/VulkanDevice.h"
-#include "context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/context/VulkanInstance.h"
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+#include "src/renderer/vulkan/context/VulkanSwapChain.h"
 
 class VulkanRenderer {
 public:

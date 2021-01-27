@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <array>
 
-#include "src/renderer/vulkan/VulkanRenderPass.h"
+#include "src/renderer/vulkan/pass/VulkanRenderPass.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
