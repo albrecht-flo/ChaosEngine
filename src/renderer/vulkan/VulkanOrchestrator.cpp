@@ -1,15 +1,14 @@
 #include "VulkanOrchestrator.h"
 
-VulkanOrchestrator::VulkanOrchestrator(Window &window, VulkanContext &&context) : context(std::move(context)) {
+VulkanOrchestrator::VulkanOrchestrator(Window &window) : context(window) {
     // vulkanDataManager(vulkanContext),
 }
 
-VulkanOrchestrator::~VulkanOrchestrator() {
-
-}
+VulkanOrchestrator::~VulkanOrchestrator() = default;
 
 void VulkanOrchestrator::init() {
-    // vulkanContext.init();
+    context.init();
+
     // vulkanDataManager.init();
     // solidRenderPass.init();
     // transparentRenderPass.init();
@@ -59,10 +58,6 @@ RendererAPI::MaterialRef VulkanOrchestrator::loadMaterial() {
     return RendererAPI::MaterialRef();
 }
 
-VulkanOrchestrator VulkanOrchestrator::Create(Window &window) {
-    VulkanContext context = VulkanContext::Create(window);
-    return VulkanOrchestrator(window, std::move(context));
-}
 
 
 

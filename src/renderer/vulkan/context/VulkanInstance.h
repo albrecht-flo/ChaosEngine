@@ -15,25 +15,13 @@ public:
 
     ~VulkanInstance() = default;
 
-    static VulkanInstance create(std::vector<const char *> validationLayers = {});
+    void init(std::vector<const char *> validationLayers = {});
 
     static void destroy(VulkanInstance &instance);
 
     VkInstance getInstance() const { return instance; }
 
     const std::vector<const char *> getValidationLayers() const { return validationLayers; }
-
-private:
-    static bool checkValidationLayerSupport(const std::vector<const char *> &validationLayers);
-
-    static std::vector<const char *> getRequiredExtensions(bool enableValidationLayers);
-
-    static void setupDebugMessenger(VkInstance instance, VkDebugUtilsMessengerEXT &debugMessenger,
-                                    VkDebugUtilsMessengerCreateInfoEXT createInfo);
-
-    static VkResult
-    CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                 const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger);
 
 private:
     VkInstance instance = {};

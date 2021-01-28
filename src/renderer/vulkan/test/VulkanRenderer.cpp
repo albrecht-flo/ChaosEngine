@@ -6,7 +6,7 @@ VulkanRenderer::VulkanRenderer(Window &w) :
         window(w) {
 
     // Vulkan context
-    instance = VulkanInstance::create({"VK_LAYER_KHRONOS_validation"});
+    instance.init({"VK_LAYER_KHRONOS_validation"});
     createSurface();
     device.init(instance, surface);
 

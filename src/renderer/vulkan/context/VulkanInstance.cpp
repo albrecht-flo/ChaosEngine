@@ -6,17 +6,8 @@
 #include <iostream>
 #include <utility>
 
-VulkanInstance::VulkanInstance() :
-        instance(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE) {
-}
-
-VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                               std::vector<const char *> validationLayers) :
-        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {
-}
-
 /* Checks if the driver supports validation layers. */
-bool VulkanInstance::checkValidationLayerSupport(const std::vector<const char *> &validationLayers) {
+static bool checkValidationLayerSupport(const std::vector<const char *> &validationLayers) {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -42,7 +33,7 @@ bool VulkanInstance::checkValidationLayerSupport(const std::vector<const char *>
 }
 
 /* Gets the necessary extension from glfw. */
-std::vector<const char *> VulkanInstance::getRequiredExtensions(bool enableValidationLayers) {
+static std::vector<const char *> getRequiredExtensions(bool enableValidationLayers) {
     uint32_t glfwExtensionCount = 0;
     const char **glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -60,15 +51,50 @@ std::vector<const char *> VulkanInstance::getRequiredExtensions(bool enableValid
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
                                                     VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                                                    void* /*pUserData*/) {
+                                                    void * /*pUserData*/) {
     std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
 
+/* Tries to create a debug messenger while checking if the extension is present. */
+static VkResult
+CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+                             const VkAllocationCallbacks *pAllocator,
+                             VkDebugUtilsMessengerEXT *pDebugMessenger) {
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
+            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+    } else {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+/* Creates and attaches the debug messenger. */
+static void setupDebugMessenger(VkInstance instance,
+                                VkDebugUtilsMessengerEXT &debugMessenger,
+                                VkDebugUtilsMessengerCreateInfoEXT createInfo) {
+
+    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+        throw std::runtime_error("VULKAN: failed to set up debug messenger!");
+    }
+}
+
+// ------------------------------------ Class Methods ------------------------------------------------------------------
+
+VulkanInstance::VulkanInstance() :
+        instance(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE) {
+}
+
+VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                               std::vector<const char *> validationLayers) :
+        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {
+}
 
 /* Creates a vulkan instance with a debug callback and validation layers if requested. */
-VulkanInstance VulkanInstance::create(std::vector<const char *> validationLayers) {
+void VulkanInstance::init(std::vector<const char *> p_ValidationLayers) {
+    validationLayers = p_ValidationLayers;
     // Check the validation layers
     if (!validationLayers.empty() && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("VULKAN: validation layers requested, but not available!");
@@ -92,7 +118,7 @@ VulkanInstance VulkanInstance::create(std::vector<const char *> validationLayers
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    VkInstance instance;
+    // TODO: Why the fuck is this neccesary?
 #ifdef _MSC_VER
     if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
         throw std::runtime_error("failed to create instance!");
@@ -128,35 +154,9 @@ VulkanInstance VulkanInstance::create(std::vector<const char *> validationLayers
     }
 #endif
 
-    VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
+    debugMessenger = VK_NULL_HANDLE;
     if (!validationLayers.empty())
         setupDebugMessenger(instance, debugMessenger, debugCreateInfo);
-
-    return VulkanInstance(instance, debugMessenger, validationLayers);
-}
-
-/* Creates and attaches the debug messenger. */
-void VulkanInstance::setupDebugMessenger(VkInstance instance,
-                                         VkDebugUtilsMessengerEXT &debugMessenger,
-                                         VkDebugUtilsMessengerCreateInfoEXT createInfo) {
-
-    if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to set up debug messenger!");
-    }
-}
-
-/* Tries to create a debug messenger while checking if the extension is present. */
-VkResult
-VulkanInstance::CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                             const VkAllocationCallbacks *pAllocator,
-                                             VkDebugUtilsMessengerEXT *pDebugMessenger) {
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
-            vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-    if (func != nullptr) {
-        return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-    } else {
-        return VK_ERROR_EXTENSION_NOT_PRESENT;
-    }
 }
 
 /* Destroys the instance and if present the debug messenger. */

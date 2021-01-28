@@ -6,22 +6,21 @@
 #include "VulkanSwapChain.h"
 
 class VulkanContext {
-private: // Methods
-    explicit VulkanContext(Window &window, VulkanDevice &&device,
-                           VulkanInstance &&instance, VulkanSwapChain &&swapChain,
-                           VkSurfaceKHR surface);
-
 public: // Methods
+    explicit VulkanContext(Window &window);
+
     ~VulkanContext() = default;
 
     VulkanContext(const VulkanContext &o) = delete;
 
     VulkanContext &operator=(const VulkanContext &o) = delete;
 
-    VulkanContext(VulkanContext &&o) : window(o.window), device(o.device), instance(o.instance),
-                                       swapChain(o.swapChain), surface(o.surface) {};
+    VulkanContext(VulkanContext &&o) noexcept: window(o.window), device(o.device), instance(o.instance),
+                                               swapChain(o.swapChain), surface(o.surface) {};
 
-    static VulkanContext Create(Window &window);
+    VulkanContext &operator=(VulkanContext &&o) = delete;
+
+    void init();
 
     inline VkDevice getVkDevice() const { return device.getDevice(); }
 
@@ -35,7 +34,7 @@ private:
     Window &window;
     VulkanDevice device;
     VulkanInstance instance;
-    VulkanSwapChain swapChain;
     VkSurfaceKHR surface;
+    VulkanSwapChain swapChain;
 };
 

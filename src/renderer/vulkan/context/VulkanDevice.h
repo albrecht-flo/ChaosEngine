@@ -41,7 +41,7 @@ public:
 
     ~VulkanDevice() {}
 
-    void init(VulkanInstance &instance, VkSurfaceKHR surface);
+    void init(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface);
 
     void waitIdle();
 

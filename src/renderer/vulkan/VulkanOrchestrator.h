@@ -6,9 +6,7 @@
 
 class VulkanOrchestrator : public RendererAPI {
 private:
-    VulkanOrchestrator(Window &window, VulkanContext&& context);
-public:
-    static VulkanOrchestrator Create(Window &window);
+    VulkanOrchestrator(Window &window);
     ~VulkanOrchestrator() override;
 
     // Lifecycle

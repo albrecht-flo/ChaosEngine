@@ -244,9 +244,9 @@ VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidat
     return findSupportedFormat(physicalDevice, candidates, tiling, features);
 }
 
-void VulkanDevice::init(VulkanInstance &instance_p, VkSurfaceKHR surface_p) {
-    instance = &instance_p;
-    surface = surface_p;
+void VulkanDevice::init(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface) {
+    instance = &p_Instance;
+    surface = p_Surface;
     // Select a graphics card that supports our features
     pickPhysicalDevice();
     // Create the logical device for this GPU
