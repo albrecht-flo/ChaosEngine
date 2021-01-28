@@ -26,12 +26,6 @@ public:
     virtual ~RendererAPI();
 
     // Lifecycle
-    /// Context initialization
-    virtual void init() = 0;
-
-    /// Context tear down
-    virtual void cleanup() = 0;
-
     /// Wait for GPU tasks to finish
     virtual void join() = 0;
 

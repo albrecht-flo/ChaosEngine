@@ -40,7 +40,7 @@ void Window::setFrameBufferResized(bool b) {
     framebufferResized = b;
 }
 
-WindowDimensions Window::getFrameBufferSize() {
+WindowDimensions Window::getFrameBufferSize() const {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
     return WindowDimensions{width, height};
@@ -48,8 +48,11 @@ WindowDimensions Window::getFrameBufferSize() {
 
 
 /* Creates the Vulkan surface from the window. */
-void Window::createSurface(const VkInstance &instance, VkSurfaceKHR *surface) {
-    if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+VkSurfaceKHR Window::createSurface(const VkInstance &instance) {
+    VkSurfaceKHR surface{};
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create window surface!");
     }
+
+    return surface;
 }

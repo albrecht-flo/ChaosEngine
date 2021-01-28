@@ -6,15 +6,13 @@
 
 class VulkanOrchestrator : public RendererAPI {
 private:
-    VulkanOrchestrator(Window &window);
-    ~VulkanOrchestrator() override;
+    VulkanOrchestrator(Window &window, VulkanContext&& context);
+public:
+    ~VulkanOrchestrator() override = default;
+
+    VulkanOrchestrator Create(Window &window);
 
     // Lifecycle
-    /// Context initialization
-    void init() override;
-
-    /// Context tear down
-    void cleanup() override;
 
     /// Wait for GPU tasks to finish
     void join() override;

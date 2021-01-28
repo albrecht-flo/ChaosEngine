@@ -20,7 +20,7 @@
 
 class ImGuiRenderPass : public VulkanRenderPass {
 public:
-    ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window);
+    ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window, const VulkanInstance &instance);
 
     ~ImGuiRenderPass() = default;
 
@@ -43,6 +43,7 @@ private:
 
 private:
     Window &window;
+    const VulkanInstance &instance;
     // The objects for uniform buffer linking
     VkDescriptorPool descriptorPool = {};
 };

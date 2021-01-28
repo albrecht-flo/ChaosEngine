@@ -8,7 +8,7 @@
 
 class VulkanImageView {
 public:
-    static VkImageView create(VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+    static VkImageView create(const VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
     static void destroy(VulkanDevice &device, VkImageView imageView);
 };

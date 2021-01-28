@@ -2,14 +2,10 @@
 
 #include <stdexcept>
 
+// TODO: Remove this might throw an exception during construction
 VulkanRenderer::VulkanRenderer(Window &w) :
-        window(w) {
-
-    // Vulkan context
-    instance.init({"VK_LAYER_KHRONOS_validation"});
-    createSurface();
-    device.init(instance, surface);
-
+        window(w), instance(VulkanInstance::Create({"VK_LAYER_KHRONOS_validation"}, "Old", "Old")),
+        device(VulkanDevice::Create(instance, surface)) {
     // Let the child class handle the rest of initialization in init
 }
 
@@ -31,10 +27,6 @@ void VulkanRenderer::cleanup() {
     // Let the child class cleanup its things
     destroyResources();
 
-    // Destroy the device and instance
-    device.destroy();
 
     vkDestroySurfaceKHR(instance.getInstance(), surface, nullptr);
-
-    VulkanInstance::destroy(instance);
 }

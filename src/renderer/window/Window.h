@@ -49,10 +49,10 @@ public:
 
     bool getFrameBufferResize() const { return framebufferResized; }
 
-    WindowDimensions  getFrameBufferSize();
+    WindowDimensions getFrameBufferSize() const;
 
     // Vulkan specific code
-    void createSurface(const VkInstance &instance, VkSurfaceKHR *surface);
+    VkSurfaceKHR createSurface(const VkInstance &instance);
 
 private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);

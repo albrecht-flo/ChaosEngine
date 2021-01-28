@@ -11,17 +11,14 @@
 
 TestRenderer::TestRenderer(Window &w) :
         VulkanRenderer(w),
-        swapChain(device, surface, window),
+        swapChain(VulkanSwapChain::Create(window, device, surface)),
         vulkanMemory(device),
         mainGraphicsPass(device, vulkanMemory, swapChain),
-        imGuiRenderPass(device, vulkanMemory, swapChain, window),
+        imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
         postRenderPass(device, vulkanMemory, swapChain) {}
 
 void TestRenderer::init() {
     // Vulkan Instance and Device are handled by VulkanRenderer constructor
-
-    // Swap chain creation
-    swapChain.init();
 
     // GPU communication
     createCommandPool();
@@ -444,7 +441,7 @@ bool TestRenderer::setModelMatrix(uint32_t robjID, glm::mat4 modelMat) {
 /* Creates a material containing only one texture and loads the texture if it
 	has not been loaded before. 
 	*/
-MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial& material) {
+MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial &material) {
     return mainGraphicsPass.createMaterial(material);
 }
 

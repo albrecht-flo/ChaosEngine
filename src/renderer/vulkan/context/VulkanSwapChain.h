@@ -10,14 +10,29 @@
 #include "src/renderer/window/Window.h"
 
 class VulkanSwapChain {
+private:
 public:
-    VulkanSwapChain(VulkanDevice &mDevice, VkSurfaceKHR &mSurface, Window &mWindow);
-
-    ~VulkanSwapChain() = default;
-
-    void init();
+    VulkanSwapChain(Window &window, VulkanDevice &device, VkSurfaceKHR surface,
+                    VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
+                    std::vector<VkImage> &&swapChainImages, std::vector<VkImageView> &&swapChainImageViews);
 
     void destroy();
+
+public:
+
+    ~VulkanSwapChain();
+
+    VulkanSwapChain(const VulkanSwapChain &o) = delete;
+
+    VulkanSwapChain &operator=(const VulkanSwapChain &o) = delete;
+
+    VulkanSwapChain(VulkanSwapChain &&o);
+
+    VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
+
+
+    static VulkanSwapChain Create(Window &mWindow, VulkanDevice &mDevice, VkSurfaceKHR &mSurface);
+
 
     void reinit();
 
@@ -32,27 +47,16 @@ public:
     std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
 
 private:
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(
-            const std::vector<VkSurfaceFormatKHR> &availableFormats);
-
-    static VkPresentModeKHR chooseSwapPresentMode(
-            const std::vector<VkPresentModeKHR> &availablePresentModes);
-
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
-    void createSwapChain();
-
-    void createImageViews();
-
-private:
-    VulkanDevice &device;
     Window &window;
-    VkSurfaceKHR &surface;
+    VulkanDevice &device;
+    VkSurfaceKHR surface;
+
 
     // All objects regarding the swapchain
     VkSwapchainKHR swapChain = {};
-    std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat = {};
     VkExtent2D swapChainExtent = {};
+    std::vector<VkImage> swapChainImages;
     std::vector<VkImageView> swapChainImageViews;
+
 };

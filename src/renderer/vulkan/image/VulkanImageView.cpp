@@ -4,7 +4,7 @@
 
 /* Creates an image view for an image. */
 VkImageView
-VulkanImageView::create(VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
+VulkanImageView::create(const VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = image;

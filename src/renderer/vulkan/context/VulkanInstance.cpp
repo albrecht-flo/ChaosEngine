@@ -1,5 +1,7 @@
 #include "VulkanInstance.h"
 
+#include <GLFW/glfw3.h>
+
 #include <stdexcept>
 #include <cstdint>
 #include <cstring>
@@ -83,18 +85,18 @@ static void setupDebugMessenger(VkInstance instance,
 
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
-VulkanInstance::VulkanInstance() :
-        instance(VK_NULL_HANDLE), debugMessenger(VK_NULL_HANDLE) {
-}
-
 VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                               std::vector<const char *> validationLayers) :
-        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {
-}
+                               std::vector<const char *> &&validationLayers) :
+        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {}
+
+VulkanInstance::VulkanInstance(VulkanInstance &&o) noexcept:
+        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {}
+
+VulkanInstance::~VulkanInstance() { destroy(); }
 
 /* Creates a vulkan instance with a debug callback and validation layers if requested. */
-void VulkanInstance::init(std::vector<const char *> p_ValidationLayers) {
-    validationLayers = p_ValidationLayers;
+VulkanInstance VulkanInstance::Create(std::vector<const char *> validationLayers, const std::string &applicationName,
+                                      const std::string &engineName) {
     // Check the validation layers
     if (!validationLayers.empty() && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("VULKAN: validation layers requested, but not available!");
@@ -103,9 +105,9 @@ void VulkanInstance::init(std::vector<const char *> p_ValidationLayers) {
     // Create the Instance, takes context information
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = applicationName.c_str();
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
+    appInfo.pEngineName = engineName.c_str();
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -118,12 +120,10 @@ void VulkanInstance::init(std::vector<const char *> p_ValidationLayers) {
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    // TODO: Why the fuck is this neccesary?
-#ifdef _MSC_VER
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create instance!");
+    VkInstance newInstance{};
+    if (vkCreateInstance(&createInfo, nullptr, &newInstance) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create newInstance!");
     }
-#endif
 
     // If required setup debug callback
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
@@ -148,26 +148,24 @@ void VulkanInstance::init(std::vector<const char *> p_ValidationLayers) {
         createInfo.pNext = nullptr;
     }
 
-#ifndef _MSC_VER
-    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create instance!");
-    }
-#endif
 
-    debugMessenger = VK_NULL_HANDLE;
+    VkDebugUtilsMessengerEXT newDebugMessenger = VK_NULL_HANDLE;
     if (!validationLayers.empty())
-        setupDebugMessenger(instance, debugMessenger, debugCreateInfo);
+        setupDebugMessenger(newInstance, newDebugMessenger, debugCreateInfo);
+
+    return VulkanInstance(newInstance, newDebugMessenger, std::move(validationLayers));
 }
 
 /* Destroys the instance and if present the debug messenger. */
-void VulkanInstance::destroy(VulkanInstance &instance) {
-    if (instance.debugMessenger != VK_NULL_HANDLE) {
+void VulkanInstance::destroy() {
+    if (debugMessenger != VK_NULL_HANDLE) {
         // Get destroy function
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
-                vkGetInstanceProcAddr(instance.instance, "vkDestroyDebugUtilsMessengerEXT");
+                vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) { // if extension is present
-            func(instance.instance, instance.debugMessenger, nullptr);
+            func(instance, debugMessenger, nullptr);
         }
     }
-    vkDestroyInstance(instance.instance, nullptr);
+    vkDestroyInstance(instance, nullptr);
 }
+
