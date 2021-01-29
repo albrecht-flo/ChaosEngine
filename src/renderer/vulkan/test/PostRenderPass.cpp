@@ -4,14 +4,14 @@
 #include <stdexcept>
 #include <cstring>
 
-/* Configures the render pass with the attachments and subpasses */
+/* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
         VulkanRenderPass(device, vulkanMemory, swapChain) {
 }
 
 void PostRenderPass::init() {
-    // Create the render pass
+    // Create the render rendering
     createRenderPass();
 
     // This descriptor set contains the textures for composition
@@ -67,11 +67,11 @@ void PostRenderPass::init() {
     // Create descriptor pool
     descriptorPool = VulkanDescriptor::createPool(device,
                                                   {
-                                                          VkDescriptorPoolSize{ // Color attachment from main scene pass
+                                                          VkDescriptorPoolSize{ // Color attachment from main scene rendering
                                                                   .type = descriptorSetLayout.bindings[0].descriptorType,
                                                                   .descriptorCount = 1
                                                           },
-                                                          VkDescriptorPoolSize{ // Depth attachment form main scene pass
+                                                          VkDescriptorPoolSize{ // Depth attachment form main scene rendering
                                                                   .type = descriptorSetLayout.bindings[1].descriptorType,
                                                                   .descriptorCount = 1
                                                           },
@@ -104,7 +104,7 @@ void PostRenderPass::setImageBufferViews(VkImageView newFramebufferView,
     createPipelineAndDescriptors();
 }
 
-/* Creates the vulkan render pass, describing all attachments, subpasses and subpass dependencies. */
+/* Creates the vulkan render rendering, describing all attachments, subpasses and subpass dependencies. */
 void PostRenderPass::createRenderPass() {
     // Configures color attachment processing
     VkAttachmentDescription colorAttachment = {};
@@ -140,7 +140,7 @@ void PostRenderPass::createRenderPass() {
     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
 
-    // Combine subpasses, dependencies and attachments to render pass
+    // Combine subpasses, dependencies and attachments to render rendering
     std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -152,11 +152,11 @@ void PostRenderPass::createRenderPass() {
     renderPassInfo.pDependencies = &dependency;
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create render pass!");
+        throw std::runtime_error("VULKAN: failed to create render rendering!");
     }
 
 #ifdef M_DEBUG
-    std::cout << "PostRenderPass: created render pass (" << renderPass << ")" << std::endl;
+    std::cout << "PostRenderPass: created render rendering (" << renderPass << ")" << std::endl;
 #endif
 }
 
@@ -225,10 +225,10 @@ void PostRenderPass::createPipelineAndDescriptors() {
 }
 
 // Rendering stuff
-/* Begin the render pass and setup all context descriptors . */
+/* Begin the render rendering and setup all context descriptors . */
 void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
 
-    // Define render pass to draw with
+    // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass; // the renderpass to use
@@ -263,23 +263,23 @@ void PostRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) {
     // TODO
 }
 
-/* End this render pass. */
+/* End this render rendering. */
 void PostRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
-    // Finish the render pass
+    // Finish the render rendering
     vkCmdEndRenderPass(cmdBuf);
 }
 
 void PostRenderPass::destroySwapChainDependent() {
-    // The pipeline, layouts and render pass also deppend on the number of swapchain images and the framebuffers
+    // The pipeline, layouts and render rendering also deppend on the number of swapchain images and the framebuffers
     postprocessingPipeline.destroy(device);
 
     vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
 }
 
-/* Recreates this render pass to fit the new swap chain. */
+/* Recreates this render rendering to fit the new swap chain. */
 void PostRenderPass::recreate() {
-    // Recreate the render pass, because swap chain format has changed
+    // Recreate the render rendering, because swap chain format has changed
     createRenderPass();
 }
 

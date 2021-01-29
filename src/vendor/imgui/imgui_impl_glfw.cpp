@@ -243,7 +243,7 @@ static void ImGui_ImplGlfw_UpdateMousePosAndButtons() {
     // Update buttons
     ImGuiIO &io = ImGui::GetIO();
     for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) {
-        // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
+        // If a mouse press event came, always rendering it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
         io.MouseDown[i] = g_MouseJustPressed[i] || glfwGetMouseButton(g_Window, i) != 0;
         g_MouseJustPressed[i] = false;
     }

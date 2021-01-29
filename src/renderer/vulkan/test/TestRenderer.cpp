@@ -30,7 +30,7 @@ void TestRenderer::init() {
     createDepthResources();
     createImageBuffers();
 
-    // Render pass
+    // Render rendering
     mainGraphicsPass.init();
     imGuiRenderPass.init();
     postRenderPass.init();
@@ -113,7 +113,7 @@ void TestRenderer::createImageBuffers() {
                                     imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-/* Creates framebuffers for offscreen render passes and final composite pass. */
+/* Creates framebuffers for offscreen render passes and final composite rendering. */
 void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
     offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
@@ -159,13 +159,13 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // Implicitly resets the command buffer.
     commandBuffers[currentImage].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-    VkCommandBuffer cmdBuf = commandBuffers[currentImage].getBuffer();
+    VkCommandBuffer cmdBuf = commandBuffers[currentImage].vk();
 
-    // Let the render pass setup context descriptors
+    // Let the render rendering setup context descriptors
     mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer);
 
     for (auto &robj : renderObjects) {
-        // Let the render pass setup per model descriptors
+        // Let the render rendering setup per model descriptors
         mainGraphicsPass.cmdRender(cmdBuf, robj);
 
         // Bind the vertex buffer
@@ -177,7 +177,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
         vkCmdDrawIndexed(cmdBuf, robj.mesh->indexCount, 1, 0, 0, 0);
     }
 
-    // End this render pass
+    // End this render rendering
     mainGraphicsPass.cmdEnd(cmdBuf);
 
     // !!! Transition of image layouts performed by attachment final layouts
@@ -192,7 +192,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // !!! synchronization done by imGuiRenderPass->dependency.dstSubPass EXTERNAL
     // !!!							postRenderPass->dependency.srcSubPass EXTERNAL
 
-    // Start post processing render pass
+    // Start post processing render rendering
     postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage]);
     // Bind previous color attachment to fragment shader sampler
     postRenderPass.cmdRender(cmdBuf, quadRobj);
@@ -247,7 +247,7 @@ void TestRenderer::drawFrame() {
     submitInfo.pWaitSemaphores = waitSemaphores; // semaphore to wait for before executing
     submitInfo.pWaitDstStageMask = waitStages; // stages to wait for before executing
     // Specify the command buffers to submit for this draw call
-    std::array<VkCommandBuffer, 1> activeCommandBuffers = {commandBuffers[imageIndex].getBuffer()};
+    std::array<VkCommandBuffer, 1> activeCommandBuffers = {commandBuffers[imageIndex].vk()};
     submitInfo.commandBufferCount = static_cast<uint32_t>(activeCommandBuffers.size());
     submitInfo.pCommandBuffers = activeCommandBuffers.data();
     // Specify semaphore to notify after finishing
@@ -310,7 +310,7 @@ void TestRenderer::recreateSwapChain() {
     // Create new createSyncObjects
     swapChain.reinit();
 
-    // Recreate the render pass attachments
+    // Recreate the render rendering attachments
     createDepthResources();
     createImageBuffers();
 

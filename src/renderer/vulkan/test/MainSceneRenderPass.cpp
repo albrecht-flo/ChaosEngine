@@ -4,12 +4,12 @@
 #include <iostream>
 #include <cstring>
 
-/* Configures the render pass with the attachments and subpasses */
+/* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
         VulkanRenderPass(device, vulkanMemory, swapChain) {}
 
 void MainSceneRenderPass::init() {
-    // Create the render pass
+    // Create the render rendering
     createRenderPass();
 
     // Descriptor layout for this pipeline and the pool
@@ -90,7 +90,7 @@ void MainSceneRenderPass::init() {
     createLightStructures();
 }
 
-/* Creates the vulkan render pass, describing all attachments, subpasses and subpass dependencies. */
+/* Creates the vulkan render rendering, describing all attachments, subpasses and subpass dependencies. */
 void MainSceneRenderPass::createRenderPass() {
     // Configures color attachment processing
     VkAttachmentDescription colorAttachment = {};
@@ -100,8 +100,8 @@ void MainSceneRenderPass::createRenderPass() {
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // store results instead of discarding them
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render pass
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render pass
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render rendering
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render rendering
 
     // Configre depth attachment
     VkAttachmentDescription depthAttachment = {};
@@ -111,8 +111,8 @@ void MainSceneRenderPass::createRenderPass() {
     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // post will need this
     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render pass
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // layout ~after~ render pass
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render rendering
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // layout ~after~ render rendering
 
     // Subpasses references one or more color attachments
     VkAttachmentReference colorAttachmentRef = {};
@@ -147,7 +147,7 @@ void MainSceneRenderPass::createRenderPass() {
     dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    // Combine subpasses, dependencies and attachments to render pass
+    // Combine subpasses, dependencies and attachments to render rendering
     std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -159,11 +159,11 @@ void MainSceneRenderPass::createRenderPass() {
     renderPassInfo.pDependencies = dependencies.data();
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create render pass!");
+        throw std::runtime_error("VULKAN: failed to create render rendering!");
     }
 
 #ifdef M_DEBUG
-    std::cout << "MainSceneRenderPass: created render pass (" << renderPass << ")" << std::endl;
+    std::cout << "MainSceneRenderPass: created render rendering (" << renderPass << ")" << std::endl;
 #endif
 }
 
@@ -327,10 +327,10 @@ void MainSceneRenderPass::updateUniformBuffer(uint32_t currentImage,
 }
 
 // Rendering stuff
-/* Begin the render pass and setup all context descriptors . */
+/* Begin the render rendering and setup all context descriptors . */
 void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
 
-    // Define render pass to draw with
+    // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass; // the renderpass to use
@@ -379,14 +379,14 @@ void MainSceneRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj)
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(robj.modelMat), &robj.modelMat);
 }
 
-/* End this render pass. */
+/* End this render rendering. */
 void MainSceneRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
-    // Finish the render pass
+    // Finish the render rendering
     vkCmdEndRenderPass(cmdBuf);
 }
 
 void MainSceneRenderPass::destroySwapChainDependent() {
-    // The pipeline, layouts and render pass also deppend on the number of swapchain images and the framebuffers
+    // The pipeline, layouts and render rendering also deppend on the number of swapchain images and the framebuffers
     graphicsPipeline.destroy(device);
 
     // These uniform buffers are per frame and therefore depend on the number of swapchain images
@@ -399,7 +399,7 @@ void MainSceneRenderPass::destroySwapChainDependent() {
                             nullptr); // this also destroys the descriptor sets of this pools
 }
 
-/* Recreates this render pass to fit the new swap chain. */
+/* Recreates this render rendering to fit the new swap chain. */
 void MainSceneRenderPass::recreate() {
     // Recreate the pipeline because the swap chain dimensions might have changed
     auto attributeDescription = Vertex::getAttributeDescriptions();

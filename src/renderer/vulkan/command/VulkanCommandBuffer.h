@@ -34,7 +34,7 @@ public:
 
     void destroy();
 
-    VkCommandBuffer getBuffer() { return buffer; }
+    [[nodiscard]] inline VkCommandBuffer vk() const { return buffer; }
 
 private:
     const VulkanDevice &device;

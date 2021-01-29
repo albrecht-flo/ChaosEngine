@@ -4,9 +4,10 @@ set(RENDER_ENGINE_SOURCES
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
-        renderer/vulkan/VulkanOrchestrator.cpp
+        renderer/vulkan/VulkanRenderer2D.cpp
         renderer/vulkan/test/VulkanRendererOld.cpp
-        renderer/vulkan/pass/VulkanRenderPass.cpp
+        renderer/vulkan/rendering/VulkanFrame.cpp
+        renderer/vulkan/rendering/VulkanRenderPass.cpp
         renderer/vulkan/image/VulkanTexture.cpp
         renderer/vulkan/context/VulkanContext.cpp
         renderer/vulkan/context/VulkanDevice.cpp
@@ -32,6 +33,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
+
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

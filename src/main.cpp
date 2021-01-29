@@ -62,7 +62,7 @@
 			- Textures
         - Render Passes
             - attachment handling
-            - sub pass dependencies
+            - sub rendering dependencies
 		- Pipeline handling
 			- Shaders
 			- Pipeline

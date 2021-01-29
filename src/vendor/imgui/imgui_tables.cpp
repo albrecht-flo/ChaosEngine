@@ -1345,7 +1345,7 @@ ImGui::TableSetupColumn(const char *label, ImGuiTableColumnFlags flags, float in
     IM_ASSERT(table != NULL && "Need to call TableSetupColumn() after BeginTable()!");
     IM_ASSERT(table->IsLayoutLocked == false && "Need to call call TableSetupColumn() before first row!");
     IM_ASSERT((flags & ImGuiTableColumnFlags_StatusMask_) == 0 &&
-              "Illegal to pass StatusMask values to TableSetupColumn()");
+              "Illegal to rendering StatusMask values to TableSetupColumn()");
     if (table->DeclColumnsCount >= table->ColumnsCount) {
         IM_ASSERT_USER_ERROR(table->DeclColumnsCount < table->ColumnsCount,
                              "Called TableSetupColumn() too many times!");

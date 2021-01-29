@@ -328,7 +328,7 @@ void ImGui::ShowDemoWindow(bool *p_open) {
     if (no_nav) window_flags |= ImGuiWindowFlags_NoNav;
     if (no_background) window_flags |= ImGuiWindowFlags_NoBackground;
     if (no_bring_to_front) window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
-    if (no_close) p_open = NULL; // Don't pass our bool* to Begin
+    if (no_close) p_open = NULL; // Don't rendering our bool* to Begin
 
     // We specify a default position/size in case there's no data in the .ini file.
     // We only do it to make the demo applications a little more welcoming, but typically this isn't required.
@@ -948,7 +948,7 @@ static void ShowDemoWindowWidgets() {
         ImGuiIO &io = ImGui::GetIO();
         ImGui::TextWrapped(
                 "Below we are displaying the font texture (which is the only texture we have access to in this demo). "
-                "Use the 'ImTextureID' type as storage to pass pointers or identifier to your own texture data. "
+                "Use the 'ImTextureID' type as storage to rendering pointers or identifier to your own texture data. "
                 "Hover the texture for a zoomed view!");
 
         // Below we are displaying the font texture because it is the only texture we have access to inside the demo!
@@ -959,7 +959,7 @@ static void ShowDemoWindowWidgets() {
         // - The imgui_impl_dx11.cpp renderer expect a 'ID3D11ShaderResourceView*' pointer
         // - The imgui_impl_opengl3.cpp renderer expect a GLuint OpenGL texture identifier, etc.
         // More:
-        // - If you decided that ImTextureID = MyEngineTexture*, then you can pass your MyEngineTexture* pointers
+        // - If you decided that ImTextureID = MyEngineTexture*, then you can rendering your MyEngineTexture* pointers
         //   to ImGui::Image(), and gather width/height through your own functions, etc.
         // - You can use ShowMetricsWindow() to inspect the draw data that are being passed to your renderer,
         //   it will help you debug issues if you are confused about it.
@@ -1240,7 +1240,7 @@ static void ShowDemoWindowWidgets() {
 
         if (ImGui::TreeNode("Filtered Text Input")) {
             struct TextFilters {
-                // Return 0 (pass) if the character is 'i' or 'm' or 'g' or 'u' or 'i'
+                // Return 0 (rendering) if the character is 'i' or 'm' or 'g' or 'u' or 'i'
                 static int FilterImGuiLetters(ImGuiInputTextCallbackData *data) {
                     if (data->EventChar < 256 && strchr("imgui", (char) data->EventChar))
                         return 0;
@@ -1518,7 +1518,7 @@ static void ShowDemoWindowWidgets() {
         ImGui::PlotLines("Frame Times", arr, IM_ARRAYSIZE(arr));
 
         // Fill an array of contiguous float values to plot
-        // Tip: If your float aren't contiguous but part of a structure, you can pass a pointer to your first float
+        // Tip: If your float aren't contiguous but part of a structure, you can rendering a pointer to your first float
         // and the sizeof() of your structure in the "stride" parameter.
         static float values[90] = {};
         static int values_offset = 0;
@@ -1549,7 +1549,7 @@ static void ShowDemoWindowWidgets() {
         ImGui::PlotHistogram("Histogram", arr, IM_ARRAYSIZE(arr), 0, NULL, 0.0f, 1.0f, ImVec2(0, 80.0f));
 
         // Use functions to generate output
-        // FIXME: This is rather awkward because current plot API only pass in indices.
+        // FIXME: This is rather awkward because current plot API only rendering in indices.
         // We probably want an API passing floats and user provide sample rate/count.
         struct Funcs {
             static float Sin(void *, int i) { return sinf(i * 0.1f); }
@@ -1634,7 +1634,7 @@ static void ShowDemoWindowWidgets() {
         ImGui::SameLine();
         HelpMarker(
                 "With the ImGuiColorEditFlags_NoInputs flag you can hide all the slider/text inputs.\n"
-                "With the ImGuiColorEditFlags_NoLabel flag you can pass a non-empty label which will only "
+                "With the ImGuiColorEditFlags_NoLabel flag you can rendering a non-empty label which will only "
                 "be used for the tooltip and picker popup.");
         ImGui::ColorEdit4("MyColor##3", (float *) &color,
                           ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | misc_flags);
@@ -1772,7 +1772,7 @@ static void ShowDemoWindowWidgets() {
         ImGui::SameLine();
         HelpMarker(
                 "By default, colors are given to ColorEdit and ColorPicker in RGB, but ImGuiColorEditFlags_InputHSV"
-                "allows you to store colors as HSV and pass them to ColorEdit and ColorPicker as HSV. This comes with the"
+                "allows you to store colors as HSV and rendering them to ColorEdit and ColorPicker as HSV. This comes with the"
                 "added benefit that you can manipulate hue values with the picker even when saturation or value are zero.");
         ImGui::Text("Color widget with InputHSV:");
         ImGui::ColorEdit4("HSV shown as RGB##1", (float *) &color_hsv,
@@ -1837,11 +1837,11 @@ static void ShowDemoWindowWidgets() {
         // - 8/16/32/64-bits
         // - integer/float/double
         // To avoid polluting the public API with all possible combinations, we use the ImGuiDataType enum
-        // to pass the type, and passing all arguments by pointer.
+        // to rendering the type, and passing all arguments by pointer.
         // This is the reason the test code below creates local variables to hold "zero" "one" etc. for each types.
         // In practice, if you frequently use a given type that is not covered by the normal API entry points,
         // you can wrap it yourself inside a 1 line function which can take typed argument as value instead of void*,
-        // and then pass their address to the generic function. For example:
+        // and then rendering their address to the generic function. For example:
         //   bool MySliderU64(const char *label, u64* value, u64 min = 0, u64 max = 0, const char* format = "%lld")
         //   {
         //      return SliderScalar(label, ImGuiDataType_U64, value, &min, &max, format);
@@ -3365,7 +3365,7 @@ namespace {
         // As we don't rely on std:: or other third-party library to compile dear imgui, we only have reliable access to qsort(),
         // however qsort doesn't allow passing user data to comparing function.
         // As a workaround, we are storing the sort specs in a static/global for the comparing function to access.
-        // In your own use case you would probably pass the sort specs to your sorting/comparing functions directly and not use a global.
+        // In your own use case you would probably rendering the sort specs to your sorting/comparing functions directly and not use a global.
         // We could technically call ImGui::TableGetSortSpecs() in CompareWithSortSpecs(), but considering that this function is called
         // very often by the sorting algorithm it would be a little wasteful.
         static const ImGuiTableSortSpecs *s_current_sort_specs;
@@ -4364,7 +4364,7 @@ static void ShowDemoWindowTables() {
         ImGui::SetNextItemOpen(open_action != 0);
     if (ImGui::TreeNode("Row height")) {
         HelpMarker(
-                "You can pass a 'min_row_height' to TableNextRow().\n\nRows are padded with 'style.CellPadding.y' on top and bottom, so effectively the minimum row height will always be >= 'style.CellPadding.y * 2.0f'.\n\nWe cannot honor a _maximum_ row height as that would requires a unique clipping rectangle per row.");
+                "You can rendering a 'min_row_height' to TableNextRow().\n\nRows are padded with 'style.CellPadding.y' on top and bottom, so effectively the minimum row height will always be >= 'style.CellPadding.y * 2.0f'.\n\nWe cannot honor a _maximum_ row height as that would requires a unique clipping rectangle per row.");
         if (ImGui::BeginTable("##Table", 1, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_BordersInnerV)) {
             for (int row = 0; row < 10; row++) {
                 float min_row_height = (float) (int) (TEXT_BASE_HEIGHT * 0.30f * row);
@@ -4483,7 +4483,7 @@ static void ShowDemoWindowTables() {
                     // Change background of Cells B1->C2
                     // Demonstrate setting a cell background color with 'ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, ...)'
                     // (the CellBg color will be blended over the RowBg and ColumnBg colors)
-                    // We can also pass a column number as a third parameter to TableSetBgColor() and do this outside the column loop.
+                    // We can also rendering a column number as a third parameter to TableSetBgColor() and do this outside the column loop.
                     if (row >= 1 && row <= 2 && column >= 1 && column <= 2 && cell_bg_type == 1) {
                         ImU32 cell_bg_color = ImGui::GetColorU32(ImVec4(0.3f, 0.3f, 0.7f, 0.65f));
                         ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, cell_bg_color);
@@ -4898,7 +4898,7 @@ static void ShowDemoWindowTables() {
         static bool show_headers = true;
         static bool show_wrapped_text = false;
         //static ImGuiTextFilter filter;
-        //ImGui::SetNextItemOpen(true, ImGuiCond_Once); // FIXME-TABLE: Enabling this results in initial clipped first pass on table which tend to affects column sizing
+        //ImGui::SetNextItemOpen(true, ImGuiCond_Once); // FIXME-TABLE: Enabling this results in initial clipped first rendering on table which tend to affects column sizing
         if (ImGui::TreeNode("Options")) {
             // Make the UI compact because there are so many fields
             PushStyleCompact();
@@ -5000,7 +5000,7 @@ static void ShowDemoWindowTables() {
                            "- OuterSize.y then becomes the minimum size for the table, which will extend vertically if there are more rows (unless NoHostExtendY is set).");
 
                 // From a user point of view we will tend to use 'inner_width' differently depending on whether our table is embedding scrolling.
-                // To facilitate toying with this demo we will actually pass 0.0f to the BeginTable() when ScrollX is disabled.
+                // To facilitate toying with this demo we will actually rendering 0.0f to the BeginTable() when ScrollX is disabled.
                 ImGui::DragFloat("inner_width (when ScrollX active)", &inner_width_with_scroll, 1.0f, 0.0f, FLT_MAX);
 
                 ImGui::DragFloat("row_min_height", &row_min_height, 1.0f, 0.0f, FLT_MAX);
@@ -5900,7 +5900,7 @@ static void NodeFont(ImFont *font) {
 }
 
 void ImGui::ShowStyleEditor(ImGuiStyle *ref) {
-    // You can pass in a reference ImGuiStyle structure to compare to, revert to and save to
+    // You can rendering in a reference ImGuiStyle structure to compare to, revert to and save to
     // (without a reference style pointer, we will use one compared locally as a reference)
     ImGuiStyle &style = ImGui::GetStyle();
     static ImGuiStyle ref_saved_style;
@@ -7140,7 +7140,7 @@ static void ShowExampleAppCustomRendering(bool *p_open) {
 
             // Draw gradients
             // (note that those are currently exacerbating our sRGB/Linear issues)
-            // Calling ImGui::GetColorU32() multiplies the given colors by the current Style Alpha, but you may pass the IM_COL32() directly as well..
+            // Calling ImGui::GetColorU32() multiplies the given colors by the current Style Alpha, but you may rendering the IM_COL32() directly as well..
             ImGui::Text("Gradients");
             ImVec2 gradient_size = ImVec2(ImGui::CalcItemWidth(), ImGui::GetFrameHeight());
             {

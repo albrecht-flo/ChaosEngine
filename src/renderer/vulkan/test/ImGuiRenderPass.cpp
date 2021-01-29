@@ -14,7 +14,7 @@ static void check_imgui_vk_result(VkResult result) {
 
 }
 
-/* Configures the render pass with the attachments and subpasses */
+/* Configures the render rendering with the attachments and subpasses */
 ImGuiRenderPass::ImGuiRenderPass(VulkanDevice &device,
                                  VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window, const VulkanInstance &instance) :
         VulkanRenderPass(device, vulkanMemory, swapChain), window(window), instance(instance) {
@@ -86,7 +86,7 @@ void ImGuiRenderPass::init() {
     vulkanMemory.endSingleTimeCommands(cmdBuf);
 }
 
-/* Creates the vulkan render pass, describing all attachments, subpasses and subpass dependencies. */
+/* Creates the vulkan render rendering, describing all attachments, subpasses and subpass dependencies. */
 void ImGuiRenderPass::createRenderPass() {
     // Configures color attachment processing
     VkAttachmentDescription colorAttachment = {};
@@ -96,8 +96,8 @@ void ImGuiRenderPass::createRenderPass() {
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // store results instead of discarding them
     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render pass
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render pass
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render rendering
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render rendering
 
     // Subpasses references one or more color attachments
     VkAttachmentReference colorAttachmentRef = {};
@@ -127,7 +127,7 @@ void ImGuiRenderPass::createRenderPass() {
     dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-    // Combine subpasses, dependencies and attachments to render pass
+    // Combine subpasses, dependencies and attachments to render rendering
     std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -139,18 +139,18 @@ void ImGuiRenderPass::createRenderPass() {
     renderPassInfo.pDependencies = dependencies.data();
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create ImGui render pass!");
+        throw std::runtime_error("VULKAN: failed to create ImGui render rendering!");
     }
 
 #ifdef M_DEBUG
-    std::cout << "ImGuiRenderPass: created render pass (" << renderPass << ")" << std::endl;
+    std::cout << "ImGuiRenderPass: created render rendering (" << renderPass << ")" << std::endl;
 #endif
 }
 
 // Rendering stuff
-/* Begin the render pass and setup all context descriptors . */
+/* Begin the render rendering and setup all context descriptors . */
 void ImGuiRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
-    // Define render pass to draw with
+    // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass; // the renderpass to use
@@ -175,7 +175,7 @@ void ImGuiRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) {
 
 }
 
-/* End this render pass. */
+/* End this render rendering. */
 void ImGuiRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
     vkCmdEndRenderPass(cmdBuf);
 }
@@ -184,7 +184,7 @@ void ImGuiRenderPass::destroySwapChainDependent() {
 
 }
 
-/* Recreates this render pass to fit the new swap chain. */
+/* Recreates this render rendering to fit the new swap chain. */
 void ImGuiRenderPass::recreate() {
     ImGui_ImplVulkan_SetMinImageCount(swapChain.size());
 }

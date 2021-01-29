@@ -1699,7 +1699,7 @@ bool ImGui::Combo(const char *label, int *current_item, bool (*items_getter)(voi
     return value_changed;
 }
 
-// Combo box helper allowing to pass an array of strings.
+// Combo box helper allowing to rendering an array of strings.
 bool
 ImGui::Combo(const char *label, int *current_item, const char *const items[], int items_count, int height_in_items) {
     const bool value_changed = Combo(label, current_item, Items_ArrayGetter, (void *) items, items_count,
@@ -1707,7 +1707,7 @@ ImGui::Combo(const char *label, int *current_item, const char *const items[], in
     return value_changed;
 }
 
-// Combo box helper allowing to pass all items in a single string literal holding multiple zero-terminated items "item1\0item2\0"
+// Combo box helper allowing to rendering all items in a single string literal holding multiple zero-terminated items "item1\0item2\0"
 bool ImGui::Combo(const char *label, int *current_item, const char *items_separated_by_zeros, int height_in_items) {
     int items_count = 0;
     const char *p = items_separated_by_zeros;       // FIXME-OPT: Avoid computing this, or at least only when combo is open
@@ -4207,7 +4207,7 @@ bool ImGui::InputTextEx(const char *label, const char *hint, char *buf, int buf_
         if (io.InputQueueCharacters.Size > 0) {
             if (!ignore_char_inputs && !is_readonly && !user_nav_input_start)
                 for (int n = 0; n < io.InputQueueCharacters.Size; n++) {
-                    // Insert character if they pass filtering
+                    // Insert character if they rendering filtering
                     unsigned int c = (unsigned int) io.InputQueueCharacters[n];
                     if (c == '\t' && io.KeyShift)
                         continue;
@@ -4566,7 +4566,7 @@ bool ImGui::InputTextEx(const char *label, const char *hint, char *buf, int buf_
         // - Display the text (this alone can be more easily clipped)
         // - Handle scrolling, highlight selection, display cursor (those all requires some form of 1d->2d cursor position calculation)
         // - Measure text height (for scrollbar)
-        // We are attempting to do most of that in **one main pass** to minimize the computation cost (non-negligible for large amount of text) + 2nd pass for selection rendering (we could merge them by an extra refactoring effort)
+        // We are attempting to do most of that in **one main rendering** to minimize the computation cost (non-negligible for large amount of text) + 2nd rendering for selection rendering (we could merge them by an extra refactoring effort)
         // FIXME: This should occur on buf_display but we'd need to maintain cursor/select_start/select_end for UTF-8.
         const ImWchar *text_begin = state->TextW.Data;
         ImVec2 cursor_offset, select_start_offset;
@@ -6096,7 +6096,7 @@ bool ImGui::CollapsingHeader(const char *label, bool *p_visible, ImGuiTreeNodeFl
 // - Selectable()
 //-------------------------------------------------------------------------
 
-// Tip: pass a non-visible label (e.g. "##hello") then you can use the space to draw other text or image.
+// Tip: rendering a non-visible label (e.g. "##hello") then you can use the space to draw other text or image.
 // But you need to make sure the ID is unique, e.g. enclose calls in PushID/PopID or use ##unique_id.
 // With this scheme, ImGuiSelectableFlags_SpanAllColumns and ImGuiSelectableFlags_AllowItemOverlap are also frequently used flags.
 // FIXME: Selectable() with (size.x == 0.0f) and (SelectableTextAlign.x > 0.0f) followed by SameLine() is currently not supported.
@@ -6259,7 +6259,7 @@ bool ImGui::Selectable(const char *label, bool *p_selected, ImGuiSelectableFlags
 
 // FIXME: In principle this function should be called BeginListBox(). We should rename it after re-evaluating if we want to keep the same signature.
 // Helper to calculate the size of a listbox and display a label on the right.
-// Tip: To have a list filling the entire window width, PushItemWidth(-1) and pass an non-visible label e.g. "##empty"
+// Tip: To have a list filling the entire window width, PushItemWidth(-1) and rendering an non-visible label e.g. "##empty"
 bool ImGui::ListBoxHeader(const char *label, const ImVec2 &size_arg) {
     ImGuiContext &g = *GImGui;
     ImGuiWindow *window = GetCurrentWindow();
@@ -6347,7 +6347,7 @@ bool ImGui::ListBox(const char *label, int *current_item, bool (*items_getter)(v
     bool value_changed = false;
     ImGuiListClipper clipper;
     clipper.Begin(items_count,
-                  GetTextLineHeightWithSpacing()); // We know exactly our line height here so we pass it as a minor optimization, but generally you don't need to.
+                  GetTextLineHeightWithSpacing()); // We know exactly our line height here so we rendering it as a minor optimization, but generally you don't need to.
     while (clipper.Step())
         for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++) {
             const bool item_selected = (i == *current_item);

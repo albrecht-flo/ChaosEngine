@@ -44,7 +44,7 @@ protected:
     VulkanMemory &vulkanMemory;
     VulkanSwapChain &swapChain;
 
-    // This vulkan render pass
+    // This vulkan render rendering
     VkRenderPass renderPass = {};
 
 };
