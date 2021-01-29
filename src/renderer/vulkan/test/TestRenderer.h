@@ -119,7 +119,7 @@ private:
     VkImageView imGuiImageView{};
 
     // The command pool, TOBE moved
-    VkCommandPool commandPool{};
+    VulkanCommandPool commandPool;
 
     // The memory management object
     VulkanMemory vulkanMemory;

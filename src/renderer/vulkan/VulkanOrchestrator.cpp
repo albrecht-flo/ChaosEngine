@@ -1,10 +1,16 @@
 #include "VulkanOrchestrator.h"
+#include "command/VulkanCommandBuffer.h"
 
-VulkanOrchestrator::VulkanOrchestrator(const Window &window, VulkanContext &&context, VulkanSwapChain &&swapChain)
-        : context(std::move(context)),
-          memory(context.getDevice(), context.getCommandPool().vk()),
-          swapChain(std::move(swapChain)) {
-    // vulkanDataManager(vulkanContext),
+static std::vector<VulkanCommandBuffer>
+createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
+    std::vector<VulkanCommandBuffer> primaryCommandBuffers;
+    primaryCommandBuffers.reserve(swapChainSize);
+    for (int i = 0; i < swapChainSize; ++i) {
+        primaryCommandBuffers.emplace_back(
+                VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+    }
+
+    return std::move(primaryCommandBuffers);
 }
 
 VulkanOrchestrator VulkanOrchestrator::Create(const Window &window) {
@@ -12,14 +18,25 @@ VulkanOrchestrator VulkanOrchestrator::Create(const Window &window) {
 
     VulkanSwapChain swapChain = VulkanSwapChain::Create(window, context.getDevice(), context.getSurface());
 
+    auto primaryCommandBuffers = createPrimaryCommandBuffers(context.getDevice(), context.getCommandPool(),
+                                                             swapChain.size());
+
     // vulkanDataManager.init();
     // solidRenderPass.init();
     // transparentRenderPass.init();
     // guiRenderPass.init();
     // postProcessingRenderPass.init();
-    return VulkanOrchestrator(window, std::move(context), std::move(swapChain));
+    return VulkanOrchestrator(window, std::move(context), std::move(swapChain), std::move(primaryCommandBuffers));
 }
 
+VulkanOrchestrator::VulkanOrchestrator(const Window &window, VulkanContext &&context, VulkanSwapChain &&swapChain,
+                                       std::vector<VulkanCommandBuffer> &&primaryCommandBuffers)
+        : context(std::move(context)),
+          memory(context.getDevice(), context.getCommandPool()),
+          swapChain(std::move(swapChain)),
+          primaryCommandBuffers(std::move(primaryCommandBuffers)) {
+    // vulkanDataManager(vulkanContext),
+}
 
 void VulkanOrchestrator::join() {
 

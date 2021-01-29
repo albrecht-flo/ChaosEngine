@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <src/renderer/vulkan/command/VulkanCommandPool.h>
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanBuffer.h"
@@ -8,7 +9,7 @@
 // TODO: This class needs to be refactored as soon as the Khronos Vulkan memory manager is added
 class VulkanMemory {
 public:
-    VulkanMemory(const VulkanDevice &device, VkCommandPool commandPool);
+    VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool);
 
     ~VulkanMemory() = default;
 
@@ -18,8 +19,7 @@ public:
 
     VulkanMemory(VulkanMemory &&o) noexcept;
 
-    VulkanMemory &operator=(VulkanMemory &&o) noexcept; // TODO: Mark delete after refactoring is complete
-
+    VulkanMemory &operator=(VulkanMemory &&o) = delete;
 
     void destroy();
 
@@ -49,6 +49,6 @@ public:
 
 private:
     const VulkanDevice &device;
-    VkCommandPool commandPool;
+    const VulkanCommandPool &commandPool;
 };
 

@@ -12,6 +12,7 @@
 TestRenderer::TestRenderer(Window &w) :
         VulkanRenderer(w),
         swapChain(VulkanSwapChain::Create(window, device, surface)),
+        commandPool(VulkanCommandPool::Create(device)),
         vulkanMemory(device, commandPool),
         mainGraphicsPass(device, vulkanMemory, swapChain),
         imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
@@ -21,14 +22,10 @@ void TestRenderer::init() {
     // Vulkan Instance and Device are handled by VulkanRenderer constructor
 
     // GPU communication
-    createCommandPool();
     // Create per frame command buffers
     createCommandBuffers();
     // Sync objects for drawing frames
     createSyncObjects();
-
-    // Initialize memory manager
-    vulkanMemory = VulkanMemory(device, commandPool);
 
     // requires memory manager for depth image creation
     createDepthResources();
@@ -48,20 +45,6 @@ void TestRenderer::init() {
     quadRobj.modelMat = glm::translate(glm::mat4(1), glm::vec3(0.0f, 0.0f, -3.0f));
 }
 
-
-/* Creates command pool to contain command buffers */
-void TestRenderer::createCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies();
-
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // We want the buffers to be able to reset them
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-
-    if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create graphics command pool!");
-    }
-}
 
 /* Creates the command buffers for all frames from the command pool. */
 void TestRenderer::createCommandBuffers() {
@@ -370,7 +353,7 @@ void TestRenderer::cleanupSwapChain() {
     VulkanImageView::destroy(device, imGuiImageView);
 
     // The command buffers depend on the amount of swapchain images
-    for (auto cmdBuffer : commandBuffers) {
+    for (auto &cmdBuffer : commandBuffers) {
         cmdBuffer.destroy();
     }
 
@@ -407,7 +390,7 @@ void TestRenderer::destroyResources() {
     vulkanMemory.destroy();
 
     // Destroy the command pool
-    vkDestroyCommandPool(device.getDevice(), commandPool, nullptr);
+//    vkDestroyCommandPool(device.getDevice(), commandPool.vk(), nullptr);
 }
 
 // Data management

@@ -6,13 +6,24 @@
 
 class Window;
 
+class VulkanCommandBuffer;
+
 /// This class orchestrates the creation, recreation and communication of the all vulkan objects.
 class VulkanOrchestrator : public RendererAPI {
 private:
-    VulkanOrchestrator(const Window &window, VulkanContext &&context, VulkanSwapChain &&swapChain);
+    VulkanOrchestrator(const Window &window, VulkanContext &&context, VulkanSwapChain &&swapChain,
+                       std::vector<VulkanCommandBuffer> &&primaryCommandBuffers);
 
 public:
     ~VulkanOrchestrator() override = default;
+
+    VulkanOrchestrator(const VulkanOrchestrator &o) = delete;
+
+    VulkanOrchestrator&operator=(const VulkanOrchestrator &o) = delete;
+
+    VulkanOrchestrator(VulkanOrchestrator &&o) = delete;
+
+    VulkanOrchestrator&operator=(VulkanOrchestrator &&o) = delete;
 
     static VulkanOrchestrator Create(const Window &window);
 
@@ -61,4 +72,6 @@ private: // Fields
     VulkanContext context;
     VulkanMemory memory;
     VulkanSwapChain swapChain;
+
+    std::vector<VulkanCommandBuffer> primaryCommandBuffers;
 };

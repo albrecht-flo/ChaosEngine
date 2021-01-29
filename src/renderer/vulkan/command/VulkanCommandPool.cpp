@@ -3,6 +3,7 @@
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <stdexcept>
+#include <iostream>
 
 /// Creates command pool to contain command buffers
 static VkCommandPool createCommandPool(const VulkanDevice &device) {

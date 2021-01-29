@@ -3,18 +3,12 @@
 #include <stdexcept>
 #include <cstring>
 
-VulkanMemory::VulkanMemory(const VulkanDevice &device, VkCommandPool commandPool) :
+VulkanMemory::VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool) :
         device(device), commandPool(commandPool) {
 }
 
 VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
         : device(o.device), commandPool(o.commandPool) {}
-
-
-VulkanMemory &VulkanMemory::operator=(VulkanMemory &&o) noexcept {
-    commandPool = o.commandPool;
-    return *this;
-}
 
 
 void VulkanMemory::destroy(VulkanBuffer buffer) {
@@ -112,7 +106,7 @@ VkCommandBuffer VulkanMemory::beginSingleTimeCommands() {
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool;
+    allocInfo.commandPool = commandPool.vk();
     allocInfo.commandBufferCount = 1; // we only need one
 
     VkCommandBuffer commandBuffer;
@@ -146,7 +140,7 @@ void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) {
     vkQueueWaitIdle(device.getGraphicsQueue());
 
     // The cmdbuffer is no longer needed
-    vkFreeCommandBuffers(device.getDevice(), commandPool, 1, &commandBuffer);
+    vkFreeCommandBuffers(device.getDevice(), commandPool.vk(), 1, &commandBuffer);
 }
 
 /* Finds apropriate memory type if the physical device */

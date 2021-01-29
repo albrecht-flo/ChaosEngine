@@ -1,20 +1,47 @@
 #include "VulkanCommandBuffer.h"
 
+#include <vulkan/vulkan.h>
+
 #include <stdexcept>
 
-VulkanCommandBuffer::VulkanCommandBuffer(VulkanDevice &device, VkCommandPool commandPool, VkCommandBufferLevel level) :
-        m_device(device), m_commandPool(commandPool) {
-
+static VkCommandBuffer createCommandBuffer(const VulkanDevice &device, VkCommandPool commandPool,
+                                           VkCommandBufferLevel level) {
     // Creates the command buffers for each frame
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.commandPool = m_commandPool; // the pool to allocate from
+    allocInfo.commandPool = commandPool; // the pool to allocate from
     allocInfo.level = level; // primary -> can be submited directly; secondary -> can be called from primary
     allocInfo.commandBufferCount = 1; // the number of buffers
 
-    if (vkAllocateCommandBuffers(m_device.getDevice(), &allocInfo, &m_buffer) != VK_SUCCESS) {
+    VkCommandBuffer commandBuffer{};
+    if (vkAllocateCommandBuffers(device.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to allocate command buffers!");
     }
+    return commandBuffer;
+}
+
+VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
+                                         VkCommandBufferLevel level) :
+        device(device), commandPool(commandPool), buffer(createCommandBuffer(device, commandPool.vk(), level)) {}
+
+VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
+                                         VkCommandBuffer buffer)
+        : device(device), commandPool(commandPool), buffer(buffer) {}
+
+VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer &&o) noexcept
+        : device(o.device), commandPool(o.commandPool), buffer(o.buffer) {}
+
+VulkanCommandBuffer
+VulkanCommandBuffer::Create(const VulkanDevice &device, const VulkanCommandPool &commandPool,
+                            VkCommandBufferLevel level) {
+    auto commandBuffer = createCommandBuffer(device, commandPool.vk(), level);
+
+    return VulkanCommandBuffer{device, commandPool, commandBuffer};
+
+}
+
+VulkanCommandBuffer::~VulkanCommandBuffer() {
+    destroy();
 }
 
 /* Begin recording the command buffer.
@@ -26,22 +53,20 @@ void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags) {
     beginInfo.flags = flags; // can be resubmited while beeing executed
     beginInfo.pInheritanceInfo = nullptr; // only relevant for secondary cmdbuffers
 
-    if (vkBeginCommandBuffer(m_buffer, &beginInfo) != VK_SUCCESS) {
+    if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to begin recording command buffer!");
     }
 }
 
 // Finish recording the command buffer
 void VulkanCommandBuffer::end() {
-    if (vkEndCommandBuffer(m_buffer) != VK_SUCCESS) {
+    if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to record command buffer!");
     }
 }
 
 void VulkanCommandBuffer::destroy() {
-    vkFreeCommandBuffers(m_device.getDevice(), m_commandPool, 1, &m_buffer);
-}
-
-VulkanCommandBuffer::~VulkanCommandBuffer() {
-
+    if (buffer != VK_NULL_HANDLE)
+        vkFreeCommandBuffers(device.getDevice(), commandPool.vk(), 1, &buffer);
+    buffer = VK_NULL_HANDLE;
 }

@@ -13,11 +13,11 @@ public:
 
     VulkanCommandPool(const VulkanCommandPool &o) = delete;
 
-    VulkanCommandPool operator=(const VulkanCommandPool &o) = delete;
+    VulkanCommandPool &operator=(const VulkanCommandPool &o) = delete;
 
     VulkanCommandPool(VulkanCommandPool &&o) noexcept;
 
-    VulkanCommandPool operator=(VulkanCommandPool &&o) = delete;
+    VulkanCommandPool &operator=(VulkanCommandPool &&o) = delete;
 
     static VulkanCommandPool Create(const VulkanDevice &device);
 
