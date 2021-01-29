@@ -4,12 +4,14 @@
 
 // TODO: Remove this might throw an exception during construction
 VulkanRenderer::VulkanRenderer(Window &w) :
-        window(w), instance(VulkanInstance::Create({"VK_LAYER_KHRONOS_validation"}, "Old", "Old")),
+        window(w),
+        instance(VulkanInstance::Create({"VK_LAYER_KHRONOS_validation"}, "Old", "Old")),
+        surface(window.createSurface(instance.getInstance())),
         device(VulkanDevice::Create(instance, surface)) {
     // Let the child class handle the rest of initialization in init
 }
 
-VulkanRenderer::~VulkanRenderer() {}
+VulkanRenderer::~VulkanRenderer() = default;
 
 /* Creates the Vulkan surface from the window. */
 void VulkanRenderer::createSurface() {

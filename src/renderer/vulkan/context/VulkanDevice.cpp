@@ -1,8 +1,11 @@
 #include "VulkanDevice.h"
 
+#include <vulkan/vulkan.h>
+
 #include <vector>
 #include <set>
 #include <stdexcept>
+#include <tuple>
 
 /* Checks if a GPU supports all required extensions. */
 static bool checkDeviceExtensionSupport(VkPhysicalDevice phdevice, const std::vector<const char *> &deviceExtensions) {

@@ -1,10 +1,11 @@
 #include "VulkanSwapChain.h"
 
+#include <vulkan/vulkan.h>
 #include "../image/VulkanImageView.h"
 
 #include <array>
 #include <stdexcept>
-
+#include <tuple>
 
 /* Helper to select an appropriate surface format. */
 static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
@@ -82,7 +83,8 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
     createInfo.imageExtent = extent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // images are used for color output // ~ TRANSFER for post processing
+    createInfo.imageUsage =
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // images are used for color output // ~ TRANSFER for post processing
 
     // Determine how the images will be accessed by different queues
     QueueFamilyIndices indices = device.findQueueFamilies();
@@ -96,7 +98,8 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // ownership needs to be handled explicitly
     }
 
-    createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // we do not want any transform to the final image
+    createInfo.preTransform =
+            swapChainSupport.capabilities.currentTransform; // we do not want any transform to the final image
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR; // no blending with other windows
     createInfo.presentMode = presentMode;
     createInfo.clipped = VK_TRUE; // discard pixels covered by other windows
@@ -161,8 +164,10 @@ void VulkanSwapChain::destroy() {
         VulkanImageView::destroy(device, imageView);
     }
 
-    vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
+    if (swapChain != nullptr)
+        vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
     swapChainImageViews.clear();
+    swapChain = nullptr;
 }
 
 /* Reinitializes the swap chain. */
@@ -176,7 +181,6 @@ void VulkanSwapChain::reinit() {
     swapChainImages = getSwapChainImages(device.getDevice(), swapChain);
     swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 }
-
 
 VulkanSwapChain::VulkanSwapChain(Window &window, VulkanDevice &device, VkSurfaceKHR surface,
                                  VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,

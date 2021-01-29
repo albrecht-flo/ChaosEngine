@@ -8,6 +8,7 @@
 
 #include <string>
 #include <optional>
+#include <memory>
 
 #include "Mesh.h"
 

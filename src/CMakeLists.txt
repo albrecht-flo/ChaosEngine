@@ -42,11 +42,20 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/tinyobjloader
         ../dep/stb
         )
-
+        
 add_library(render_engine ${RENDER_ENGINE_SOURCES})
 target_include_directories(render_engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
-target_link_directories(render_engine PUBLIC ../dep/lib/win)
-target_link_libraries(render_engine vulkan-1 glfw3)
+
+if(WIN32)
+	target_link_directories(render_engine PUBLIC ../dep/lib/win)
+	target_link_libraries(render_engine vulkan-1 glfw3)
+elseif(UNIX AND NOT APPLE)
+	target_link_directories(render_engine PUBLIC ../dep/lib/linux)
+	target_link_libraries(render_engine X11 dl pthread vulkan glfw3)
+else()
+	message(SEND_ERROR, "Unsuported platform")
+endif()
+add_compile_definitions(GLFW_INCLUDE_NONE)
 
 # ------------------------------------- application -----------------------------------------------
 
