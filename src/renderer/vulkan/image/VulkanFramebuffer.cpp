@@ -19,7 +19,7 @@ VkFramebuffer VulkanFramebuffer::createFramebuffer(
     framebufferInfo.layers = 1; // single images
 
     VkFramebuffer framebuffer;
-    if (vkCreateFramebuffer(device.getDevice(), &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS) {
+    if (vkCreateFramebuffer(device.vk(), &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create framebuffer!");
     }
 
@@ -27,5 +27,5 @@ VkFramebuffer VulkanFramebuffer::createFramebuffer(
 }
 
 void VulkanFramebuffer::destroy(VulkanDevice &device, VkFramebuffer framebuffer) {
-    vkDestroyFramebuffer(device.getDevice(), framebuffer, nullptr);
+    vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
 }

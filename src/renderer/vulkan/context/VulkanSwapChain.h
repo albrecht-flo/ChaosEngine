@@ -41,6 +41,8 @@ public:
     [[nodiscard]] VkFormat getFormat() const { return swapChainImageFormat; }
 
     [[nodiscard]] VkExtent2D getExtent() const { return swapChainExtent; }
+    [[nodiscard]] uint32_t getWidth() const { return swapChainExtent.width; }
+    [[nodiscard]] uint32_t getHeight() const { return swapChainExtent.height; }
 
     std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
 

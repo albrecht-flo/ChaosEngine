@@ -15,11 +15,13 @@ static VkCommandPool createCommandPool(const VulkanDevice &device) {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
     VkCommandPool commandPool{};
-    if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(device.vk(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create graphics command pool!");
     }
     return commandPool;
 }
+
+// ------------------------------------ Class members ------------------------------------------------------------------
 
 VulkanCommandPool VulkanCommandPool::Create(const VulkanDevice &device) {
     auto commandPool = createCommandPool(device);
@@ -33,6 +35,10 @@ VulkanCommandPool::VulkanCommandPool(VulkanCommandPool &&o) noexcept
         : device(o.device), commandPool(o.commandPool) {}
 
 VulkanCommandPool::~VulkanCommandPool() {
-    // Destroy the command pool
-    vkDestroyCommandPool(device.getDevice(), commandPool, nullptr);
+    destroy();
+}
+
+// Destroy the command pool
+void VulkanCommandPool::destroy() {
+    vkDestroyCommandPool(device.vk(), commandPool, nullptr);
 }

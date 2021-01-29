@@ -21,12 +21,12 @@ VulkanImageView::create(const VulkanDevice &device, VkImage image, VkFormat form
     createInfo.subresourceRange.layerCount = 1;
 
     VkImageView imageView = {};
-    if (vkCreateImageView(device.getDevice(), &createInfo, nullptr, &imageView) != VK_SUCCESS) {
+    if (vkCreateImageView(device.vk(), &createInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image views!");
     }
     return imageView;
 }
 
 void VulkanImageView::destroy(const VulkanDevice &device, VkImageView imageView) {
-    vkDestroyImageView(device.getDevice(), imageView, nullptr);
+    vkDestroyImageView(device.vk(), imageView, nullptr);
 }

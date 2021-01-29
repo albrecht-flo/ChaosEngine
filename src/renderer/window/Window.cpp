@@ -1,24 +1,51 @@
 #include "Window.h"
 
 #include <stdexcept>
+#include <iostream>
 
-void Window::framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*height*/) {
+static void glfwErrorCallback(int error_code, const char *description) {
+    std::cerr << "[GLFW] Error: [" << error_code << "] :" << description << std::endl;
+}
+
+static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*height*/) {
     auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
     w->setFrameBufferResized(true);
 }
 
-Window::Window(uint32_t width, uint32_t height) {
-    glfwInit();
+// ------------------------------------ Class members ------------------------------------------------------------------
+
+Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
+    glfwSetErrorCallback(glfwErrorCallback);
+
+    if (glfwInit() != GLFW_TRUE) {
+        throw std::runtime_error("[GLFW] Failed to initialize GLFW!");
+    }
+
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    window = glfwCreateWindow(width, height, "RenderEngine", nullptr, nullptr);
+    GLFWwindow *windowPtr = glfwCreateWindow(width, height, applicationName.c_str(), nullptr, nullptr);
+    if (windowPtr == nullptr) {
+        throw std::runtime_error("[GLFW] Failed to create a window!");
+    }
 
-    glfwSetWindowUserPointer(window, this);
+    Window window{windowPtr};
+
+    glfwSetWindowUserPointer(windowPtr, &window);
 
     // Setup callbacks
-    glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
+
+    return std::move(window);
 }
+
+Window::Window(GLFWwindow *window)
+        : window(window), framebufferResized(false),
+          lastMousePos({0, 0}), mousePos({0, 0}) {}
+
+Window::Window(Window &&o) noexcept
+        : window(o.window), framebufferResized(o.framebufferResized),
+          lastMousePos(o.lastMousePos), mousePos(o.mousePos) {}
 
 void Window::poolEvents() {
     glfwPollEvents();

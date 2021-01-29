@@ -21,8 +21,6 @@ public:
 
     VulkanMemory &operator=(VulkanMemory &&o) = delete;
 
-    void destroy();
-
     void destroy(VulkanBuffer buffer);
 
     const VulkanBuffer createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags);

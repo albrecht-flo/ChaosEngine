@@ -28,9 +28,9 @@ public:
                                  const std::string &engineName);
 
 
-    [[nodiscard]] VkInstance getInstance() const { return instance; }
+    [[nodiscard]] inline VkInstance vk() const { return instance; }
 
-    [[nodiscard]] const std::vector<const char *> &getValidationLayers() const { return validationLayers; }
+    [[nodiscard]] inline const std::vector<const char *> &getValidationLayers() const { return validationLayers; }
 
 private:
     VkInstance instance;

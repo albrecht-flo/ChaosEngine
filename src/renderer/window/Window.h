@@ -1,7 +1,10 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
+
 #include <GLFW/glfw3.h>
+
+#include <string>
 
 struct MousePos {
     int x;
@@ -14,10 +17,22 @@ struct WindowDimensions {
 };
 
 class Window {
-public:
-    explicit Window(uint32_t width = 1200, uint32_t height = 800);
+private:
+    explicit Window(GLFWwindow *window);
 
+public:
     ~Window() = default;
+
+    Window(const Window &o) = delete;
+
+    Window &operator=(const Window &o) = delete;
+
+    Window(Window &&o) noexcept;
+
+    Window &operator=(Window &&o) = delete;
+
+    static Window
+    Create(const std::string &applicationName = "Vulkan Triangle", uint32_t width = 1200, uint32_t height = 800);
 
     void poolEvents();
 
@@ -33,7 +48,7 @@ public:
 
     bool isKeyUp(int key) { return glfwGetKey(window, key) == GLFW_RELEASE; }
 
-    MousePos getDeltaMouse() const {
+    [[nodiscard]] MousePos getDeltaMouse() const {
         return MousePos{mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y};
     }
 
@@ -47,22 +62,17 @@ public:
 
     void setFrameBufferResized(bool b);
 
-    bool getFrameBufferResize() const { return framebufferResized; }
+    [[nodiscard]] bool getFrameBufferResize() const { return framebufferResized; }
 
-    WindowDimensions getFrameBufferSize() const;
+    [[nodiscard]] WindowDimensions getFrameBufferSize() const;
 
     // Vulkan specific code
-    VkSurfaceKHR createSurface(const VkInstance &instance) const;
-
-private:
-    static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
+    [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
 
 private:
     GLFWwindow *window = nullptr;
 
     bool framebufferResized = false;
-
-private: // Static members
     MousePos lastMousePos;
     MousePos mousePos;
 };

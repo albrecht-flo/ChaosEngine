@@ -139,14 +139,14 @@ static std::tuple<VkPhysicalDevice, VkPhysicalDeviceProperties>
 pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     // Get all available GPUs
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(instance.getInstance(), &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, nullptr);
 
     if (deviceCount == 0) {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(instance.getInstance(), &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, devices.data());
     VkPhysicalDevice physicalDevice{};
     for (const auto &device : devices) {
         // Take the first one that fits
@@ -235,29 +235,9 @@ static std::tuple<VkQueue, uint32_t> getPresentQueue(VkDevice device, QueueFamil
 
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
-/* Waits for all processing done on this device to finish. */
-void VulkanDevice::waitIdle() {
-    vkDeviceWaitIdle(device);
-}
-
-// wraper for external calls
-
-bool VulkanDevice::checkDeviceExtensionSupport() const {
-    return ::checkDeviceExtensionSupport(physicalDevice, VulkanDevice::deviceExtensions);
-}
-
-QueueFamilyIndices VulkanDevice::findQueueFamilies() const {
-    return ::findQueueFamilies(physicalDevice, surface);
-}
-
-SwapChainSupportDetails VulkanDevice::querySwapChainSupport() const {
-    return ::querySwapChainSupport(physicalDevice, surface);
-}
-
-VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
-                                           VkFormatFeatureFlags features) {
-    return ::findSupportedFormat(physicalDevice, candidates, tiling, features);
-}
+const std::vector<const char *> VulkanDevice::deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
 
 VulkanDevice VulkanDevice::Create(VulkanInstance &instance, VkSurfaceKHR surface) {
     // Select a graphics card that supports our features
@@ -275,14 +255,6 @@ VulkanDevice VulkanDevice::Create(VulkanInstance &instance, VkSurfaceKHR surface
                         graphicsQueue, presentQueue, deviceProperties};
 }
 
-void VulkanDevice::destroy() {
-    vkDestroyDevice(device, nullptr);
-}
-
-const std::vector<const char *> VulkanDevice::deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
 VulkanDevice::VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
                            VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
                            VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties)
@@ -298,3 +270,31 @@ VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept: instance(o.instance), sur
                                                        presentQueue(o.presentQueue), properties(o.properties) {}
 
 VulkanDevice::~VulkanDevice() { destroy(); }
+
+void VulkanDevice::destroy() {
+    vkDestroyDevice(device, nullptr);
+}
+
+/* Waits for all processing done on this device to finish. */
+void VulkanDevice::waitIdle() {
+    vkDeviceWaitIdle(device);
+}
+
+// wrapper for external calls
+
+bool VulkanDevice::checkDeviceExtensionSupport() const {
+    return ::checkDeviceExtensionSupport(physicalDevice, VulkanDevice::deviceExtensions);
+}
+
+QueueFamilyIndices VulkanDevice::findQueueFamilies() const {
+    return ::findQueueFamilies(physicalDevice, surface);
+}
+
+SwapChainSupportDetails VulkanDevice::querySwapChainSupport() const {
+    return ::querySwapChainSupport(physicalDevice, surface);
+}
+
+VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                                           VkFormatFeatureFlags features) {
+    return ::findSupportedFormat(physicalDevice, candidates, tiling, features);
+}

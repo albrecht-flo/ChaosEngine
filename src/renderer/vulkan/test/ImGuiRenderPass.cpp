@@ -67,9 +67,9 @@ void ImGuiRenderPass::init() {
 
     // Setup vulkan for ImGui
     ImGui_ImplVulkan_InitInfo init_info = {};
-    init_info.Instance = instance.getInstance();
+    init_info.Instance = instance.vk();
     init_info.PhysicalDevice = device.getPhysicalDevice();
-    init_info.Device = device.getDevice();
+    init_info.Device = device.vk();
     init_info.QueueFamily = device.getPresentQueueFamily();
     init_info.Queue = device.getPresentQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
@@ -138,7 +138,7 @@ void ImGuiRenderPass::createRenderPass() {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
     renderPassInfo.pDependencies = dependencies.data();
 
-    if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create ImGui render pass!");
     }
 
@@ -191,10 +191,10 @@ void ImGuiRenderPass::recreate() {
 
 void ImGuiRenderPass::destroy() {
     // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(device.getDevice(), descriptorPool,
+    vkDestroyDescriptorPool(device.vk(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
 
-    vkDestroyRenderPass(device.getDevice(), renderPass, nullptr);
+    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();

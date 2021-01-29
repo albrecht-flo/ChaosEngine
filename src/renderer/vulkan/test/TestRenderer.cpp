@@ -1,16 +1,15 @@
 #include "TestRenderer.h"
 
 #include <iostream>
-#include <fstream>
 #include <memory>
 #include <stdexcept>
-#include <cstdlib>
 #include <cstring>
 
 #include "src/renderer/data/ModelLoader.h"
+#include "src/renderer/vulkan/command/VulkanCommandPool.h"
 
 TestRenderer::TestRenderer(Window &w) :
-        VulkanRenderer(w),
+        VulkanRendererOld(w),
         swapChain(VulkanSwapChain::Create(window, device, surface)),
         commandPool(VulkanCommandPool::Create(device)),
         vulkanMemory(device, commandPool),
@@ -19,7 +18,7 @@ TestRenderer::TestRenderer(Window &w) :
         postRenderPass(device, vulkanMemory, swapChain) {}
 
 void TestRenderer::init() {
-    // Vulkan Instance and Device are handled by VulkanRenderer constructor
+    // Vulkan Instance and Device are handled by VulkanRendererOld constructor
 
     // GPU communication
     // Create per frame command buffers
@@ -70,11 +69,11 @@ void TestRenderer::createSyncObjects() {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        if (vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
+        if (vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
             VK_SUCCESS ||
-            vkCreateSemaphore(device.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-            VK_SUCCESS ||
-            vkCreateFence(device.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+                vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
+                VK_SUCCESS ||
+            vkCreateFence(device.vk(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
             throw std::runtime_error("VULKAN: failed to create synchronization objects for a frame!");
         }
     }
@@ -216,12 +215,12 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
 */
 void TestRenderer::drawFrame() {
     // Wait for the old frame to finish rendering
-    vkWaitForFences(device.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(device.vk(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
     // Aquire the next image to draw to from the swapchain
     // Specifies the sync objects to be notified when the image is ready
     uint32_t imageIndex; // index of available image
-    VkResult result = vkAcquireNextImageKHR(device.getDevice(),
+    VkResult result = vkAcquireNextImageKHR(device.vk(),
                                             swapChain.getSwapChain(), UINT64_MAX /*timeout*/,
                                             imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
@@ -257,7 +256,7 @@ void TestRenderer::drawFrame() {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     // Reset the finish fence
-    vkResetFences(device.getDevice(), 1, &inFlightFences[currentFrame]);
+    vkResetFences(device.vk(), 1, &inFlightFences[currentFrame]);
 
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
     if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
@@ -381,16 +380,11 @@ void TestRenderer::destroyResources() {
 
     // Destroy the synchronization objects
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        vkDestroySemaphore(device.getDevice(), renderFinishedSemaphores[i], nullptr);
-        vkDestroySemaphore(device.getDevice(), imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(device.getDevice(), inFlightFences[i], nullptr);
+        vkDestroySemaphore(device.vk(), renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(device.vk(), imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(device.vk(), inFlightFences[i], nullptr);
     }
 
-    // Cleanup all other allocations
-    vulkanMemory.destroy();
-
-    // Destroy the command pool
-//    vkDestroyCommandPool(device.getDevice(), commandPool.vk(), nullptr);
 }
 
 // Data management

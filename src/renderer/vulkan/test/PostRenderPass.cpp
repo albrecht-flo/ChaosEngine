@@ -151,7 +151,7 @@ void PostRenderPass::createRenderPass() {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create render pass!");
     }
 
@@ -273,7 +273,7 @@ void PostRenderPass::destroySwapChainDependent() {
     // The pipeline, layouts and render pass also deppend on the number of swapchain images and the framebuffers
     postprocessingPipeline.destroy(device);
 
-    vkDestroyRenderPass(device.getDevice(), renderPass, nullptr);
+    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
 }
 
@@ -291,10 +291,10 @@ void PostRenderPass::destroy() {
     VulkanSampler::destroy(device, imGuiImageSampler);
 
     // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(device.getDevice(), descriptorPool,
+    vkDestroyDescriptorPool(device.vk(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
 
     VulkanTexture::destroy(device, backgroundTexture);
 
-    vkDestroyDescriptorSetLayout(device.getDevice(), descriptorSetLayout.vDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayout.vDescriptorSetLayout, nullptr);
 }

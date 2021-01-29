@@ -21,10 +21,14 @@ public:
 
     static VulkanCommandPool Create(const VulkanDevice &device);
 
-    inline VkCommandPool vk() const { return commandPool; }
+    [[nodiscard]] inline VkCommandPool vk() const { return commandPool; }
+
+private:
+    void destroy();
 
 private:
     const VulkanDevice &device;
     VkCommandPool commandPool;
+
 };
 

@@ -158,7 +158,7 @@ void MainSceneRenderPass::createRenderPass() {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
     renderPassInfo.pDependencies = dependencies.data();
 
-    if (vkCreateRenderPass(device.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create render pass!");
     }
 
@@ -395,7 +395,7 @@ void MainSceneRenderPass::destroySwapChainDependent() {
     }
 
     // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(device.getDevice(), descriptorPoolCamera,
+    vkDestroyDescriptorPool(device.vk(), descriptorPoolCamera,
                             nullptr); // this also destroys the descriptor sets of this pools
 }
 
@@ -422,12 +422,12 @@ void MainSceneRenderPass::recreate() {
 void MainSceneRenderPass::destroy() {
 
     // this also destroys the descriptor sets of this pool
-    vkDestroyDescriptorPool(device.getDevice(), descriptorPoolMaterials, nullptr);
-    vkDestroyDescriptorPool(device.getDevice(), descriptorPoolLights, nullptr);
+    vkDestroyDescriptorPool(device.vk(), descriptorPoolMaterials, nullptr);
+    vkDestroyDescriptorPool(device.vk(), descriptorPoolLights, nullptr);
 
-    vkDestroyDescriptorSetLayout(device.getDevice(), descriptorSetLayoutCameraBuf.vDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device.getDevice(), descriptorSetLayoutMaterials.vDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device.getDevice(), descriptorSetLayoutLights.vDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutCameraBuf.vDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutMaterials.vDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutLights.vDescriptorSetLayout, nullptr);
 
     for (size_t i = 0; i < materialUniformBuffers.size(); i++) {
         vulkanMemory.destroy(materialUniformBuffers[i]);
@@ -440,7 +440,7 @@ void MainSceneRenderPass::destroy() {
         VulkanTexture::destroy(device, t.second);
     }
 
-    vkDestroyRenderPass(device.getDevice(), renderPass, nullptr);
+    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
     uboContent.destroy();
 }

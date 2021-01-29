@@ -107,7 +107,7 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
     createInfo.clipped = VK_TRUE; // discard pixels covered by other windows
 
     VkSwapchainKHR swapChain{};
-    if (vkCreateSwapchainKHR(device.getDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(device.vk(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create swap chain!");
     }
 
@@ -150,7 +150,7 @@ getSwapChainImages(VkDevice device, VkSwapchainKHR swapChain) {
 VulkanSwapChain VulkanSwapChain::Create(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
     auto[swapChain, swapChainImageFormat, swapChainExtent] = createSwapChain(window, device, surface);
 
-    std::vector<VkImage> swapChainImages = getSwapChainImages(device.getDevice(), swapChain);
+    std::vector<VkImage> swapChainImages = getSwapChainImages(device.vk(), swapChain);
 
     auto swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 
@@ -158,30 +158,6 @@ VulkanSwapChain VulkanSwapChain::Create(const Window &window, const VulkanDevice
                            swapChain, swapChainImageFormat, swapChainExtent,
                            std::move(swapChainImages), std::move(swapChainImageViews)
     };
-}
-
-/* Stories frame buffers, image views and swap chain. */
-void VulkanSwapChain::destroy() {
-    for (auto imageView : swapChainImageViews) {
-        VulkanImageView::destroy(device, imageView);
-    }
-
-    if (swapChain != nullptr)
-        vkDestroySwapchainKHR(device.getDevice(), swapChain, nullptr);
-    swapChainImageViews.clear();
-    swapChain = nullptr;
-}
-
-/* Reinitializes the swap chain. */
-void VulkanSwapChain::reinit() {
-    destroy();
-    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface);
-    swapChain = mSwapChain;
-    swapChainImageFormat = mSwapChainImageFormat;
-    swapChainExtent = mSwapChainExtent;
-
-    swapChainImages = getSwapChainImages(device.getDevice(), swapChain);
-    swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 }
 
 VulkanSwapChain::VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
@@ -198,4 +174,28 @@ VulkanSwapChain::VulkanSwapChain(VulkanSwapChain &&o) noexcept
 
 VulkanSwapChain::~VulkanSwapChain() {
     destroy();
+}
+
+/* Stories frame buffers, image views and swap chain. */
+void VulkanSwapChain::destroy() {
+    for (auto imageView : swapChainImageViews) {
+        VulkanImageView::destroy(device, imageView);
+    }
+
+    if (swapChain != nullptr)
+        vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
+    swapChainImageViews.clear();
+    swapChain = nullptr;
+}
+
+/* Reinitializes the swap chain. */
+void VulkanSwapChain::reinit() {
+    destroy();
+    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface);
+    swapChain = mSwapChain;
+    swapChainImageFormat = mSwapChainImageFormat;
+    swapChainExtent = mSwapChainExtent;
+
+    swapChainImages = getSwapChainImages(device.vk(), swapChain);
+    swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 }

@@ -14,10 +14,21 @@ static VkCommandBuffer createCommandBuffer(const VulkanDevice &device, VkCommand
     allocInfo.commandBufferCount = 1; // the number of buffers
 
     VkCommandBuffer commandBuffer{};
-    if (vkAllocateCommandBuffers(device.getDevice(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(device.vk(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to allocate command buffers!");
     }
     return commandBuffer;
+}
+
+// ------------------------------------ Class members ------------------------------------------------------------------
+
+VulkanCommandBuffer
+VulkanCommandBuffer::Create(const VulkanDevice &device, const VulkanCommandPool &commandPool,
+                            VkCommandBufferLevel level) {
+    auto commandBuffer = createCommandBuffer(device, commandPool.vk(), level);
+
+    return VulkanCommandBuffer{device, commandPool, commandBuffer};
+
 }
 
 VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
@@ -31,14 +42,6 @@ VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const Vulka
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer &&o) noexcept
         : device(o.device), commandPool(o.commandPool), buffer(o.buffer) {}
 
-VulkanCommandBuffer
-VulkanCommandBuffer::Create(const VulkanDevice &device, const VulkanCommandPool &commandPool,
-                            VkCommandBufferLevel level) {
-    auto commandBuffer = createCommandBuffer(device, commandPool.vk(), level);
-
-    return VulkanCommandBuffer{device, commandPool, commandBuffer};
-
-}
 
 VulkanCommandBuffer::~VulkanCommandBuffer() {
     destroy();
@@ -67,6 +70,6 @@ void VulkanCommandBuffer::end() {
 
 void VulkanCommandBuffer::destroy() {
     if (buffer != VK_NULL_HANDLE)
-        vkFreeCommandBuffers(device.getDevice(), commandPool.vk(), 1, &buffer);
+        vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &buffer);
     buffer = VK_NULL_HANDLE;
 }

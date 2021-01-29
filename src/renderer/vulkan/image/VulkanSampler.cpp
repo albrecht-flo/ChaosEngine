@@ -26,12 +26,12 @@ VkSampler VulkanSampler::create(VulkanDevice &device, VkFilter filter) {
     samplerInfo.maxLod = 0.0f;
 
     VkSampler sampler = {};
-    if (vkCreateSampler(device.getDevice(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
+    if (vkCreateSampler(device.vk(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: Failed to create sampler!");
     }
     return sampler;
 }
 
 void VulkanSampler::destroy(VulkanDevice &device, VkSampler sampler) {
-    vkDestroySampler(device.getDevice(), sampler, nullptr);
+    vkDestroySampler(device.vk(), sampler, nullptr);
 }

@@ -12,12 +12,8 @@ VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
 
 
 void VulkanMemory::destroy(VulkanBuffer buffer) {
-    vkDestroyBuffer(device.getDevice(), buffer.buffer, nullptr);
-    vkFreeMemory(device.getDevice(), buffer.memory, nullptr);
-}
-
-void VulkanMemory::destroy() {
-
+    vkDestroyBuffer(device.vk(), buffer.buffer, nullptr);
+    vkFreeMemory(device.vk(), buffer.memory, nullptr);
 }
 
 /* Creates a new buffer with dedicated device memory ! bad !
@@ -32,12 +28,12 @@ void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
     bufferInfo.usage = usage; // the usage the buffer contents will be used for
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // exclusiv to the graphcis queue
 
-    if (vkCreateBuffer(device.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(device.vk(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(device.getDevice(), buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(device.vk(), buffer, &memRequirements);
     // printf("Info: Buffer alignment: %d\n", memRequirements.alignment); // 256 on Nvidia GeForce 940MX
 
     // Allocate the memory
@@ -46,13 +42,13 @@ void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties); // find apropriate memory
 
-    if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to allocate buffer memory!");
     }
 
     // Bind the buffer to the memory
     // The offset has to be a multiple of memRequirements.alignment
-    vkBindBufferMemory(device.getDevice(), buffer, bufferMemory, 0 /*offset*/);
+    vkBindBufferMemory(device.vk(), buffer, bufferMemory, 0 /*offset*/);
 }
 
 /* Copies the contents of a source buffer to a destination buffer on the GPU. */
@@ -71,9 +67,9 @@ void VulkanMemory::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSi
 /* Copies data to buffer. */
 void VulkanMemory::copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size) {
     void *bufferData;
-    vkMapMemory(device.getDevice(), memory, 0, size, 0, &bufferData);
+    vkMapMemory(device.vk(), memory, 0, size, 0, &bufferData);
     memcpy(bufferData, data, (size_t) size);
-    vkUnmapMemory(device.getDevice(), memory);
+    vkUnmapMemory(device.vk(), memory);
 }
 
 void VulkanMemory::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
@@ -110,7 +106,7 @@ VkCommandBuffer VulkanMemory::beginSingleTimeCommands() {
     allocInfo.commandBufferCount = 1; // we only need one
 
     VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(device.getDevice(), &allocInfo, &commandBuffer);
+    vkAllocateCommandBuffers(device.vk(), &allocInfo, &commandBuffer);
 
     // Begin the command buffer
     VkCommandBufferBeginInfo beginInfo = {};
@@ -140,7 +136,7 @@ void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) {
     vkQueueWaitIdle(device.getGraphicsQueue());
 
     // The cmdbuffer is no longer needed
-    vkFreeCommandBuffers(device.getDevice(), commandPool.vk(), 1, &commandBuffer);
+    vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &commandBuffer);
 }
 
 /* Finds apropriate memory type if the physical device */
@@ -205,8 +201,8 @@ const VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, void *data
     copyBuffer(stagingBuffer, inputBuffer, size);
 
     // The staging buffer is no longer necessary so we can destroy it
-    vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(device.vk(), stagingBuffer, nullptr);
+    vkFreeMemory(device.vk(), stagingBufferMemory, nullptr);
 
     return VulkanBuffer{.buffer=inputBuffer, .memory=inputBufferMemory};
 }

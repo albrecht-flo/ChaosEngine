@@ -19,7 +19,7 @@
 #include "PostRenderPass.h"
 #include "ImGuiRenderPass.h"
 
-#include "VulkanRenderer.h"
+#include "VulkanRendererOld.h"
 #include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
@@ -35,7 +35,7 @@
 #define MAX_FRAMES_IN_FLIGHT 2
 
 
-class TestRenderer : public VulkanRenderer {
+class TestRenderer : public VulkanRendererOld {
 public:
     explicit TestRenderer(Window &w);
 
@@ -83,8 +83,6 @@ private:
     void createImageBuffers();
 
     void createFramebuffers();
-
-    void createCommandPool();
 
     void createDepthResources();
 

@@ -151,7 +151,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     pipelineLayoutInfo.pPushConstantRanges = descriptorLayout.pushConstants.data();
 
     VkPipelineLayout pipelineLayout;
-    if (vkCreatePipelineLayout(device.getDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    if (vkCreatePipelineLayout(device.vk(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create pipeline layout!");
     }
 
@@ -173,14 +173,14 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
     VkPipeline pipeline;
-    if (vkCreateGraphicsPipelines(device.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
+    if (vkCreateGraphicsPipelines(device.vk(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
         VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create graphics pipeline!");
     }
 
     // No longer needed
-    vkDestroyShaderModule(device.getDevice(), fragShaderModule, nullptr);
-    vkDestroyShaderModule(device.getDevice(), vertShaderModule, nullptr);
+    vkDestroyShaderModule(device.vk(), fragShaderModule, nullptr);
+    vkDestroyShaderModule(device.vk(), vertShaderModule, nullptr);
 
     return VulkanPipeline(pipeline, pipelineLayout);
 }
@@ -194,7 +194,7 @@ VkShaderModule VulkanPipeline::createShaderModule(VulkanDevice &device, const st
     createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(device.getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(device.vk(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create shader module!");
     }
 
@@ -222,7 +222,7 @@ std::vector<char> VulkanPipeline::readFile(const std::string &filename) {
 
 void VulkanPipeline::destroy(VulkanDevice &device) {
     if (pipeline != VK_NULL_HANDLE)
-        vkDestroyPipeline(device.getDevice(), pipeline, nullptr);
+        vkDestroyPipeline(device.vk(), pipeline, nullptr);
     if (pipelineLayout != VK_NULL_HANDLE)
-        vkDestroyPipelineLayout(device.getDevice(), pipelineLayout, nullptr);
+        vkDestroyPipelineLayout(device.vk(), pipelineLayout, nullptr);
 }

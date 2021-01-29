@@ -5,14 +5,15 @@ set(RENDER_ENGINE_SOURCES
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
         renderer/vulkan/VulkanOrchestrator.cpp
-        renderer/vulkan/test/VulkanRenderer.cpp
+        renderer/vulkan/test/VulkanRendererOld.cpp
         renderer/vulkan/pass/VulkanRenderPass.cpp
         renderer/vulkan/image/VulkanTexture.cpp
         renderer/vulkan/context/VulkanContext.cpp
         renderer/vulkan/context/VulkanDevice.cpp
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp
-		renderer/vulkan/command/VulkanCommandBuffer.cpp
+        renderer/vulkan/command/VulkanCommandBuffer.cpp
+        renderer/vulkan/command/VulkanCommandPool.cpp
         renderer/vulkan/image/VulkanImage.cpp
         renderer/vulkan/image/VulkanSampler.cpp
         renderer/vulkan/image/VulkanFramebuffer.cpp
@@ -31,7 +32,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
-		renderer/vulkan/command/VulkanCommandPool.cpp renderer/vulkan/command/VulkanCommandPool.h)
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/
@@ -42,19 +43,19 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/tinyobjloader
         ../dep/stb
         )
-        
+
 add_library(render_engine ${RENDER_ENGINE_SOURCES})
 target_include_directories(render_engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
 
-if(WIN32)
-	target_link_directories(render_engine PUBLIC ../dep/lib/win)
-	target_link_libraries(render_engine vulkan-1 glfw3)
-elseif(UNIX AND NOT APPLE)
-	target_link_directories(render_engine PUBLIC ../dep/lib/linux)
-	target_link_libraries(render_engine X11 dl pthread vulkan glfw3)
-else()
-	message(SEND_ERROR, "Unsuported platform")
-endif()
+if (WIN32)
+    target_link_directories(render_engine PUBLIC ../dep/lib/win)
+    target_link_libraries(render_engine vulkan-1 glfw3)
+elseif (UNIX AND NOT APPLE)
+    target_link_directories(render_engine PUBLIC ../dep/lib/linux)
+    target_link_libraries(render_engine X11 dl pthread vulkan glfw3)
+else ()
+    message(SEND_ERROR, "Unsuported platform")
+endif ()
 add_compile_definitions(GLFW_INCLUDE_NONE)
 
 # ------------------------------------- application -----------------------------------------------

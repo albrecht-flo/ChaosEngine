@@ -10,11 +10,11 @@
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 
-class VulkanRenderer {
+class VulkanRendererOld {
 public:
-    VulkanRenderer(Window &w);
+    VulkanRendererOld(Window &w);
 
-    ~VulkanRenderer();
+    ~VulkanRendererOld();
 
     void waitIdle();
 

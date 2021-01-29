@@ -12,7 +12,7 @@ DescriptorSetLayout VulkanDescriptor::createDescriptorSetLayout(
     layoutInfo.pBindings = descriptorBindings.data();
 
     VkDescriptorSetLayout layout;
-    if (vkCreateDescriptorSetLayout(device.getDevice(), &layoutInfo, nullptr, &layout) != VK_SUCCESS) {
+    if (vkCreateDescriptorSetLayout(device.vk(), &layoutInfo, nullptr, &layout) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create descriptor set layout!");
     }
 
@@ -32,7 +32,7 @@ VkDescriptorPool VulkanDescriptor::createPool(VulkanDevice &device,
     poolInfo.maxSets = maxSets; // max number of sets to be allocated
 
     VkDescriptorPool descriptorPool;
-    if (vkCreateDescriptorPool(device.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+    if (vkCreateDescriptorPool(device.vk(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to create descriptor pool!");
     }
 
@@ -56,7 +56,7 @@ VkDescriptorSet VulkanDescriptor::allocateDescriptorSet(VulkanDevice &device,
     allocInfo.pSetLayouts = &layout.vDescriptorSetLayout; // the layouts
 
     VkDescriptorSet descriptorSet;
-    if (vkAllocateDescriptorSets(device.getDevice(), &allocInfo, &descriptorSet) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(device.vk(), &allocInfo, &descriptorSet) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: failed to allocate descriptor set!");
     }
 #ifdef M_DEBUG
@@ -101,6 +101,6 @@ void VulkanDescriptor::writeDescriptorSet(VulkanDevice &device, VkDescriptorSet 
         i++;
     }
 
-    vkUpdateDescriptorSets(device.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
+    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
                            0, nullptr);
 }

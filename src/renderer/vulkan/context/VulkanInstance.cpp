@@ -85,15 +85,6 @@ static void setupDebugMessenger(VkInstance instance,
 
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
-VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                               std::vector<const char *> &&validationLayers) :
-        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {}
-
-VulkanInstance::VulkanInstance(VulkanInstance &&o) noexcept:
-        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {}
-
-VulkanInstance::~VulkanInstance() { destroy(); }
-
 /* Creates a vulkan instance with a debug callback and validation layers if requested. */
 VulkanInstance VulkanInstance::Create(std::vector<const char *> validationLayers, const std::string &applicationName,
                                       const std::string &engineName) {
@@ -155,6 +146,16 @@ VulkanInstance VulkanInstance::Create(std::vector<const char *> validationLayers
 
     return VulkanInstance(newInstance, newDebugMessenger, std::move(validationLayers));
 }
+
+VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                               std::vector<const char *> &&validationLayers) :
+        instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {}
+
+VulkanInstance::VulkanInstance(VulkanInstance &&o) noexcept:
+        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {}
+
+VulkanInstance::~VulkanInstance() { destroy(); }
+
 
 /* Destroys the instance and if present the debug messenger. */
 void VulkanInstance::destroy() {

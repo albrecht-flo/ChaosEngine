@@ -270,7 +270,7 @@ int main() {
 
     try {
         ModelLoader modelLoader;
-        Window window;
+        Window window = Window::Create("Test Engine");
 
         TestRenderer renderer(window);
         renderer.init();

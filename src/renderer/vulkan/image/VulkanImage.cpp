@@ -51,8 +51,8 @@ VkImage VulkanImage::createFromFile(VulkanDevice &device, VulkanMemory &vulkanMe
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     // Staging buffer is no longer needed
-    vkDestroyBuffer(device.getDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(device.getDevice(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(device.vk(), stagingBuffer, nullptr);
+    vkFreeMemory(device.vk(), stagingBufferMemory, nullptr);
 
     return image;
 }
@@ -112,13 +112,13 @@ void VulkanImage::createImage(VulkanDevice &device, VulkanMemory &vulkanMemory, 
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // multisample
     imageInfo.flags = 0;
 
-    if (vkCreateImage(device.getDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(device.vk(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: Failed to create image!");
     }
 
     // Get requirements
     VkMemoryRequirements imageMemoryRequirements;
-    vkGetImageMemoryRequirements(device.getDevice(), image, &imageMemoryRequirements);
+    vkGetImageMemoryRequirements(device.vk(), image, &imageMemoryRequirements);
 
     // Allocate image memory
     VkMemoryAllocateInfo allocInfo = {};
@@ -126,12 +126,12 @@ void VulkanImage::createImage(VulkanDevice &device, VulkanMemory &vulkanMemory, 
     allocInfo.allocationSize = imageMemoryRequirements.size;
     allocInfo.memoryTypeIndex = vulkanMemory.findMemoryType(imageMemoryRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         throw std::runtime_error("VULKAN: Failed to allocation image memmory!");
     }
 
     // Bind image to memory
-    vkBindImageMemory(device.getDevice(), image, imageMemory, 0);
+    vkBindImageMemory(device.vk(), image, imageMemory, 0);
 
 }
 
@@ -224,6 +224,6 @@ VkFormat VulkanImage::getDepthFormat(VulkanDevice &device) {
 
 /* Destroyes the image and the memory. */
 void VulkanImage::destroy(VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory) {
-    vkDestroyImage(device.getDevice(), image, nullptr);
-    vkFreeMemory(device.getDevice(), imageMemory, nullptr);
+    vkDestroyImage(device.vk(), image, nullptr);
+    vkFreeMemory(device.vk(), imageMemory, nullptr);
 }
