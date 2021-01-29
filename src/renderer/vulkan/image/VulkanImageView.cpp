@@ -27,6 +27,6 @@ VulkanImageView::create(const VulkanDevice &device, VkImage image, VkFormat form
     return imageView;
 }
 
-void VulkanImageView::destroy(VulkanDevice &device, VkImageView imageView) {
+void VulkanImageView::destroy(const VulkanDevice &device, VkImageView imageView) {
     vkDestroyImageView(device.getDevice(), imageView, nullptr);
 }

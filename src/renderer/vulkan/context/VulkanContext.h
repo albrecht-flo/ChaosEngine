@@ -6,10 +6,11 @@
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 
+/// This class holds all vulkan context that is constant for the whole execution of the application.
 class VulkanContext {
 private:
-    VulkanContext(Window &window, VulkanInstance &&instance, VulkanDevice &&device, VkSurfaceKHR surface,
-                  VulkanSwapChain &&swapChain, VulkanCommandPool &&commandPool);
+    VulkanContext(const Window &window, VulkanInstance &&instance, VulkanDevice &&device, VkSurfaceKHR surface,
+                  VulkanCommandPool &&commandPool);
 
 public: // Methods
     ~VulkanContext() = default;
@@ -22,20 +23,21 @@ public: // Methods
 
     VulkanContext &operator=(VulkanContext &&o) = delete;
 
-    static VulkanContext Create(Window &window);
+    static VulkanContext Create(const Window &window);
 
     inline const VulkanDevice &getDevice() const { return device; }
 
     inline const VulkanInstance &getInstance() const { return instance; }
 
+    inline VkSurfaceKHR getSurface() const { return surface; }
+
     inline const VulkanCommandPool &getCommandPool() const { return commandPool; }
 
 private:
-    Window &window;
+    const Window &window;
     VulkanInstance instance;
     VulkanDevice device;
     VkSurfaceKHR surface;
-    VulkanSwapChain swapChain;
     VulkanCommandPool commandPool;
 };
 

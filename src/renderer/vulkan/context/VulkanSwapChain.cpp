@@ -147,7 +147,7 @@ getSwapChainImages(VkDevice device, VkSwapchainKHR swapChain) {
 
 
 /* Initialized the swap chain and creates the image views */
-VulkanSwapChain VulkanSwapChain::Create(Window &window, VulkanDevice &device, VkSurfaceKHR &surface) {
+VulkanSwapChain VulkanSwapChain::Create(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
     auto[swapChain, swapChainImageFormat, swapChainExtent] = createSwapChain(window, device, surface);
 
     std::vector<VkImage> swapChainImages = getSwapChainImages(device.getDevice(), swapChain);
@@ -184,7 +184,7 @@ void VulkanSwapChain::reinit() {
     swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 }
 
-VulkanSwapChain::VulkanSwapChain(Window &window, VulkanDevice &device, VkSurfaceKHR surface,
+VulkanSwapChain::VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
                                  VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
                                  std::vector<VkImage> &&swapChainImages, std::vector<VkImageView> &&swapChainImageViews)
         : window(window), device(device), surface(surface),

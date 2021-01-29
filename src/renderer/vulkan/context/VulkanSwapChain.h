@@ -9,7 +9,7 @@ class VulkanDevice;
 
 class VulkanSwapChain {
 private:
-    VulkanSwapChain(Window &window, VulkanDevice &device, VkSurfaceKHR surface,
+    VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
                     VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
                     std::vector<VkImage> &&swapChainImages, std::vector<VkImageView> &&swapChainImageViews);
 
@@ -29,7 +29,7 @@ public:
     VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
 
 
-    static VulkanSwapChain Create(Window &mWindow, VulkanDevice &mDevice, VkSurfaceKHR &mSurface);
+    static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
 
 
     void reinit();
@@ -45,8 +45,8 @@ public:
     std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
 
 private:
-    Window &window;
-    VulkanDevice &device;
+    const Window &window;
+    const VulkanDevice &device;
     VkSurfaceKHR surface;
 
 

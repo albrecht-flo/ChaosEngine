@@ -52,7 +52,7 @@ public:
     WindowDimensions getFrameBufferSize() const;
 
     // Vulkan specific code
-    VkSurfaceKHR createSurface(const VkInstance &instance);
+    VkSurfaceKHR createSurface(const VkInstance &instance) const;
 
 private:
     static void framebufferResizeCallback(GLFWwindow *window, int width, int height);

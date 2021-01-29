@@ -6,14 +6,15 @@
 
 class Window;
 
+/// This class orchestrates the creation, recreation and communication of the all vulkan objects.
 class VulkanOrchestrator : public RendererAPI {
 private:
-    VulkanOrchestrator(Window &window, VulkanContext &&context);
+    VulkanOrchestrator(const Window &window, VulkanContext &&context, VulkanSwapChain &&swapChain);
 
 public:
     ~VulkanOrchestrator() override = default;
 
-    static VulkanOrchestrator Create(Window &window);
+    static VulkanOrchestrator Create(const Window &window);
 
     // Lifecycle
 
@@ -59,4 +60,5 @@ public:
 private: // Fields
     VulkanContext context;
     VulkanMemory memory;
+    VulkanSwapChain swapChain;
 };
