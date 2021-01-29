@@ -16,7 +16,7 @@ VulkanRendererOld::~VulkanRendererOld() = default;
 /* Creates the Vulkan surface from the window. */
 void VulkanRendererOld::createSurface() {
     if (glfwCreateWindowSurface(instance.vk(), window.getWindow(), nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create window surface!");
+        throw std::runtime_error("[Vulkan] Failed to create window surface!");
     }
 }
 

@@ -29,7 +29,7 @@ void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // exclusiv to the graphcis queue
 
     if (vkCreateBuffer(device.vk(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create buffer!");
+        throw std::runtime_error("[Vulkan] Failed to create buffer!");
     }
 
     VkMemoryRequirements memRequirements;
@@ -43,7 +43,7 @@ void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties); // find apropriate memory
 
     if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to allocate buffer memory!");
+        throw std::runtime_error("[Vulkan] Failed to allocate buffer memory!");
     }
 
     // Bind the buffer to the memory
@@ -151,7 +151,7 @@ uint32_t VulkanMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
         }
     }
 
-    throw std::runtime_error("VULKAN: failed to find suitable memory type!");
+    throw std::runtime_error("[Vulkan] Failed to find suitable memory type!");
 }
 
 const VulkanUniformBuffer

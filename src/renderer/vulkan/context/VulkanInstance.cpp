@@ -79,7 +79,7 @@ static void setupDebugMessenger(VkInstance instance,
                                 VkDebugUtilsMessengerCreateInfoEXT createInfo) {
 
     if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to set up debug messenger!");
+        throw std::runtime_error("[Vulkan] Failed to set up debug messenger!");
     }
 }
 

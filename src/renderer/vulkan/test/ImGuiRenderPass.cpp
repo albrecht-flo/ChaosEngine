@@ -139,7 +139,7 @@ void ImGuiRenderPass::createRenderPass() {
     renderPassInfo.pDependencies = dependencies.data();
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create ImGui render rendering!");
+        throw std::runtime_error("[Vulkan] Failed to create ImGui render rendering!");
     }
 
 #ifdef M_DEBUG

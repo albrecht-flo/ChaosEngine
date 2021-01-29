@@ -108,7 +108,7 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
 
     VkSwapchainKHR swapChain{};
     if (vkCreateSwapchainKHR(device.vk(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create swap chain!");
+        throw std::runtime_error("[Vulkan] Failed to create swap chain!");
     }
 
     return std::make_tuple(swapChain, surfaceFormat.format, extent);

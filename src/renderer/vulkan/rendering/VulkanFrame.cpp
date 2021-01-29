@@ -76,7 +76,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     if (result == VK_ERROR_OUT_OF_DATE_KHR) { // swap chain has been invalidated
         return false;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("VULKAN: failed to acquire swap chain image!");
+        throw std::runtime_error("[Vulkan] Failed to acquire swap chain image!");
     }
 
     // Prepare to submit the command buffers for the current frame
@@ -105,7 +105,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
     if (vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
         VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to submit draw command buffer!");
+        throw std::runtime_error("[Vulkan] Failed to submit draw command buffer!");
     }
 
     // Present the frame on the screen
@@ -128,7 +128,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
         window.setFrameBufferResized(false);
         return false;
     } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to present swap chain image!");
+        throw std::runtime_error("[Vulkan] Failed to present swap chain image!");
     }
     return true;
 }

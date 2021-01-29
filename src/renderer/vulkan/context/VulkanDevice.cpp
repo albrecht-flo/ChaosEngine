@@ -108,7 +108,7 @@ static VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice,
         }
     }
 
-    throw std::runtime_error("VULKAN: Failed to find supported format!");
+    throw std::runtime_error("[Vulkan] Failed to find supported format!");
 }
 
 /* Checks if a GPU is suitable for this application. */

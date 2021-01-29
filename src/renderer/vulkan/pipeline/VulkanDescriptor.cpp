@@ -13,7 +13,7 @@ DescriptorSetLayout VulkanDescriptor::createDescriptorSetLayout(
 
     VkDescriptorSetLayout layout;
     if (vkCreateDescriptorSetLayout(device.vk(), &layoutInfo, nullptr, &layout) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create descriptor set layout!");
+        throw std::runtime_error("[Vulkan] Failed to create descriptor set layout!");
     }
 
     return DescriptorSetLayout{layout, descriptorBindings};
@@ -33,7 +33,7 @@ VkDescriptorPool VulkanDescriptor::createPool(VulkanDevice &device,
 
     VkDescriptorPool descriptorPool;
     if (vkCreateDescriptorPool(device.vk(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create descriptor pool!");
+        throw std::runtime_error("[Vulkan] Failed to create descriptor pool!");
     }
 
 #ifdef M_DEBUG
@@ -57,7 +57,7 @@ VkDescriptorSet VulkanDescriptor::allocateDescriptorSet(VulkanDevice &device,
 
     VkDescriptorSet descriptorSet;
     if (vkAllocateDescriptorSets(device.vk(), &allocInfo, &descriptorSet) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to allocate descriptor set!");
+        throw std::runtime_error("[Vulkan] Failed to allocate descriptor set!");
     }
 #ifdef M_DEBUG
     printf("Allocated new descriptor set(%x) from %x\n", descriptorSet, descriptorPool);

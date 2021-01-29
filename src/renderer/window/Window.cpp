@@ -78,7 +78,7 @@ WindowDimensions Window::getFrameBufferSize() const {
 VkSurfaceKHR Window::createSurface(const VkInstance &instance) const {
     VkSurfaceKHR surface{};
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create window surface!");
+        throw std::runtime_error("[Vulkan] Failed to create window surface!");
     }
 
     return surface;

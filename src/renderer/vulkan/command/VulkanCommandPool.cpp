@@ -16,7 +16,7 @@ static VkCommandPool createCommandPool(const VulkanDevice &device) {
 
     VkCommandPool commandPool{};
     if (vkCreateCommandPool(device.vk(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create graphics command pool!");
+        throw std::runtime_error("[Vulkan] Failed to create graphics command pool!");
     }
     return commandPool;
 }

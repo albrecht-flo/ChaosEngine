@@ -15,7 +15,7 @@ static VkCommandBuffer createCommandBuffer(const VulkanDevice &device, VkCommand
 
     VkCommandBuffer commandBuffer{};
     if (vkAllocateCommandBuffers(device.vk(), &allocInfo, &commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to allocate command buffers!");
+        throw std::runtime_error("[Vulkan] Failed to allocate command buffers!");
     }
     return commandBuffer;
 }
@@ -57,14 +57,14 @@ void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags) {
     beginInfo.pInheritanceInfo = nullptr; // only relevant for secondary cmdbuffers
 
     if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to begin recording command buffer!");
+        throw std::runtime_error("[Vulkan] Failed to begin recording command buffer!");
     }
 }
 
 // Finish recording the command buffer
 void VulkanCommandBuffer::end() {
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to record command buffer!");
+        throw std::runtime_error("[Vulkan] Failed to record command buffer!");
     }
 }
 

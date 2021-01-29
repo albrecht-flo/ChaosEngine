@@ -113,7 +113,7 @@ void VulkanImage::createImage(VulkanDevice &device, VulkanMemory &vulkanMemory, 
     imageInfo.flags = 0;
 
     if (vkCreateImage(device.vk(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: Failed to create image!");
+        throw std::runtime_error("[Vulkan] Failed to create image!");
     }
 
     // Get requirements
@@ -127,7 +127,7 @@ void VulkanImage::createImage(VulkanDevice &device, VulkanMemory &vulkanMemory, 
     allocInfo.memoryTypeIndex = vulkanMemory.findMemoryType(imageMemoryRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: Failed to allocation image memmory!");
+        throw std::runtime_error("[Vulkan] Failed to allocation image memmory!");
     }
 
     // Bind image to memory

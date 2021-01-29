@@ -27,7 +27,7 @@ VkSampler VulkanSampler::create(VulkanDevice &device, VkFilter filter) {
 
     VkSampler sampler = {};
     if (vkCreateSampler(device.vk(), &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: Failed to create sampler!");
+        throw std::runtime_error("[Vulkan] Failed to create sampler!");
     }
     return sampler;
 }

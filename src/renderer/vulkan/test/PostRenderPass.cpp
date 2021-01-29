@@ -152,7 +152,7 @@ void PostRenderPass::createRenderPass() {
     renderPassInfo.pDependencies = &dependency;
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create render rendering!");
+        throw std::runtime_error("[Vulkan] Failed to create render rendering!");
     }
 
 #ifdef M_DEBUG

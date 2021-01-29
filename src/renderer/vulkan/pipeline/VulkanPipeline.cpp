@@ -152,7 +152,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
 
     VkPipelineLayout pipelineLayout;
     if (vkCreatePipelineLayout(device.vk(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create pipeline layout!");
+        throw std::runtime_error("[Vulkan] Failed to create pipeline layout!");
     }
 
     // Build pipeline with all configurations
@@ -175,7 +175,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     VkPipeline pipeline;
     if (vkCreateGraphicsPipelines(device.vk(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
         VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create graphics pipeline!");
+        throw std::runtime_error("[Vulkan] Failed to create graphics pipeline!");
     }
 
     // No longer needed
@@ -195,7 +195,7 @@ VkShaderModule VulkanPipeline::createShaderModule(VulkanDevice &device, const st
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(device.vk(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create shader module!");
+        throw std::runtime_error("[Vulkan] Failed to create shader module!");
     }
 
     return shaderModule;
@@ -206,7 +206,7 @@ std::vector<char> VulkanPipeline::readFile(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        throw std::runtime_error("VULKAN: failed to open file! " + filename);
+        throw std::runtime_error("[Vulkan] Failed to open file! " + filename);
     }
 
     size_t fileSize = (size_t) file.tellg();

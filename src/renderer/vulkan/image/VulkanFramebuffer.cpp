@@ -20,7 +20,7 @@ VkFramebuffer VulkanFramebuffer::createFramebuffer(
 
     VkFramebuffer framebuffer;
     if (vkCreateFramebuffer(device.vk(), &framebufferInfo, nullptr, &framebuffer) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to create framebuffer!");
+        throw std::runtime_error("[Vulkan] Failed to create framebuffer!");
     }
 
     return framebuffer;

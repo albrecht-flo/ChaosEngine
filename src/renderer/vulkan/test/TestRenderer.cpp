@@ -74,7 +74,7 @@ void TestRenderer::createSyncObjects() {
                 vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
                 VK_SUCCESS ||
             vkCreateFence(device.vk(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-            throw std::runtime_error("VULKAN: failed to create synchronization objects for a frame!");
+            throw std::runtime_error("[Vulkan] Failed to create synchronization objects for a frame!");
         }
     }
 }
@@ -228,7 +228,7 @@ void TestRenderer::drawFrame() {
         recreateSwapChain();
         return;
     } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-        throw std::runtime_error("VULKAN: failed to acquire swap chain image!");
+        throw std::runtime_error("[Vulkan] Failed to acquire swap chain image!");
     }
 
     // Update the uniforms and draw commands
@@ -260,7 +260,7 @@ void TestRenderer::drawFrame() {
 
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
     if (vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to submit draw command buffer!");
+        throw std::runtime_error("[Vulkan] Failed to submit draw command buffer!");
     }
 
     // Present the frame on the screen
@@ -283,7 +283,7 @@ void TestRenderer::drawFrame() {
         window.setFrameBufferResized(false);
         recreateSwapChain();
     } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("VULKAN: failed to present swap chain image!");
+        throw std::runtime_error("[Vulkan] Failed to present swap chain image!");
     }
 
     // Counter for current frame
