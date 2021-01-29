@@ -3,7 +3,7 @@ set(DISABLE_ASAN OFF CACHE BOOL "disable compilation with the address sanitizer 
 include(CheckCXXSourceRuns)
 
 if (NOT DISABLE_ASAN)
-   set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=address")
+   set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=address -Wall")
    check_cxx_source_runs("int main() { return 0; }" HAVE_FLAG_SANITIZE_ADDRESS)
    unset(CMAKE_REQUIRED_FLAGS)
 

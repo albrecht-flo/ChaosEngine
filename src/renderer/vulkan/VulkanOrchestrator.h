@@ -1,16 +1,19 @@
 #pragma once
 
-#include <src/renderer/vulkan/context/VulkanContext.h>
+#include "src/renderer/vulkan/context/VulkanContext.h"
+#include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/RendererAPI.h"
-#include "src/renderer/window/Window.h"
+
+class Window;
 
 class VulkanOrchestrator : public RendererAPI {
 private:
-    VulkanOrchestrator(Window &window, VulkanContext&& context);
+    VulkanOrchestrator(Window &window, VulkanContext &&context);
+
 public:
     ~VulkanOrchestrator() override = default;
 
-    VulkanOrchestrator Create(Window &window);
+    static VulkanOrchestrator Create(Window &window);
 
     // Lifecycle
 
@@ -55,4 +58,5 @@ public:
 
 private: // Fields
     VulkanContext context;
+    VulkanMemory memory;
 };

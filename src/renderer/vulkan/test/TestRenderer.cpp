@@ -12,7 +12,7 @@
 TestRenderer::TestRenderer(Window &w) :
         VulkanRenderer(w),
         swapChain(VulkanSwapChain::Create(window, device, surface)),
-        vulkanMemory(device),
+        vulkanMemory(device, commandPool),
         mainGraphicsPass(device, vulkanMemory, swapChain),
         imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
         postRenderPass(device, vulkanMemory, swapChain) {}
@@ -28,7 +28,7 @@ void TestRenderer::init() {
     createSyncObjects();
 
     // Initialize memory manager
-    vulkanMemory.init(commandPool);
+    vulkanMemory = VulkanMemory(device, commandPool);
 
     // requires memory manager for depth image creation
     createDepthResources();
@@ -239,7 +239,7 @@ void TestRenderer::drawFrame() {
     // Specifies the sync objects to be notified when the image is ready
     uint32_t imageIndex; // index of available image
     VkResult result = vkAcquireNextImageKHR(device.getDevice(),
-                                            swapChain.vSwapChain(), UINT64_MAX /*timeout*/,
+                                            swapChain.getSwapChain(), UINT64_MAX /*timeout*/,
                                             imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) { // swap chain has been invalidated
@@ -288,7 +288,7 @@ void TestRenderer::drawFrame() {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
     // Specify the swapchain for presentation
-    VkSwapchainKHR swapChains[] = {swapChain.vSwapChain()};
+    VkSwapchainKHR swapChains[] = {swapChain.getSwapChain()};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapChains;
     // Specify the image to present

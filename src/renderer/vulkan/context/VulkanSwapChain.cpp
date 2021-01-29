@@ -1,7 +1,9 @@
 #include "VulkanSwapChain.h"
 
+#include "src/renderer/window/Window.h"
+#include "src/renderer/vulkan/image/VulkanImageView.h"
+
 #include <vulkan/vulkan.h>
-#include "../image/VulkanImageView.h"
 
 #include <array>
 #include <stdexcept>
@@ -189,7 +191,7 @@ VulkanSwapChain::VulkanSwapChain(Window &window, VulkanDevice &device, VkSurface
           swapChain(swapChain), swapChainImageFormat(swapChainImageFormat), swapChainExtent(swapChainExtent),
           swapChainImages(std::move(swapChainImages)), swapChainImageViews(std::move(swapChainImageViews)) {}
 
-VulkanSwapChain::VulkanSwapChain(VulkanSwapChain &&o)
+VulkanSwapChain::VulkanSwapChain(VulkanSwapChain &&o) noexcept
         : window(o.window), device(o.device), surface(o.surface),
           swapChain(o.swapChain), swapChainImageFormat(o.swapChainImageFormat), swapChainExtent(o.swapChainExtent),
           swapChainImages(std::move(o.swapChainImages)), swapChainImageViews(std::move(o.swapChainImageViews)) {}

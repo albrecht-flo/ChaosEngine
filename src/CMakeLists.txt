@@ -12,7 +12,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/context/VulkanDevice.cpp
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp
-        renderer/vulkan/context/VulkanCommandBuffer.cpp
+		renderer/vulkan/command/VulkanCommandBuffer.cpp
         renderer/vulkan/image/VulkanImage.cpp
         renderer/vulkan/image/VulkanSampler.cpp
         renderer/vulkan/image/VulkanFramebuffer.cpp
@@ -31,7 +31,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
-        )
+		renderer/vulkan/command/VulkanCommandPool.cpp renderer/vulkan/command/VulkanCommandPool.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/

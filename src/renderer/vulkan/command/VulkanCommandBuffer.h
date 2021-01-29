@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "VulkanDevice.h"
+#include "src/renderer/vulkan/context/VulkanDevice.h"
 
 /* Contains a single command buffer. 
 	TOBE: Factory to bulk create command buffers.

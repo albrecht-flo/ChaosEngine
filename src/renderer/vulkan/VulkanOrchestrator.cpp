@@ -1,11 +1,13 @@
 #include "VulkanOrchestrator.h"
 
-VulkanOrchestrator::VulkanOrchestrator(Window &window, VulkanContext &&context) : context(std::move(context)) {
+VulkanOrchestrator::VulkanOrchestrator(Window &window, VulkanContext &&context)
+        : context(std::move(context)),
+          memory(context.getDevice(), context.getCommandPool().vk()) {
     // vulkanDataManager(vulkanContext),
 }
 
 VulkanOrchestrator VulkanOrchestrator::Create(Window &window) {
-    VulkanContext contest = VulkanContext::Create(window);
+    VulkanContext context = VulkanContext::Create(window);
 
     // vulkanDataManager.init();
     // solidRenderPass.init();
@@ -14,6 +16,7 @@ VulkanOrchestrator VulkanOrchestrator::Create(Window &window) {
     // postProcessingRenderPass.init();
     return VulkanOrchestrator(window, std::move(context));
 }
+
 
 void VulkanOrchestrator::join() {
 

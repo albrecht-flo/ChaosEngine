@@ -1,18 +1,25 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanBuffer.h"
 
+// TODO: This class needs to be refactored as soon as the Khronos Vulkan memory manager is added
 class VulkanMemory {
 public:
-   explicit VulkanMemory(VulkanDevice &device);
+    VulkanMemory(const VulkanDevice &device, VkCommandPool commandPool);
+
     ~VulkanMemory() = default;
 
-    void init(VkCommandPool cmdPool);
+    VulkanMemory(const VulkanMemory &o) = delete;
+
+    VulkanMemory &operator=(const VulkanMemory &o) = delete;
+
+    VulkanMemory(VulkanMemory &&o) noexcept;
+
+    VulkanMemory &operator=(VulkanMemory &&o) noexcept; // TODO: Mark delete after refactoring is complete
+
 
     void destroy();
 
@@ -41,7 +48,7 @@ public:
     void endSingleTimeCommands(VkCommandBuffer &commandBuffer);
 
 private:
-    VulkanDevice &m_device;
-    VkCommandPool m_commandPool;
+    const VulkanDevice &device;
+    VkCommandPool commandPool;
 };
 

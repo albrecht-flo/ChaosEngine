@@ -1,30 +1,26 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <optional>
 
 #include "VulkanInstance.h"
 
-// TODO: Refactor
-
 /* Stores the required queues. */
 struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
+  std::optional<uint32_t> graphicsFamily;
+  std::optional<uint32_t> presentFamily;
 
-    bool isComplete() {
-        return graphicsFamily.has_value() && presentFamily.has_value();
-    }
+  bool isComplete() {
+    return graphicsFamily.has_value() && presentFamily.has_value();
+  }
 };
 
 /* Stores relevant swapchain information*/
 struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
+  VkSurfaceCapabilitiesKHR capabilities;
+  std::vector<VkSurfaceFormatKHR> formats;
+  std::vector<VkPresentModeKHR> presentModes;
 };
 
 /* Wrapper for the logical device and handles the creation of it for a physical device.
@@ -32,71 +28,69 @@ struct SwapChainSupportDetails {
 	*/
 class VulkanDevice {
 private:
-    VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
-                 VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
-                 VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties);
+  VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
+               VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
+               VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties);
 
-    void destroy();
+  void destroy();
 
 public:
-    static const std::vector<const char *> deviceExtensions;
+  static const std::vector<const char *> deviceExtensions;
 public:
-    ~VulkanDevice();
+  ~VulkanDevice();
 
-    VulkanDevice(const VulkanDevice &o) = delete;
+  VulkanDevice(const VulkanDevice &o) = delete;
 
-    VulkanDevice &operator=(const VulkanDevice &o) = delete;
+  VulkanDevice &operator=(const VulkanDevice &o) = delete;
 
-    VulkanDevice(VulkanDevice &&o) noexcept;
+  VulkanDevice(VulkanDevice &&o) noexcept;
 
-    VulkanDevice &operator=(VulkanDevice &&o) = delete;
+  VulkanDevice &operator=(VulkanDevice &&o) = delete;
 
+  static VulkanDevice Create(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface);
 
-    static VulkanDevice Create(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface);
+  void waitIdle();
 
-    void waitIdle();
+  // Getter
+  [[nodiscard]] VkDevice getDevice() const { return device; }
 
+  [[nodiscard]] VkQueue getGraphicsQueue() const { return graphicsQueue; }
 
-    // Getter
-    [[nodiscard]] VkDevice getDevice() const { return device; }
+  [[nodiscard]] VkQueue getPresentQueue() const { return presentQueue; }
 
-    [[nodiscard]] VkQueue getGraphicsQueue() const { return graphicsQueue; }
+  [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
 
-    [[nodiscard]] VkQueue getPresentQueue() const { return presentQueue; }
+  [[nodiscard]] VkPhysicalDeviceProperties getProperties() const { return properties; }
 
-    [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
+  [[nodiscard]] uint32_t getGraphicsQueueFamily() const { return graphicsQueueFamily; }
 
-    [[nodiscard]] VkPhysicalDeviceProperties getProperties() const { return properties; }
+  [[nodiscard]] uint32_t getPresentQueueFamily() const { return presentQueueFamily; }
 
-    [[nodiscard]] uint32_t getGraphicsQueueFamily() const { return graphicsQueueFamily; }
+  // Wrapper for external calls
+  [[nodiscard]] bool checkDeviceExtensionSupport() const;
 
-    [[nodiscard]] uint32_t getPresentQueueFamily() const { return presentQueueFamily; }
+  [[nodiscard]] QueueFamilyIndices findQueueFamilies() const;
 
-    // Wrapper for external calls
-    [[nodiscard]] bool checkDeviceExtensionSupport() const;
+  [[nodiscard]] SwapChainSupportDetails querySwapChainSupport() const;
 
-    [[nodiscard]] QueueFamilyIndices findQueueFamilies() const;
-
-    [[nodiscard]] SwapChainSupportDetails querySwapChainSupport() const;
-
-    VkFormat
-    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+  VkFormat
+  findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 private:
-    VulkanInstance &instance;
+  VulkanInstance &instance;
 
-    VkSurfaceKHR surface = {};
+  VkSurfaceKHR surface;
 
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  VkPhysicalDevice physicalDevice;
 
-    VkDevice device = {};
+  VkDevice device;
 
-    uint32_t graphicsQueueFamily;
-    uint32_t presentQueueFamily;
+  uint32_t graphicsQueueFamily;
+  uint32_t presentQueueFamily;
 
-    VkQueue graphicsQueue = {};
-    VkQueue presentQueue = {};
+  VkQueue graphicsQueue;
+  VkQueue presentQueue;
 
-    VkPhysicalDeviceProperties properties = {};
+  VkPhysicalDeviceProperties properties;
 };
 

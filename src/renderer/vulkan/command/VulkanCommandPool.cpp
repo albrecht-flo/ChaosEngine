@@ -1,0 +1,37 @@
+#include "VulkanCommandPool.h"
+
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+
+#include <stdexcept>
+
+/// Creates command pool to contain command buffers
+static VkCommandPool createCommandPool(const VulkanDevice &device) {
+    QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies();
+
+    VkCommandPoolCreateInfo poolInfo = {};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // We want the buffers to be able to reset them
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+    VkCommandPool commandPool{};
+    if (vkCreateCommandPool(device.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+        throw std::runtime_error("VULKAN: failed to create graphics command pool!");
+    }
+    return commandPool;
+}
+
+VulkanCommandPool VulkanCommandPool::Create(const VulkanDevice &device) {
+    auto commandPool = createCommandPool(device);
+    return VulkanCommandPool(device, commandPool);
+}
+
+VulkanCommandPool::VulkanCommandPool(const VulkanDevice &device, VkCommandPool commandPool)
+        : device(device), commandPool(commandPool) {}
+
+VulkanCommandPool::VulkanCommandPool(VulkanCommandPool &&o) noexcept
+        : device(o.device), commandPool(o.commandPool) {}
+
+VulkanCommandPool::~VulkanCommandPool() {
+    // Destroy the command pool
+    vkDestroyCommandPool(device.getDevice(), commandPool, nullptr);
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "src/renderer/vulkan/command/VulkanCommandPool.h"
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
@@ -8,7 +9,7 @@
 class VulkanContext {
 private:
     VulkanContext(Window &window, VulkanInstance &&instance, VulkanDevice &&device, VkSurfaceKHR surface,
-                  VulkanSwapChain &&swapChain);
+                  VulkanSwapChain &&swapChain, VulkanCommandPool &&commandPool);
 
 public: // Methods
     ~VulkanContext() = default;
@@ -17,21 +18,17 @@ public: // Methods
 
     VulkanContext &operator=(const VulkanContext &o) = delete;
 
-    VulkanContext(VulkanContext &&o) noexcept: window(o.window), device(std::move(o.device)),
-                                               instance(std::move(o.instance)),
-                                               swapChain(std::move(o.swapChain)), surface(o.surface) {};
+    VulkanContext(VulkanContext &&o) noexcept;
 
     VulkanContext &operator=(VulkanContext &&o) = delete;
 
     static VulkanContext Create(Window &window);
 
-    inline VkDevice getVkDevice() const { return device.getDevice(); }
+    inline const VulkanDevice &getDevice() const { return device; }
 
-    inline VkInstance getVkInstance() const { return instance.getInstance(); }
+    inline const VulkanInstance &getInstance() const { return instance; }
 
-    inline VkFormat getSwapChainFormat() const { return swapChain.getFormat(); }
-
-    inline VkExtent2D getSwapChainExtent() const { return swapChain.getExtent(); }
+    inline const VulkanCommandPool &getCommandPool() const { return commandPool; }
 
 private:
     Window &window;
@@ -39,5 +36,6 @@ private:
     VulkanDevice device;
     VkSurfaceKHR surface;
     VulkanSwapChain swapChain;
+    VulkanCommandPool commandPool;
 };
 

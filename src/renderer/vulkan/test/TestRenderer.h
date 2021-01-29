@@ -20,7 +20,7 @@
 #include "ImGuiRenderPass.h"
 
 #include "VulkanRenderer.h"
-#include "src/renderer/vulkan/context/VulkanCommandBuffer.h"
+#include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"

@@ -4,9 +4,9 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
-#include <iostream>
 #include <stdexcept>
-#include <cstring>
+
+#include "src/renderer/window/Window.h"
 
 static void check_imgui_vk_result(VkResult result) {
     if (result != VK_SUCCESS)
