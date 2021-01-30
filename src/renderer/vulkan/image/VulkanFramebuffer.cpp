@@ -3,8 +3,8 @@
 #include <stdexcept>
 
 /* Create framebuffers for swapchain image views */
-VkFramebuffer VulkanFramebuffer::createFramebuffer(
-        VulkanDevice &device,
+VulkanFramebuffer VulkanFramebuffer::createFramebuffer(
+        const VulkanDevice &device,
         std::vector<VkImageView> attachments,
         VkRenderPass renderPass, uint32_t width, uint32_t height) {
 
@@ -23,9 +23,31 @@ VkFramebuffer VulkanFramebuffer::createFramebuffer(
         throw std::runtime_error("[Vulkan] Failed to create framebuffer!");
     }
 
-    return framebuffer;
+    return VulkanFramebuffer{device, framebuffer};
 }
 
-void VulkanFramebuffer::destroy(VulkanDevice &device, VkFramebuffer framebuffer) {
-    vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
+// ------------------------------------ Class members ------------------------------------------------------------------
+
+VulkanFramebuffer::VulkanFramebuffer(const VulkanDevice &device, VkFramebuffer frameBuffer)
+        : device(device), framebuffer(frameBuffer) {}
+
+VulkanFramebuffer::VulkanFramebuffer(VulkanFramebuffer &&o) noexcept
+        : device(o.device), framebuffer(o.framebuffer) { o.framebuffer = VK_NULL_HANDLE; }
+
+VulkanFramebuffer::~VulkanFramebuffer() { destroy(); }
+
+
+VulkanFramebuffer &VulkanFramebuffer::operator=(VulkanFramebuffer &&o) noexcept {
+    if (this == &o)
+        return *this;
+    destroy();
+    framebuffer = o.framebuffer;
+    o.framebuffer = VK_NULL_HANDLE;
+    return *this;
 }
+
+void VulkanFramebuffer::destroy() {
+    if (framebuffer != VK_NULL_HANDLE)
+        vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
+}
+

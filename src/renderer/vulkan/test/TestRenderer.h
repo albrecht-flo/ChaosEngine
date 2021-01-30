@@ -57,7 +57,7 @@ public: // RenderObject handling
 
     bool setModelMatrix(uint32_t robjID, glm::mat4 modelMat);
 
-    MaterialRef createMaterial(const TexturePhongMaterial& material);
+    MaterialRef createMaterial(const TexturePhongMaterial &material);
 
     // Camera handling
     void setViewMatrix(const glm::mat4 &view);
@@ -103,15 +103,13 @@ private:
 private:
     // The swap chain
     VulkanSwapChain swapChain;
-    std::vector<VkFramebuffer> swapChainFramebuffers;
+    std::vector<VulkanFramebuffer> swapChainFramebuffers;
     // Frame resources for offscreen scene rendering
-    VkFramebuffer offscreenFramebuffer{};
     VkImage offscreenImage{};
     VkDeviceMemory offscreenImageMemory{};
     VkImageView offscreenImageView{};
 
     // Frame resources for offscreen ImGui rendering
-    VkFramebuffer imGuiFramebuffer{};
     VkImage imGuiImage{};
     VkDeviceMemory imGuiImageMemory{};
     VkImageView imGuiImageView{};
@@ -126,6 +124,10 @@ private:
     MainSceneRenderPass mainGraphicsPass;
     ImGuiRenderPass imGuiRenderPass;
     PostRenderPass postRenderPass;
+
+    // Framebuffers for render passes
+    VulkanFramebuffer imGuiFramebuffer;
+    VulkanFramebuffer offscreenFramebuffer;
 
     // Depth resources
     VkImage depthImage{};

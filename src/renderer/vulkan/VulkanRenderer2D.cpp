@@ -1,4 +1,6 @@
 #include <src/renderer/vulkan/rendering/VulkanFrame.h>
+#include <src/renderer/vulkan/image/VulkanFramebuffer.h>
+#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
 #include "VulkanRenderer2D.h"
 
 static std::vector<VulkanCommandBuffer>
@@ -13,6 +15,23 @@ createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool 
     return std::move(primaryCommandBuffers);
 }
 
+static std::vector<VulkanFramebuffer>
+createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
+                            const VulkanRenderPass &renderPass,
+                            uint32_t maxFramesInFlight) {
+    std::vector<VulkanFramebuffer> swapChainFramebuffers;
+    swapChainFramebuffers.reserve(maxFramesInFlight);
+    for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+        swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
+                device,
+                {swapChain.getImageViews()[i]},
+                renderPass.vk(),
+                swapChain.getExtent().width, swapChain.getExtent().height
+        ));
+    }
+    return std::move(swapChainFramebuffers);
+}
+
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
 VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
@@ -22,7 +41,8 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
                                                              maxFramesInFlight);
     VulkanFrame frame = VulkanFrame::Create(window, context, maxFramesInFlight);
 
-    return VulkanRenderer2D(std::move(context), std::move(frame));
+    // TODO: auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), postProcessingPass, maxFramesInFlight);
+    return VulkanRenderer2D(std::move(context), std::move(frame) /*, std::move(swapChainFrameBuffers)*/);
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame)

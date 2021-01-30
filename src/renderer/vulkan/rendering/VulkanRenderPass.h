@@ -36,7 +36,7 @@ public:
 
     virtual void destroySwapChainDependent() = 0;
 
-    VkRenderPass getVkRenderPass() const { return renderPass; }
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
 
 protected:
     // The common pointers to the vulkan context objects

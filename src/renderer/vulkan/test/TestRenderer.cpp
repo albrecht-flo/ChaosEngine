@@ -15,7 +15,9 @@ TestRenderer::TestRenderer(Window &w) :
         vulkanMemory(device, commandPool),
         mainGraphicsPass(device, vulkanMemory, swapChain),
         imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
-        postRenderPass(device, vulkanMemory, swapChain) {}
+        postRenderPass(device, vulkanMemory, swapChain),
+        offscreenFramebuffer(device),
+        imGuiFramebuffer(device) {}
 
 void TestRenderer::init() {
     // Vulkan Instance and Device are handled by VulkanRendererOld constructor
@@ -71,8 +73,8 @@ void TestRenderer::createSyncObjects() {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         if (vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) !=
             VK_SUCCESS ||
-                vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
-                VK_SUCCESS ||
+            vkCreateSemaphore(device.vk(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) !=
+            VK_SUCCESS ||
             vkCreateFence(device.vk(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
             throw std::runtime_error("[Vulkan] Failed to create synchronization objects for a frame!");
         }
@@ -119,26 +121,27 @@ void TestRenderer::createFramebuffers() {
     offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
             device,
             {offscreenImageView, depthImageView},
-            mainGraphicsPass.getVkRenderPass(),
+            mainGraphicsPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
     // Create offscreen ImGui framebuffer
     imGuiFramebuffer = VulkanFramebuffer::createFramebuffer(
             device,
             {imGuiImageView},
-            imGuiRenderPass.getVkRenderPass(),
+            imGuiRenderPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
 
     // Create framebuffers for swap chain
-    swapChainFramebuffers.resize(swapChain.size());
+    swapChainFramebuffers.clear();
+    swapChainFramebuffers.reserve(swapChain.size());
     for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers[i] = VulkanFramebuffer::createFramebuffer(
+        swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
                 device,
                 {swapChain.getImageViews()[i]},
-                postRenderPass.getVkRenderPass(),
+                postRenderPass.vk(),
                 swapChain.getExtent().width, swapChain.getExtent().height
-        );
+        ));
     }
 }
 
@@ -162,7 +165,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     VkCommandBuffer cmdBuf = primaryCommandBuffers[currentImage].vk();
 
     // Let the render rendering setup context descriptors
-    mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer);
+    mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer.vk());
 
     for (auto &robj : renderObjects) {
         // Let the render rendering setup per model descriptors
@@ -184,7 +187,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // !!! synchronization done by mainGraphicsPass->dependency.dstSubPass EXTERNAL
     // !!!							imGuiRenderPass->dependency.srcSubPass EXTERNAL
 
-    imGuiRenderPass.cmdBegin(cmdBuf, currentImage, imGuiFramebuffer);
+    imGuiRenderPass.cmdBegin(cmdBuf, currentImage, imGuiFramebuffer.vk());
     // No more needed, ImGui rendering is called in cmdBegin
     imGuiRenderPass.cmdEnd(cmdBuf);
 
@@ -193,7 +196,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // !!!							postRenderPass->dependency.srcSubPass EXTERNAL
 
     // Start post processing render rendering
-    postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage]);
+    postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage].vk());
     // Bind previous color attachment to fragment shader sampler
     postRenderPass.cmdRender(cmdBuf, quadRobj);
     // Bind a screen filling quad to render the previous render passes to
@@ -325,12 +328,10 @@ void TestRenderer::recreateSwapChain() {
 void TestRenderer::cleanupSwapChain() {
 
     // The framebuffers depend on the image views of the swap chain
-    for (auto framebuffer : swapChainFramebuffers) {
-        VulkanFramebuffer::destroy(device, framebuffer);
-    }
+    swapChainFramebuffers.clear();
 
     // Destroy offscreen main scene framebuffer
-    VulkanFramebuffer::destroy(device, offscreenFramebuffer);
+//    VulkanFramebuffer::destroy(device, offscreenFramebuffer);
     // Destroy offscreen main scene image buffer
     VulkanImage::destroy(device, offscreenImage, offscreenImageMemory);
     VulkanImageView::destroy(device, offscreenImageView);
@@ -339,7 +340,7 @@ void TestRenderer::cleanupSwapChain() {
     VulkanImageView::destroy(device, depthImageView);
 
     // Destroy offscreen ImGui framebuffer
-    VulkanFramebuffer::destroy(device, imGuiFramebuffer);
+//    VulkanFramebuffer::destroy(device, imGuiFramebuffer);
     // Destroy offscreen ImGui image buffer
     VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
     VulkanImageView::destroy(device, imGuiImageView);

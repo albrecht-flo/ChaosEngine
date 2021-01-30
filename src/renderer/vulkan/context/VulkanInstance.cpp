@@ -152,7 +152,10 @@ VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT deb
         instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {}
 
 VulkanInstance::VulkanInstance(VulkanInstance &&o) noexcept:
-        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {}
+        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {
+    o.instance = VK_NULL_HANDLE;
+    o.debugMessenger = VK_NULL_HANDLE;
+}
 
 VulkanInstance::~VulkanInstance() { destroy(); }
 

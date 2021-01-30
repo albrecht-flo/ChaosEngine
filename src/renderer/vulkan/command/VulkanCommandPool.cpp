@@ -32,7 +32,7 @@ VulkanCommandPool::VulkanCommandPool(const VulkanDevice &device, VkCommandPool c
         : device(device), commandPool(commandPool) {}
 
 VulkanCommandPool::VulkanCommandPool(VulkanCommandPool &&o) noexcept
-        : device(o.device), commandPool(o.commandPool) {}
+        : device(o.device), commandPool(o.commandPool) { o.commandPool = VK_NULL_HANDLE; }
 
 VulkanCommandPool::~VulkanCommandPool() {
     destroy();
@@ -40,5 +40,6 @@ VulkanCommandPool::~VulkanCommandPool() {
 
 // Destroy the command pool
 void VulkanCommandPool::destroy() {
-    vkDestroyCommandPool(device.vk(), commandPool, nullptr);
+    if (commandPool != VK_NULL_HANDLE)
+        vkDestroyCommandPool(device.vk(), commandPool, nullptr);
 }

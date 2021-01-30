@@ -171,7 +171,9 @@ VulkanSwapChain::VulkanSwapChain(const Window &window, const VulkanDevice &devic
 VulkanSwapChain::VulkanSwapChain(VulkanSwapChain &&o) noexcept
         : window(o.window), device(o.device), surface(o.surface),
           swapChain(o.swapChain), swapChainImageFormat(o.swapChainImageFormat), swapChainExtent(o.swapChainExtent),
-          swapChainImages(std::move(o.swapChainImages)), swapChainImageViews(std::move(o.swapChainImageViews)) {}
+          swapChainImages(std::move(o.swapChainImages)), swapChainImageViews(std::move(o.swapChainImageViews)) {
+    o.swapChain = VK_NULL_HANDLE;
+}
 
 VulkanSwapChain::~VulkanSwapChain() {
     destroy();

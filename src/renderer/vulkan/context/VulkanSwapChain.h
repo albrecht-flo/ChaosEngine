@@ -28,9 +28,7 @@ public:
 
     VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
 
-
     static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
-
 
     void reinit();
 
@@ -42,11 +40,11 @@ public:
 
     [[nodiscard]] inline VkExtent2D getExtent() const { return swapChainExtent; }
 
-    [[nodiscard]]  inline uint32_t getWidth() const { return swapChainExtent.width; }
+    [[nodiscard]] inline uint32_t getWidth() const { return swapChainExtent.width; }
 
     [[nodiscard]] inline uint32_t getHeight() const { return swapChainExtent.height; }
 
-    [[nodiscard]]inline const std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
+    [[nodiscard]] inline const std::vector<VkImageView> &getImageViews() const { return swapChainImageViews; }
 
 private:
     const Window &window;

@@ -267,7 +267,12 @@ VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept: instance(o.instance), sur
                                                        device(o.device), graphicsQueueFamily(o.graphicsQueueFamily),
                                                        presentQueueFamily(o.presentQueueFamily),
                                                        graphicsQueue(o.graphicsQueue),
-                                                       presentQueue(o.presentQueue), properties(o.properties) {}
+                                                       presentQueue(o.presentQueue), properties(o.properties) {
+    o.device = VK_NULL_HANDLE;
+    o.physicalDevice = VK_NULL_HANDLE;
+    o.graphicsQueue = VK_NULL_HANDLE;
+    o.presentQueue = VK_NULL_HANDLE;
+}
 
 VulkanDevice::~VulkanDevice() { destroy(); }
 
