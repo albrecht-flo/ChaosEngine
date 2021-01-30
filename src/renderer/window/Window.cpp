@@ -31,7 +31,6 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
 
     Window window{windowPtr};
 
-    glfwSetWindowUserPointer(windowPtr, &window);
 
     // Setup callbacks
     glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
@@ -41,11 +40,15 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
 
 Window::Window(GLFWwindow *window)
         : window(window), framebufferResized(false),
-          lastMousePos({0, 0}), mousePos({0, 0}) {}
+          lastMousePos({0, 0}), mousePos({0, 0}) {
+    glfwSetWindowUserPointer(window, this);
+}
 
 Window::Window(Window &&o) noexcept
         : window(o.window), framebufferResized(o.framebufferResized),
-          lastMousePos(o.lastMousePos), mousePos(o.mousePos) {}
+          lastMousePos(o.lastMousePos), mousePos(o.mousePos) {
+    glfwSetWindowUserPointer(window, this);
+}
 
 void Window::poolEvents() {
     glfwPollEvents();
