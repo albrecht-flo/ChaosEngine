@@ -133,7 +133,7 @@ private:
     VkImageView depthImageView{};
 
     // The buffers containing the queue commands
-    std::vector<VulkanCommandBuffer> commandBuffers{};
+    std::vector<VulkanCommandBuffer> primaryCommandBuffers{};
 
     // The sync objects
     std::vector<VkSemaphore> imageAvailableSemaphores{};

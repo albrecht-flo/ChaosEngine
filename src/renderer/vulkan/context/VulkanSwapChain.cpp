@@ -8,6 +8,7 @@
 #include <array>
 #include <stdexcept>
 #include <tuple>
+#include <iostream>
 
 /* Helper to select an appropriate surface format. */
 static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {

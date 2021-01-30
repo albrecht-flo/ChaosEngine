@@ -14,7 +14,6 @@ private:
     VulkanFrame(Window &window, const VulkanContext &context, std::vector<VkSemaphore> &&imageAvailableSemaphores,
                 std::vector<VkSemaphore> &&renderFinishedSemaphores, std::vector<VkFence> &&inFlightFences);
 
-    static const uint32_t maxFramesInFlight = 2;
 public:
     ~VulkanFrame() = default;
 
@@ -26,7 +25,7 @@ public:
 
     VulkanFrame &operator=(VulkanFrame &&o) = delete;
 
-    static VulkanFrame Create(Window &window, const VulkanContext &context);
+    static VulkanFrame Create(Window &window, const VulkanContext &context, uint32_t maxFramesInFlight);
 
     [[nodiscard]] bool render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer);
 

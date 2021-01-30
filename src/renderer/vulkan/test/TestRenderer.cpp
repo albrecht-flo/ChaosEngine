@@ -47,11 +47,11 @@ void TestRenderer::init() {
 
 /* Creates the command buffers for all frames from the command pool. */
 void TestRenderer::createCommandBuffers() {
-    commandBuffers.clear();
-    commandBuffers.reserve(swapChain.size());
+    primaryCommandBuffers.clear();
+    primaryCommandBuffers.reserve(swapChain.size());
 
     for (size_t i = 0; i < swapChain.size(); i++) {
-        commandBuffers.emplace_back(VulkanCommandBuffer(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+        primaryCommandBuffers.emplace_back(VulkanCommandBuffer(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
     }
 }
 
@@ -157,9 +157,9 @@ void TestRenderer::updateUniformBuffer(uint32_t currentImage) {
 
 void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // Implicitly resets the command buffer.
-    commandBuffers[currentImage].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+    primaryCommandBuffers[currentImage].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 
-    VkCommandBuffer cmdBuf = commandBuffers[currentImage].vk();
+    VkCommandBuffer cmdBuf = primaryCommandBuffers[currentImage].vk();
 
     // Let the render rendering setup context descriptors
     mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer);
@@ -206,7 +206,7 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
 
     postRenderPass.cmdEnd(cmdBuf);
 
-    commandBuffers[currentImage].end();
+    primaryCommandBuffers[currentImage].end();
 }
 
 /* Draws a frame and handles the update and synchronization of frames.
@@ -247,7 +247,7 @@ void TestRenderer::drawFrame() {
     submitInfo.pWaitSemaphores = waitSemaphores; // semaphore to wait for before executing
     submitInfo.pWaitDstStageMask = waitStages; // stages to wait for before executing
     // Specify the command buffers to submit for this draw call
-    std::array<VkCommandBuffer, 1> activeCommandBuffers = {commandBuffers[imageIndex].vk()};
+    std::array<VkCommandBuffer, 1> activeCommandBuffers = {primaryCommandBuffers[imageIndex].vk()};
     submitInfo.commandBufferCount = static_cast<uint32_t>(activeCommandBuffers.size());
     submitInfo.pCommandBuffers = activeCommandBuffers.data();
     // Specify semaphore to notify after finishing
@@ -293,13 +293,6 @@ void TestRenderer::drawFrame() {
 /* Recreates the swap chain after e.g. a window resize. */
 void TestRenderer::recreateSwapChain() {
     std::cout << "Recreating swap chain" << std::endl;
-
-    // Get new dimensions
-    int width = 0, height = 0;
-    while (width == 0 || height == 0) {
-        glfwGetFramebufferSize(window.getWindow(), &width, &height);
-        glfwWaitEvents();
-    }
 
     // Wait for current rendering to finish
     device.waitIdle();
@@ -352,7 +345,7 @@ void TestRenderer::cleanupSwapChain() {
     VulkanImageView::destroy(device, imGuiImageView);
 
     // The command buffers depend on the amount of swapchain images
-    for (auto &cmdBuffer : commandBuffers) {
+    for (auto &cmdBuffer : primaryCommandBuffers) {
         cmdBuffer.destroy();
     }
 

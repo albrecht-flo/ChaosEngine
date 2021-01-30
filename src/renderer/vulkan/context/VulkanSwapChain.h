@@ -34,17 +34,19 @@ public:
 
     void reinit();
 
-    [[nodiscard]] uint32_t size() const { return static_cast<uint32_t>(swapChainImages.size()); }
+    [[nodiscard]] inline uint32_t size() const { return static_cast<uint32_t>(swapChainImages.size()); }
 
-    [[nodiscard]] VkSwapchainKHR getSwapChain() const { return swapChain; }
+    [[nodiscard]] inline VkSwapchainKHR getSwapChain() const { return swapChain; }
 
-    [[nodiscard]] VkFormat getFormat() const { return swapChainImageFormat; }
+    [[nodiscard]] inline VkFormat getFormat() const { return swapChainImageFormat; }
 
-    [[nodiscard]] VkExtent2D getExtent() const { return swapChainExtent; }
-    [[nodiscard]] uint32_t getWidth() const { return swapChainExtent.width; }
-    [[nodiscard]] uint32_t getHeight() const { return swapChainExtent.height; }
+    [[nodiscard]] inline VkExtent2D getExtent() const { return swapChainExtent; }
 
-    std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
+    [[nodiscard]]  inline uint32_t getWidth() const { return swapChainExtent.width; }
+
+    [[nodiscard]] inline uint32_t getHeight() const { return swapChainExtent.height; }
+
+    [[nodiscard]]inline const std::vector<VkImageView> &getImageViews() { return swapChainImageViews; }
 
 private:
     const Window &window;

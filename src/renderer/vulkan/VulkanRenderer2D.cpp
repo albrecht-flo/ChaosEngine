@@ -1,12 +1,26 @@
 #include <src/renderer/vulkan/rendering/VulkanFrame.h>
 #include "VulkanRenderer2D.h"
 
+static std::vector<VulkanCommandBuffer>
+createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
+    std::vector<VulkanCommandBuffer> primaryCommandBuffers;
+    primaryCommandBuffers.reserve(swapChainSize);
+    for (int i = 0; i < swapChainSize; ++i) {
+        primaryCommandBuffers.emplace_back(
+                VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+    }
+
+    return std::move(primaryCommandBuffers);
+}
+
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
 VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
     VulkanContext context = VulkanContext::Create(window);
 
-    VulkanFrame frame = VulkanFrame::Create(window, context);
+    auto primaryCommandBuffers = createPrimaryCommandBuffers(context.getDevice(), context.getCommandPool(),
+                                                             maxFramesInFlight);
+    VulkanFrame frame = VulkanFrame::Create(window, context, maxFramesInFlight);
 
     return VulkanRenderer2D(std::move(context), std::move(frame));
 }
@@ -36,10 +50,11 @@ void VulkanRenderer2D::endScene() {
 }
 
 void VulkanRenderer2D::flush() {
-    if (!frame.render(currentFrame, context.getPrimaryCommandBuffers()[currentFrame])) {
-        // TODO: Recreate swap chain and associated resources
+    if (!frame.render(currentFrame, primaryCommandBuffers[currentFrame])) {
+        // TODO: Recreate swap chain associated resources
+        context.recreateSwapChain();
     }
-    currentFrame = (currentFrame < context.getSwapChain().size() - 1) ? currentFrame + 1 : 0;
+    currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
 }
 
 void

@@ -40,10 +40,10 @@ static std::vector<VkSemaphore> createSemaphore(VkDevice device, uint32_t amount
 
 // ------------------------------------ Class members ------------------------------------------------------------------
 
-VulkanFrame VulkanFrame::Create(Window &window, const VulkanContext &context) {
-    auto imageAvailableSemaphores = createSemaphore(context.getDevice().vk(), VulkanFrame::maxFramesInFlight);
-    auto renderFinishedSemaphores = createSemaphore(context.getDevice().vk(), VulkanFrame::maxFramesInFlight);
-    auto inFlightFences = createFence(context.getDevice().vk(), VulkanFrame::maxFramesInFlight);
+VulkanFrame VulkanFrame::Create(Window &window, const VulkanContext &context, uint32_t maxFramesInFlight) {
+    auto imageAvailableSemaphores = createSemaphore(context.getDevice().vk(), maxFramesInFlight);
+    auto renderFinishedSemaphores = createSemaphore(context.getDevice().vk(), maxFramesInFlight);
+    auto inFlightFences = createFence(context.getDevice().vk(), maxFramesInFlight);
 
     return VulkanFrame(window, context, std::move(imageAvailableSemaphores), std::move(renderFinishedSemaphores),
                        std::move(inFlightFences));

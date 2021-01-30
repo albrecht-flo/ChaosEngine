@@ -4,17 +4,23 @@
 #include "src/renderer/RendererAPI.h"
 
 class VulkanRenderer2D : public RendererAPI {
+public:
+    static constexpr uint32_t maxFramesInFlight = 2;
 private:
-    VulkanRenderer2D(VulkanContext &&context, VulkanFrame&& frame);
+    VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame);
+
 public:
     ~VulkanRenderer2D() override = default;
-    
-    VulkanRenderer2D(const VulkanRenderer2D &o) = delete;
-    VulkanRenderer2D& operator=(const VulkanRenderer2D &o) = delete;
-    VulkanRenderer2D(VulkanRenderer2D &&o) noexcept;
-    VulkanRenderer2D& operator=(VulkanRenderer2D &&o) = delete;
 
-    static VulkanRenderer2D Create(Window& window);
+    VulkanRenderer2D(const VulkanRenderer2D &o) = delete;
+
+    VulkanRenderer2D &operator=(const VulkanRenderer2D &o) = delete;
+
+    VulkanRenderer2D(VulkanRenderer2D &&o) noexcept;
+
+    VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
+
+    static VulkanRenderer2D Create(Window &window);
 
     // Lifecycle
     /// Wait for GPU tasks to finish
@@ -59,6 +65,7 @@ public:
 private:
     VulkanContext context;
     VulkanFrame frame;
+    std::vector<VulkanCommandBuffer> primaryCommandBuffers;
 
     uint32_t currentFrame = 0;
 };
