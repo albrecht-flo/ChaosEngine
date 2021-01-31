@@ -268,31 +268,17 @@ int render(RendererAPI &renderer, const std::vector<RenderComponent> &components
 int main() {
     std::cout << "Renderer starting..." << std::endl;
 
-    try {
-        ModelLoader modelLoader;
-        Window window = Window::Create("Test Engine");
+    ModelLoader modelLoader;
+    Window window = Window::Create("Test Engine");
 
-        TestRenderer renderer(window);
-        renderer.init();
-        try {
-            run(window, renderer, modelLoader);
-        } catch (const std::exception &e) {
-            std::cerr << "ERROR in run(): " << e.what() << std::endl;
-            return EXIT_FAILURE;
-        }
-        try {
-            modelLoader.cleanup();
-            renderer.cleanup();
-            window.cleanup();
-        } catch (const std::exception &e) {
-            std::cerr << "ERROR in cleanup: " << e.what() << std::endl;
-            return EXIT_FAILURE;
-        }
-    }
-    catch (const std::exception &e) {
-        std::cerr << "ERROR in init: " << e.what() << std::endl;
-        return EXIT_FAILURE;
-    }
+    TestRenderer renderer(window);
+    renderer.init();
+
+    run(window, renderer, modelLoader);
+
+    modelLoader.cleanup();
+    renderer.cleanup();
+    window.cleanup();
 
     return EXIT_SUCCESS;
 }

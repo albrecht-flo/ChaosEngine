@@ -262,17 +262,14 @@ VulkanDevice::VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhy
         graphicsQueueFamily), presentQueueFamily(presentQueueFamily), graphicsQueue(graphicsQueue), presentQueue(
         presentQueue), properties(properties) {}
 
-VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept: instance(o.instance), surface(o.surface),
-                                                       physicalDevice(o.physicalDevice),
-                                                       device(o.device), graphicsQueueFamily(o.graphicsQueueFamily),
-                                                       presentQueueFamily(o.presentQueueFamily),
-                                                       graphicsQueue(o.graphicsQueue),
-                                                       presentQueue(o.presentQueue), properties(o.properties) {
-    o.device = VK_NULL_HANDLE;
-    o.physicalDevice = VK_NULL_HANDLE;
-    o.graphicsQueue = VK_NULL_HANDLE;
-    o.presentQueue = VK_NULL_HANDLE;
-}
+VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
+        : instance(o.instance), surface(o.surface),
+          physicalDevice(std::exchange(o.physicalDevice, nullptr)),
+          device(std::exchange(o.device, nullptr)),
+          graphicsQueueFamily(o.graphicsQueueFamily), presentQueueFamily(o.presentQueueFamily),
+          graphicsQueue(std::exchange(o.graphicsQueue, nullptr)),
+          presentQueue(std::exchange(o.presentQueue, nullptr)),
+          properties(o.properties) {}
 
 VulkanDevice::~VulkanDevice() { destroy(); }
 
@@ -281,7 +278,7 @@ void VulkanDevice::destroy() {
 }
 
 /* Waits for all processing done on this device to finish. */
-void VulkanDevice::waitIdle() {
+void VulkanDevice::waitIdle() const {
     vkDeviceWaitIdle(device);
 }
 
@@ -300,6 +297,6 @@ SwapChainSupportDetails VulkanDevice::querySwapChainSupport() const {
 }
 
 VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
-                                           VkFormatFeatureFlags features) {
+                                           VkFormatFeatureFlags features) const {
     return ::findSupportedFormat(physicalDevice, candidates, tiling, features);
 }

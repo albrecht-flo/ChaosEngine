@@ -41,6 +41,6 @@ VulkanContext::VulkanContext(VulkanContext &&o) noexcept
           commandPool(std::move(o.commandPool)), swapChain(std::move(o.swapChain)),
           memory(std::move(o.memory)) {}
 
-void VulkanContext::recreateSwapChain(){
-    swapChain.reinit();
+void VulkanContext::recreateSwapChain() {
+    swapChain = VulkanSwapChain::Create(window, device, surface);
 }

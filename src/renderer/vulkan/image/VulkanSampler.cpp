@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-VkSampler VulkanSampler::create(VulkanDevice &device, VkFilter filter) {
+VkSampler VulkanSampler::create(const VulkanDevice &device, VkFilter filter) {
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     // Configure filtering
@@ -32,6 +32,6 @@ VkSampler VulkanSampler::create(VulkanDevice &device, VkFilter filter) {
     return sampler;
 }
 
-void VulkanSampler::destroy(VulkanDevice &device, VkSampler sampler) {
+void VulkanSampler::destroy(const VulkanDevice &device, VkSampler sampler) {
     vkDestroySampler(device.vk(), sampler, nullptr);
 }

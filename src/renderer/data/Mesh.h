@@ -22,7 +22,9 @@ struct Vertex {
     glm::vec3 normal;
     glm::vec2 uv;
 
-    bool operator==(const Vertex &o) const = default;
+    bool operator==(const Vertex &o) const {
+        return pos == o.pos && color == o.color && normal == o.normal && uv == o.uv;
+    };
 
     /* Defines how vertex data is loaded to the vertex shader*/
     static VkVertexInputBindingDescription getBindingDescription() {

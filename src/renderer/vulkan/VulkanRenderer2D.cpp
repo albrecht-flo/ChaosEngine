@@ -24,7 +24,7 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
     for (uint32_t i = 0; i < maxFramesInFlight; i++) {
         swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
                 device,
-                {swapChain.getImageViews()[i]},
+                {swapChain.getImageViews()[i].vk()},
                 renderPass.vk(),
                 swapChain.getExtent().width, swapChain.getExtent().height
         ));
@@ -69,10 +69,19 @@ void VulkanRenderer2D::endScene() {
 
 }
 
+void VulkanRenderer2D::recreateSwapChain() {
+    context.getDevice().waitIdle();
+    // TODO: Recreate swap chain associated resources
+    context.recreateSwapChain();
+
+    // Recreate render passes
+
+    // swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), postProcessingPass, maxFramesInFlight);
+}
+
 void VulkanRenderer2D::flush() {
     if (!frame.render(currentFrame, primaryCommandBuffers[currentFrame])) {
-        // TODO: Recreate swap chain associated resources
-        context.recreateSwapChain();
+        recreateSwapChain();
     }
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
 }

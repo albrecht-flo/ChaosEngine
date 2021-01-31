@@ -107,12 +107,17 @@ private:
     // Frame resources for offscreen scene rendering
     VkImage offscreenImage{};
     VkDeviceMemory offscreenImageMemory{};
-    VkImageView offscreenImageView{};
+    VulkanImageView offscreenImageView;
+
+    // Depth resources
+    VkImage depthImage{};
+    VkDeviceMemory depthImageMemory{};
+    VulkanImageView depthImageView;
 
     // Frame resources for offscreen ImGui rendering
     VkImage imGuiImage{};
     VkDeviceMemory imGuiImageMemory{};
-    VkImageView imGuiImageView{};
+    VulkanImageView imGuiImageView;
 
     // The command pool, TOBE moved
     VulkanCommandPool commandPool;
@@ -129,10 +134,6 @@ private:
     VulkanFramebuffer imGuiFramebuffer;
     VulkanFramebuffer offscreenFramebuffer;
 
-    // Depth resources
-    VkImage depthImage{};
-    VkDeviceMemory depthImageMemory{};
-    VkImageView depthImageView{};
 
     // The buffers containing the queue commands
     std::vector<VulkanCommandBuffer> primaryCommandBuffers{};

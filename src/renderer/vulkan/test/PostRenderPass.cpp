@@ -7,7 +7,8 @@
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPass(device, vulkanMemory, swapChain) {
+        VulkanRenderPass(device, vulkanMemory, swapChain),
+        backgroundTexture(device) {
 }
 
 void PostRenderPass::init() {
@@ -200,8 +201,8 @@ void PostRenderPass::createPipelineAndDescriptors() {
                                                  },
                                                  DescriptorImageInfo{
                                                          .descriptorInfo = VkDescriptorImageInfo{
-                                                                 .sampler =   backgroundTexture.sampler,
-                                                                 .imageView = backgroundTexture.imageView,
+                                                                 .sampler =   backgroundTexture.getSampler(),
+                                                                 .imageView = backgroundTexture.getImageView().vk(),
                                                                  .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
                                                          },
                                                          .binding = 2,
@@ -293,8 +294,6 @@ void PostRenderPass::destroy() {
     // The descriptor pool and sets depend also on the number of images in the swapchain
     vkDestroyDescriptorPool(device.vk(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
-
-    VulkanTexture::destroy(device, backgroundTexture);
 
     vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayout.vDescriptorSetLayout, nullptr);
 }

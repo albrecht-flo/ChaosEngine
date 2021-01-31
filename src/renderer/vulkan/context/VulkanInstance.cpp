@@ -86,7 +86,7 @@ static void setupDebugMessenger(VkInstance instance,
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
 /* Creates a vulkan instance with a debug callback and validation layers if requested. */
-VulkanInstance VulkanInstance::Create(std::vector<const char *> validationLayers, const std::string &applicationName,
+VulkanInstance VulkanInstance::Create(const std::vector<const char *>& validationLayers, const std::string &applicationName,
                                       const std::string &engineName) {
     // Check the validation layers
     if (!validationLayers.empty() && !checkValidationLayerSupport(validationLayers)) {
@@ -144,18 +144,16 @@ VulkanInstance VulkanInstance::Create(std::vector<const char *> validationLayers
     if (!validationLayers.empty())
         setupDebugMessenger(newInstance, newDebugMessenger, debugCreateInfo);
 
-    return VulkanInstance(newInstance, newDebugMessenger, std::move(validationLayers));
+    return VulkanInstance(newInstance, newDebugMessenger, validationLayers);
 }
 
 VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                               std::vector<const char *> &&validationLayers) :
+                               std::vector<const char *> validationLayers) :
         instance(instance), debugMessenger(debugMessenger), validationLayers(std::move(validationLayers)) {}
 
 VulkanInstance::VulkanInstance(VulkanInstance &&o) noexcept:
-        instance(o.instance), debugMessenger(o.debugMessenger), validationLayers(std::move(o.validationLayers)) {
-    o.instance = VK_NULL_HANDLE;
-    o.debugMessenger = VK_NULL_HANDLE;
-}
+        instance(std::exchange(o.instance, nullptr)), debugMessenger(std::exchange(o.debugMessenger, nullptr)),
+        validationLayers(std::move(o.validationLayers)) {}
 
 VulkanInstance::~VulkanInstance() { destroy(); }
 

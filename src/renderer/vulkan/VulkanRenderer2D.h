@@ -63,6 +63,9 @@ public:
     MaterialRef loadMaterial(/*Resource definition*/) override;
 
 private:
+    void recreateSwapChain();
+
+private:
     VulkanContext context;
     VulkanFrame frame;
     std::vector<VulkanCommandBuffer> primaryCommandBuffers;

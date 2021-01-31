@@ -49,7 +49,7 @@ public:
 
     static VulkanDevice Create(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface);
 
-    void waitIdle();
+    void waitIdle() const;
 
     // Getter
     [[nodiscard]] inline VkDevice vk() const { return device; }
@@ -73,8 +73,8 @@ public:
 
     [[nodiscard]] SwapChainSupportDetails querySwapChainSupport() const;
 
-    VkFormat
-    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+    [[nodiscard]] VkFormat
+    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
 private:
     VulkanInstance &instance;

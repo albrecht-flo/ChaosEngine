@@ -1,30 +1,47 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <string>
 
-#include "../context/VulkanDevice.h"
-#include "../memory/VulkanMemory.h"
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+#include "src/renderer/vulkan/memory/VulkanMemory.h"
+#include "src/renderer/vulkan/image/VulkanImageView.h"
+#include "src/renderer/vulkan/image/VulkanImage.h"
 
 class VulkanTexture {
-public:
-    VulkanTexture();
+private:
+    VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VulkanImageView &&imageView,
+                  VkSampler sampler);
 
-    VulkanTexture(VkImage image, VkDeviceMemory imageMemory, VkImageView imageView, VkSampler sampler);
+    void destroy();
+
+public:
+    explicit VulkanTexture(const VulkanDevice &device);
 
     ~VulkanTexture();
 
-public:
-    static VulkanTexture createTexture(VulkanDevice &device, VulkanMemory &vulkanMemroy, const std::string &filename);
+    VulkanTexture(const VulkanTexture &o) = delete;
 
-    static void destroy(VulkanDevice &device, VulkanTexture &texture);
+    VulkanTexture &operator=(const VulkanTexture &o) = delete;
 
-public:
-    VkImage image = VK_NULL_HANDLE;
-    VkDeviceMemory imageMemory = VK_NULL_HANDLE; // TEMP
-    VkImageView imageView = VK_NULL_HANDLE;
-    VkSampler sampler = VK_NULL_HANDLE;
+    VulkanTexture(VulkanTexture &&o) noexcept;
+
+    VulkanTexture &operator=(VulkanTexture &&o) noexcept;
+
+    static VulkanTexture
+    createTexture(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename);
+
+    inline VkImage getImage() const { return image; }
+
+    inline const VulkanImageView &getImageView() const { return imageView; }
+
+    inline VkSampler getSampler() const { return sampler; }
+
+private:
+    const VulkanDevice &device;
+    VkImage image;
+    VkDeviceMemory imageMemory;
+    VulkanImageView imageView;
+    VkSampler sampler;
 };

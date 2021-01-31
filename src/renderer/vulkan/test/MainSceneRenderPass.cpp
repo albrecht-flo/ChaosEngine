@@ -436,9 +436,7 @@ void MainSceneRenderPass::destroy() {
         vulkanMemory.destroy(lightUniformBuffers[i]);
     }
 
-    for (auto &t : textures) {
-        VulkanTexture::destroy(device, t.second);
-    }
+    textures.clear();
 
     vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
@@ -448,15 +446,8 @@ void MainSceneRenderPass::destroy() {
 ////////////////////////////////////////////////////////////////////
 MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &material) {
     // Load texture
-    auto result = textures.find(material.textureFile);
-    VulkanTexture texture;
-    if (result == textures.end()) {
-        texture = VulkanTexture::createTexture(
-                device, vulkanMemory, "textures/" + material.textureFile);
-        textures[material.textureFile] = texture;
-    } else {
-        texture = result->second;
-    }
+    const VulkanTexture &texture = textures.emplace(material.textureFile, VulkanTexture::createTexture(
+            device, vulkanMemory, "textures/" + material.textureFile)).first->second;
 
     // Create and fill material buffer
     // TODO, should not be host visible -> staging
@@ -494,8 +485,8 @@ MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &mate
                                                  }
                                          },
                                          {DescriptorImageInfo{.descriptorInfo = VkDescriptorImageInfo{
-                                                 .sampler = texture.sampler,
-                                                 .imageView = texture.imageView,
+                                                 .sampler = texture.getSampler(),
+                                                 .imageView = texture.getImageView().vk(),
                                                  .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                          },
                                                  .binding = 0,

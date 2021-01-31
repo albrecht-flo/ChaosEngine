@@ -40,7 +40,7 @@ VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const Vulka
         : device(device), commandPool(commandPool), buffer(buffer) {}
 
 VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBuffer &&o) noexcept
-        : device(o.device), commandPool(o.commandPool), buffer(o.buffer) {}
+        : device(o.device), commandPool(o.commandPool), buffer(std::exchange(o.buffer, nullptr)) {}
 
 
 VulkanCommandBuffer::~VulkanCommandBuffer() {
@@ -69,7 +69,5 @@ void VulkanCommandBuffer::end() {
 }
 
 void VulkanCommandBuffer::destroy() {
-    if (buffer != VK_NULL_HANDLE)
-        vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &buffer);
-    buffer = VK_NULL_HANDLE;
+    vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &buffer);
 }

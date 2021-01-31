@@ -65,6 +65,6 @@ private:
     VkDescriptorSet descriptorSet{};
 
     Camera camera{};
-    VulkanTexture backgroundTexture{};
+    VulkanTexture backgroundTexture;
 };
 

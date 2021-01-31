@@ -32,7 +32,7 @@ VulkanFramebuffer::VulkanFramebuffer(const VulkanDevice &device, VkFramebuffer f
         : device(device), framebuffer(frameBuffer) {}
 
 VulkanFramebuffer::VulkanFramebuffer(VulkanFramebuffer &&o) noexcept
-        : device(o.device), framebuffer(o.framebuffer) { o.framebuffer = VK_NULL_HANDLE; }
+        : device(o.device), framebuffer(std::exchange(o.framebuffer, nullptr)) {}
 
 VulkanFramebuffer::~VulkanFramebuffer() { destroy(); }
 
@@ -41,13 +41,11 @@ VulkanFramebuffer &VulkanFramebuffer::operator=(VulkanFramebuffer &&o) noexcept 
     if (this == &o)
         return *this;
     destroy();
-    framebuffer = o.framebuffer;
-    o.framebuffer = VK_NULL_HANDLE;
+    framebuffer = std::exchange(o.framebuffer, nullptr);
     return *this;
 }
 
 void VulkanFramebuffer::destroy() {
-    if (framebuffer != VK_NULL_HANDLE)
-        vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
+    vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
 }
 

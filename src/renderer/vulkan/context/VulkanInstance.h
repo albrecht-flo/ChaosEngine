@@ -8,7 +8,7 @@
 class VulkanInstance {
 private:
     VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                   std::vector<const char *> &&validationLayers);
+                   std::vector<const char *> validationLayers);
 
     void destroy();
 
@@ -24,7 +24,7 @@ public:
     VulkanInstance &operator=(VulkanInstance &&o) = delete;
 
 
-    static VulkanInstance Create(std::vector<const char *> validationLayers, const std::string &applicationName,
+    static VulkanInstance Create(const std::vector<const char *>& validationLayers, const std::string &applicationName,
                                  const std::string &engineName);
 
 

@@ -3,8 +3,8 @@
 #include <stdexcept>
 
 /* Creates an image view for an image. */
-VkImageView
-VulkanImageView::create(const VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
+VulkanImageView
+VulkanImageView::Create(const VulkanDevice &device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags) {
     VkImageViewCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     createInfo.image = image;
@@ -24,9 +24,25 @@ VulkanImageView::create(const VulkanDevice &device, VkImage image, VkFormat form
     if (vkCreateImageView(device.vk(), &createInfo, nullptr, &imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create image views!");
     }
-    return imageView;
+    return VulkanImageView{device, imageView};
 }
 
-void VulkanImageView::destroy(const VulkanDevice &device, VkImageView imageView) {
+VulkanImageView::VulkanImageView(VulkanImageView &&o) noexcept
+        : device(o.device), imageView(std::exchange(o.imageView, nullptr)) {}
+
+VulkanImageView::~VulkanImageView() {
+    destroy();
+}
+
+VulkanImageView &VulkanImageView::operator=(VulkanImageView &&o) noexcept {
+    if (this == &o)
+        return *this;
+
+    destroy();
+    imageView = std::exchange(o.imageView, nullptr);
+    return *this;
+}
+
+void VulkanImageView::destroy() {
     vkDestroyImageView(device.vk(), imageView, nullptr);
 }

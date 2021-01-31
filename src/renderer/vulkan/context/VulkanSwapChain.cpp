@@ -116,15 +116,15 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
 }
 
 /* Creates image views for the images of the swapchain. */
-static std::vector<VkImageView>
+static std::vector<VulkanImageView>
 createImageViews(const VulkanDevice &device, const std::vector<VkImage> &swapChainImages,
                  VkFormat swapChainImageFormat) {
-    std::vector<VkImageView> swapChainImageViews;
-    swapChainImageViews.resize(swapChainImages.size());
+    std::vector<VulkanImageView> swapChainImageViews;
+    swapChainImageViews.reserve(swapChainImages.size());
 
     for (size_t i = 0; i < swapChainImages.size(); i++) {
-        swapChainImageViews[i] = VulkanImageView::create(device, swapChainImages[i], swapChainImageFormat,
-                                                         VK_IMAGE_ASPECT_COLOR_BIT);
+        swapChainImageViews.emplace_back(VulkanImageView::Create(device, swapChainImages[i], swapChainImageFormat,
+                                                                 VK_IMAGE_ASPECT_COLOR_BIT));
     }
 
     return swapChainImageViews;
@@ -163,42 +163,39 @@ VulkanSwapChain VulkanSwapChain::Create(const Window &window, const VulkanDevice
 
 VulkanSwapChain::VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
                                  VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
-                                 std::vector<VkImage> &&swapChainImages, std::vector<VkImageView> &&swapChainImageViews)
+                                 std::vector<VkImage> &&swapChainImages,
+                                 std::vector<VulkanImageView> &&swapChainImageViews)
         : window(window), device(device), surface(surface),
           swapChain(swapChain), swapChainImageFormat(swapChainImageFormat), swapChainExtent(swapChainExtent),
           swapChainImages(std::move(swapChainImages)), swapChainImageViews(std::move(swapChainImageViews)) {}
 
 VulkanSwapChain::VulkanSwapChain(VulkanSwapChain &&o) noexcept
         : window(o.window), device(o.device), surface(o.surface),
-          swapChain(o.swapChain), swapChainImageFormat(o.swapChainImageFormat), swapChainExtent(o.swapChainExtent),
-          swapChainImages(std::move(o.swapChainImages)), swapChainImageViews(std::move(o.swapChainImageViews)) {
-    o.swapChain = VK_NULL_HANDLE;
-}
+          swapChain(std::exchange(o.swapChain, nullptr)), swapChainImageFormat(o.swapChainImageFormat),
+          swapChainExtent(o.swapChainExtent),
+          swapChainImages(std::move(o.swapChainImages)), swapChainImageViews(std::move(o.swapChainImageViews)) {}
 
 VulkanSwapChain::~VulkanSwapChain() {
     destroy();
 }
 
-/* Stories frame buffers, image views and swap chain. */
-void VulkanSwapChain::destroy() {
-    for (auto imageView : swapChainImageViews) {
-        VulkanImageView::destroy(device, imageView);
-    }
 
-    if (swapChain != nullptr)
-        vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
-    swapChainImageViews.clear();
-    swapChain = nullptr;
+VulkanSwapChain &VulkanSwapChain::operator=(VulkanSwapChain &&o) noexcept {
+    if (this == &o)
+        return *this;
+    destroy();
+
+    swapChain = std::exchange(o.swapChain, nullptr);
+    swapChainImageFormat = o.swapChainImageFormat;
+    swapChainExtent = o.swapChainExtent;
+    swapChainImages = std::move(o.swapChainImages);
+    swapChainImageViews = std::move(o.swapChainImageViews);
+
+    return *this;
 }
 
-/* Reinitializes the swap chain. */
-void VulkanSwapChain::reinit() {
-    destroy();
-    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface);
-    swapChain = mSwapChain;
-    swapChainImageFormat = mSwapChainImageFormat;
-    swapChainExtent = mSwapChainExtent;
-
-    swapChainImages = getSwapChainImages(device.vk(), swapChain);
-    swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
+/* Stories frame buffers, image views and swap chain. */
+void VulkanSwapChain::destroy() {
+    swapChainImageViews.clear();
+    vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
 }

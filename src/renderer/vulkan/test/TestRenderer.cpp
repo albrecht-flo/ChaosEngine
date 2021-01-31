@@ -16,6 +16,9 @@ TestRenderer::TestRenderer(Window &w) :
         mainGraphicsPass(device, vulkanMemory, swapChain),
         imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
         postRenderPass(device, vulkanMemory, swapChain),
+        offscreenImageView(device),
+        depthImageView(device),
+        imGuiImageView(device),
         offscreenFramebuffer(device),
         imGuiFramebuffer(device) {}
 
@@ -36,7 +39,7 @@ void TestRenderer::init() {
     mainGraphicsPass.init();
     imGuiRenderPass.init();
     postRenderPass.init();
-    postRenderPass.setImageBufferViews(offscreenImageView, depthImageView, imGuiImageView);
+    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthImageView.vk(), imGuiImageView.vk());
 
     createFramebuffers();
 
@@ -89,7 +92,7 @@ void TestRenderer::createDepthResources() {
             device, vulkanMemory, swapChain.getExtent().width,
             swapChain.getExtent().height,
             depthFormat, depthImageMemory);
-    depthImageView = VulkanImageView::create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 /* Creates images and image views for offscreen buffers. */
@@ -101,7 +104,7 @@ void TestRenderer::createImageBuffers() {
                                         VK_FORMAT_R8G8B8A8_UNORM,
                                         offscreenImageMemory);
     offscreenImageView =
-            VulkanImageView::create(device,
+            VulkanImageView::Create(device,
                                     offscreenImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
     // Offscreen ImGui rendering
@@ -111,7 +114,7 @@ void TestRenderer::createImageBuffers() {
                                         VK_FORMAT_R8G8B8A8_UNORM,
                                         imGuiImageMemory);
     imGuiImageView =
-            VulkanImageView::create(device,
+            VulkanImageView::Create(device,
                                     imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
@@ -120,14 +123,14 @@ void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
     offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
             device,
-            {offscreenImageView, depthImageView},
+            {offscreenImageView.vk(), depthImageView.vk()},
             mainGraphicsPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
     // Create offscreen ImGui framebuffer
     imGuiFramebuffer = VulkanFramebuffer::createFramebuffer(
             device,
-            {imGuiImageView},
+            {imGuiImageView.vk()},
             imGuiRenderPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
@@ -138,7 +141,7 @@ void TestRenderer::createFramebuffers() {
     for (uint32_t i = 0; i < swapChain.size(); i++) {
         swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
                 device,
-                {swapChain.getImageViews()[i]},
+                {swapChain.getImageViews()[i].vk()},
                 postRenderPass.vk(),
                 swapChain.getExtent().width, swapChain.getExtent().height
         ));
@@ -304,7 +307,7 @@ void TestRenderer::recreateSwapChain() {
     cleanupSwapChain();
 
     // Create new createSyncObjects
-    swapChain.reinit();
+    swapChain = VulkanSwapChain::Create(window, device, surface);
 
     // Recreate the render rendering attachments
     createDepthResources();
@@ -315,7 +318,7 @@ void TestRenderer::recreateSwapChain() {
     imGuiRenderPass.recreate();
     postRenderPass.recreate();
     // Update the attachment views
-    postRenderPass.setImageBufferViews(offscreenImageView, depthImageView, imGuiImageView);
+    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthImageView.vk(), imGuiImageView.vk());
 
 
     // Recreate the framebuffers for the render passes
@@ -334,16 +337,16 @@ void TestRenderer::cleanupSwapChain() {
 //    VulkanFramebuffer::destroy(device, offscreenFramebuffer);
     // Destroy offscreen main scene image buffer
     VulkanImage::destroy(device, offscreenImage, offscreenImageMemory);
-    VulkanImageView::destroy(device, offscreenImageView);
+//    VulkanImageView::destroy(device, offscreenImageView);/**/
     // Destroy offscreen main scene depth buffer
     VulkanImage::destroy(device, depthImage, depthImageMemory);
-    VulkanImageView::destroy(device, depthImageView);
+//    VulkanImageView::destroy(device, depthImageView);
 
     // Destroy offscreen ImGui framebuffer
 //    VulkanFramebuffer::destroy(device, imGuiFramebuffer);
     // Destroy offscreen ImGui image buffer
     VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
-    VulkanImageView::destroy(device, imGuiImageView);
+//    VulkanImageView::destroy(device, imGuiImageView);
 
     // The command buffers depend on the amount of swapchain images
     for (auto &cmdBuffer : primaryCommandBuffers) {
@@ -354,7 +357,7 @@ void TestRenderer::cleanupSwapChain() {
     imGuiRenderPass.destroySwapChainDependent();
     postRenderPass.destroySwapChainDependent();
 
-    swapChain.destroy();
+//    swapChain.destroy();
 }
 
 /* Cleans up all Vulkan objects in the proper order. */

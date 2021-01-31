@@ -7,13 +7,14 @@ class Window;
 
 class VulkanDevice;
 
+class VulkanImageView;
+
 class VulkanSwapChain {
 private:
     VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
                     VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
-                    std::vector<VkImage> &&swapChainImages, std::vector<VkImageView> &&swapChainImageViews);
+                    std::vector<VkImage> &&swapChainImages, std::vector<VulkanImageView> &&swapChainImageViews);
 
-public: // TODO: make private
     void destroy();
 
 public:
@@ -26,11 +27,9 @@ public:
 
     VulkanSwapChain(VulkanSwapChain &&o) noexcept;
 
-    VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
+    VulkanSwapChain &operator=(VulkanSwapChain &&o) noexcept;
 
     static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
-
-    void reinit();
 
     [[nodiscard]] inline uint32_t size() const { return static_cast<uint32_t>(swapChainImages.size()); }
 
@@ -44,7 +43,7 @@ public:
 
     [[nodiscard]] inline uint32_t getHeight() const { return swapChainExtent.height; }
 
-    [[nodiscard]] inline const std::vector<VkImageView> &getImageViews() const { return swapChainImageViews; }
+    [[nodiscard]] inline const std::vector<VulkanImageView> &getImageViews() const { return swapChainImageViews; }
 
 private:
     const Window &window;
@@ -57,6 +56,6 @@ private:
     VkFormat swapChainImageFormat = {};
     VkExtent2D swapChainExtent = {};
     std::vector<VkImage> swapChainImages;
-    std::vector<VkImageView> swapChainImageViews;
+    std::vector<VulkanImageView> swapChainImageViews;
 
 };

@@ -13,7 +13,7 @@ private:
     explicit VulkanFramebuffer(const VulkanDevice &device, VkFramebuffer frameBuffer);
 
 public:
-    explicit VulkanFramebuffer(const VulkanDevice &device) : device(device), framebuffer(VK_NULL_HANDLE) {}
+    explicit VulkanFramebuffer(const VulkanDevice &device) : device(device), framebuffer(nullptr) {}
 
     ~VulkanFramebuffer();
 

@@ -8,7 +8,7 @@
 
 
 /* Creates an image for use as a texture from a file. */
-VkImage VulkanImage::createFromFile(VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename,
+VkImage VulkanImage::createFromFile(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename,
                                     VkDeviceMemory &imageMemory) {
     int texWidth, texHeight, texChannels;
 
@@ -59,7 +59,7 @@ VkImage VulkanImage::createFromFile(VulkanDevice &device, VulkanMemory &vulkanMe
 
 /* Creates an image for depth attachment and sample use. */
 VkImage
-VulkanImage::createDepthBufferImage(VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+VulkanImage::createDepthBufferImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                                     VkFormat depthFormat, VkDeviceMemory &depthImageMemory) {
 
     VkImage depthImage;
@@ -75,7 +75,7 @@ VulkanImage::createDepthBufferImage(VulkanDevice &device, VulkanMemory &vulkanMe
 
 
 /* Creates an image for color attachment and sample use. */
-VkImage VulkanImage::createRawImage(VulkanDevice &device,
+VkImage VulkanImage::createRawImage(const VulkanDevice &device,
                                     VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                                     VkFormat format, VkDeviceMemory &imageMemory/*TEMP*/) {
 
@@ -91,7 +91,7 @@ VkImage VulkanImage::createRawImage(VulkanDevice &device,
 }
 
 /* Creates an image, allocates its memory and binds the two together. */
-void VulkanImage::createImage(VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
+void VulkanImage::createImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
                               VkFormat format,
                               VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
                               VkImage &image, VkDeviceMemory &imageMemory) {
@@ -214,7 +214,7 @@ bool VulkanImage::hasStencilComponent(VkFormat format) {
 }
 
 /* Helper function to get a suitable depth format. */
-VkFormat VulkanImage::getDepthFormat(VulkanDevice &device) {
+VkFormat VulkanImage::getDepthFormat(const VulkanDevice &device) {
     return device.findSupportedFormat(
             {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT,
              VK_FORMAT_D24_UNORM_S8_UINT},
@@ -223,7 +223,7 @@ VkFormat VulkanImage::getDepthFormat(VulkanDevice &device) {
 }
 
 /* Destroyes the image and the memory. */
-void VulkanImage::destroy(VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory) {
+void VulkanImage::destroy(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory) {
     vkDestroyImage(device.vk(), image, nullptr);
     vkFreeMemory(device.vk(), imageMemory, nullptr);
 }
