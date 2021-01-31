@@ -307,7 +307,8 @@ void TestRenderer::recreateSwapChain() {
     cleanupSwapChain();
 
     // Create new createSyncObjects
-    swapChain = VulkanSwapChain::Create(window, device, surface);
+    surface = window.createSurface(instance.vk());
+    swapChain.recreate(surface);
 
     // Recreate the render rendering attachments
     createDepthResources();
@@ -357,7 +358,6 @@ void TestRenderer::cleanupSwapChain() {
     imGuiRenderPass.destroySwapChainDependent();
     postRenderPass.destroySwapChainDependent();
 
-//    swapChain.destroy();
 }
 
 /* Cleans up all Vulkan objects in the proper order. */

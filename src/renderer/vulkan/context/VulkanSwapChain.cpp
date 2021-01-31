@@ -60,7 +60,8 @@ static VkExtent2D chooseSwapExtent(const Window &window, const VkSurfaceCapabili
 
 /* Creates the swapchain and its images. */
 static std::tuple<VkSwapchainKHR, VkFormat, VkExtent2D>
-createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
+createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
+                VkSwapchainKHR oldSwapChain = VK_NULL_HANDLE) {
     // Check for available swapchain
     SwapChainSupportDetails swapChainSupport = device.querySwapChainSupport();
 
@@ -88,6 +89,8 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage =
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // images are used for color output // ~ TRANSFER for post processing
+    if (oldSwapChain != VK_NULL_HANDLE)
+        createInfo.oldSwapchain = oldSwapChain; // To speed up swapchain recreation
 
     // Determine how the images will be accessed by different queues
     QueueFamilyIndices indices = device.findQueueFamilies();
@@ -179,23 +182,20 @@ VulkanSwapChain::~VulkanSwapChain() {
     destroy();
 }
 
-
-VulkanSwapChain &VulkanSwapChain::operator=(VulkanSwapChain &&o) noexcept {
-    if (this == &o)
-        return *this;
-    destroy();
-
-    swapChain = std::exchange(o.swapChain, nullptr);
-    swapChainImageFormat = o.swapChainImageFormat;
-    swapChainExtent = o.swapChainExtent;
-    swapChainImages = std::move(o.swapChainImages);
-    swapChainImageViews = std::move(o.swapChainImageViews);
-
-    return *this;
-}
-
 /* Stories frame buffers, image views and swap chain. */
 void VulkanSwapChain::destroy() {
     swapChainImageViews.clear();
     vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
+}
+
+void VulkanSwapChain::recreate(VkSurfaceKHR mSurface) {
+    surface = mSurface;
+    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface, swapChain);
+    swapChain = mSwapChain;
+    swapChainImageFormat = mSwapChainImageFormat;
+    swapChainExtent = mSwapChainExtent;
+
+    swapChainImages = getSwapChainImages(device.vk(), swapChain);
+
+    swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
 }

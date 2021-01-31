@@ -15,9 +15,9 @@ private:
                     VkSwapchainKHR swapChain, VkFormat swapChainImageFormat, VkExtent2D swapChainExtent,
                     std::vector<VkImage> &&swapChainImages, std::vector<VulkanImageView> &&swapChainImageViews);
 
-    void destroy();
 
 public:
+    void destroy();
 
     ~VulkanSwapChain();
 
@@ -27,7 +27,9 @@ public:
 
     VulkanSwapChain(VulkanSwapChain &&o) noexcept;
 
-    VulkanSwapChain &operator=(VulkanSwapChain &&o) noexcept;
+    VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
+
+    void recreate(VkSurfaceKHR mSurface);
 
     static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
 

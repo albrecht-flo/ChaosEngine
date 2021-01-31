@@ -21,7 +21,6 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
         throw std::runtime_error("[GLFW] Failed to initialize GLFW!");
     }
 
-
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     GLFWwindow *windowPtr = glfwCreateWindow(width, height, applicationName.c_str(), nullptr, nullptr);
@@ -29,13 +28,11 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
         throw std::runtime_error("[GLFW] Failed to create a window!");
     }
 
-    Window window{windowPtr};
-
-
+    glfwSwapInterval(1);
     // Setup callbacks
     glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
 
-    return std::move(window);
+    return Window{windowPtr};
 }
 
 Window::Window(GLFWwindow *window)
@@ -45,7 +42,7 @@ Window::Window(GLFWwindow *window)
 }
 
 Window::Window(Window &&o) noexcept
-        : window(o.window), framebufferResized(o.framebufferResized),
+        : window(std::exchange(o.window, nullptr)), framebufferResized(o.framebufferResized),
           lastMousePos(o.lastMousePos), mousePos(o.mousePos) {
     glfwSetWindowUserPointer(window, this);
 }

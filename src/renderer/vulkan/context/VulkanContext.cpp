@@ -42,5 +42,6 @@ VulkanContext::VulkanContext(VulkanContext &&o) noexcept
           memory(std::move(o.memory)) {}
 
 void VulkanContext::recreateSwapChain() {
-    swapChain = VulkanSwapChain::Create(window, device, surface);
+    surface = window.createSurface(instance.vk());
+    swapChain.recreate(surface);
 }
