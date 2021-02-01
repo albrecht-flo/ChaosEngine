@@ -2,6 +2,7 @@
 
 #include "../image/VulkanSampler.h"
 
+#include "src/renderer/vulkan/image/VulkanImage.h"
 
 VulkanTexture
 VulkanTexture::createTexture(const VulkanDevice &device, VulkanMemory &vulkanMemroy, const std::string &filename) {

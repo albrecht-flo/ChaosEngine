@@ -6,7 +6,6 @@
 
 #include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
 
 class VulkanDevice;
 class VulkanTexture {

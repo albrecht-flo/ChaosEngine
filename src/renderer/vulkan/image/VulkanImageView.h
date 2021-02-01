@@ -2,7 +2,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
+class VulkanDevice;
 
 class VulkanImageView {
 private:
@@ -11,7 +11,7 @@ private:
     void destroy();
 
 public:
-    explicit VulkanImageView(const VulkanDevice &device) : device(device), imageView(nullptr) {}
+    [[deprecated]] explicit VulkanImageView(const VulkanDevice &device) : device(device), imageView(nullptr) {}
 
     ~VulkanImageView();
 

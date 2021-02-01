@@ -1,5 +1,6 @@
 #pragma once
 
+#include <src/renderer/vulkan/image/VulkanImage.h>
 #include "src/renderer/RendererAPI.h"
 #include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
@@ -13,7 +14,7 @@ public:
 private:
     VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
                      std::vector<VulkanFramebuffer> &&swapChainFrameBuffers, VulkanRenderPass &&mainRenderPass,
-                     VkImage depthImage, VkDeviceMemory depthImageMemory, VulkanImageView&& depthImageView);
+                     VulkanImageBuffer &&depthBuffer);
 
 public:
     ~VulkanRenderer2D() override = default;
@@ -78,9 +79,7 @@ private:
     std::vector<VulkanFramebuffer> swapChainFrameBuffers;
     VulkanRenderPass mainRenderPass;
 
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
-    VulkanImageView depthImageView;
+    VulkanImageBuffer depthBuffer;
 
     uint32_t currentFrame = 0;
 };

@@ -6,7 +6,7 @@ static std::vector<VulkanCommandBuffer>
 createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
     std::vector<VulkanCommandBuffer> primaryCommandBuffers;
     primaryCommandBuffers.reserve(swapChainSize);
-    for (int i = 0; i < swapChainSize; ++i) {
+    for (uint32_t i = 0; i < swapChainSize; ++i) {
         primaryCommandBuffers.emplace_back(
                 VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
     }
@@ -14,7 +14,7 @@ createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool 
     return std::move(primaryCommandBuffers);
 }
 
-static std::tuple<VkImage, VkDeviceMemory, VulkanImageView>
+static VulkanImageBuffer
 createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemory, VkExtent2D extent) {
     VkFormat depthFormat = VulkanImage::getDepthFormat(device);
 
@@ -25,7 +25,7 @@ createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemor
             depthFormat, depthImageMemory);
     auto depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    return std::make_tuple(depthImage, depthImageMemory, std::move(depthImageView));
+    return VulkanImageBuffer(device, std::move(depthImage), std::move(depthImageMemory), std::move(depthImageView));
 }
 
 static std::vector<VulkanFramebuffer>
@@ -59,23 +59,22 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
 
     VulkanRenderPass mainRenderPass = VulkanRenderPass::Create(context.getDevice(), attachments);
 
-    auto[depthImage, depthImageMemory, depthImageView] = createDepthResources(context.getDevice(), context.getMemory(),
-                                                                              context.getSwapChain().getExtent());
+    VulkanImageBuffer depthBuffer = createDepthResources(context.getDevice(), context.getMemory(),
+                                                         context.getSwapChain().getExtent());
 
     auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(),
-                                                             mainRenderPass, depthImageView, maxFramesInFlight);
+                                                             mainRenderPass, depthBuffer.getImageView(),
+                                                             maxFramesInFlight);
 
     return VulkanRenderer2D(std::move(context), std::move(frame), std::move(swapChainFrameBuffers),
-                            std::move(mainRenderPass), depthImage, depthImageMemory, std::move(depthImageView));
+                            std::move(mainRenderPass), std::move(depthBuffer));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
                                    std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
-                                   VulkanRenderPass &&mainRenderPass, VkImage depthImage,
-                                   VkDeviceMemory depthImageMemory, VulkanImageView &&depthImageView)
+                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer)
         : context(std::move(context)), frame(std::move(frame)), swapChainFrameBuffers(std::move(swapChainFrameBuffers)),
-          mainRenderPass(std::move(mainRenderPass)), depthImage(depthImage), depthImageMemory(depthImageMemory),
-          depthImageView(std::move(depthImageView)) {}
+          mainRenderPass(std::move(mainRenderPass)), depthBuffer(std::move(depthBuffer)) {}
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
@@ -100,17 +99,10 @@ void VulkanRenderer2D::recreateSwapChain() {
     // TODO: Recreate swap chain associated resources
     context.recreateSwapChain();
 
-    // TODO: refactor vulkan images
-    VulkanImage::destroy(context.getDevice(), depthImage, depthImageMemory);
-    auto[mDepthImage, mDepthImageMemory, mDepthImageView] = createDepthResources(context.getDevice(),
-                                                                                 context.getMemory(),
-                                                                                 context.getSwapChain().getExtent());
-    depthImage = mDepthImage;
-    depthImageMemory = mDepthImageMemory;
-    depthImageView = std::move(mDepthImageView);
+    depthBuffer = createDepthResources(context.getDevice(), context.getMemory(), context.getSwapChain().getExtent());
     // Recreate the frame buffers pointing to the swap chain images
     swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(),
-                                                        mainRenderPass, depthImageView, maxFramesInFlight);
+                                                        mainRenderPass, depthBuffer.getImageView(), maxFramesInFlight);
 
     // Recreate render passes
 }

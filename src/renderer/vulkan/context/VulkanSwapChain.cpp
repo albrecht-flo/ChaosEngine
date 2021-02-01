@@ -1,6 +1,7 @@
 #include "VulkanSwapChain.h"
 
 #include "src/renderer/window/Window.h"
+#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 
 #include <vulkan/vulkan.h>

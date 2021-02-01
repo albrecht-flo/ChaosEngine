@@ -110,9 +110,7 @@ private:
     VulkanImageView offscreenImageView;
 
     // Depth resources
-    VkImage depthImage{};
-    VkDeviceMemory depthImageMemory{};
-    VulkanImageView depthImageView;
+    VulkanImageBuffer depthBuffer;
 
     // Frame resources for offscreen ImGui rendering
     VkImage imGuiImage{};

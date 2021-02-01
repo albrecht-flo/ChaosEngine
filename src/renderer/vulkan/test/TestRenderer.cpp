@@ -17,7 +17,7 @@ TestRenderer::TestRenderer(Window &w) :
         imGuiRenderPass(device, vulkanMemory, swapChain, window, instance),
         postRenderPass(device, vulkanMemory, swapChain),
         offscreenImageView(device),
-        depthImageView(device),
+        depthBuffer(device),
         imGuiImageView(device),
         offscreenFramebuffer(device),
         imGuiFramebuffer(device) {}
@@ -39,7 +39,7 @@ void TestRenderer::init() {
     mainGraphicsPass.init();
     imGuiRenderPass.init();
     postRenderPass.init();
-    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthImageView.vk(), imGuiImageView.vk());
+    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthBuffer.getImageView().vk(), imGuiImageView.vk());
 
     createFramebuffers();
 
@@ -88,11 +88,15 @@ void TestRenderer::createSyncObjects() {
 void TestRenderer::createDepthResources() {
     VkFormat depthFormat = VulkanImage::getDepthFormat(device);
 
-    depthImage = VulkanImage::createDepthBufferImage(
+    VkDeviceMemory depthImageMemory{};
+    auto depthImage = VulkanImage::createDepthBufferImage(
             device, vulkanMemory, swapChain.getExtent().width,
             swapChain.getExtent().height,
             depthFormat, depthImageMemory);
-    depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    auto depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    depthBuffer = VulkanImageBuffer(device, std::move(depthImage), std::move(depthImageMemory),
+                                    std::move(depthImageView));
 }
 
 /* Creates images and image views for offscreen buffers. */
@@ -123,7 +127,7 @@ void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
     offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
             device,
-            {offscreenImageView.vk(), depthImageView.vk()},
+            {offscreenImageView.vk(), depthBuffer.getImageView().vk()},
             mainGraphicsPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
@@ -247,7 +251,8 @@ void TestRenderer::drawFrame() {
 
     VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]}; // wait for the image to be available
     VkPipelineStageFlags waitStages[] = {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }; // wait for the image to be writeable before writing the color output
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT}; // wait for the image to be writeable before writing the color output
     // This means that the vertex shader stage etc. can already be executed
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores; // semaphore to wait for before executing
@@ -321,7 +326,7 @@ void TestRenderer::recreateSwapChain() {
     imGuiRenderPass.recreate();
     postRenderPass.recreate();
     // Update the attachment views
-    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthImageView.vk(), imGuiImageView.vk());
+    postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthBuffer.getImageView().vk(), imGuiImageView.vk());
 
 
     // Recreate the framebuffers for the render passes (Destroys the old ones)
@@ -333,12 +338,8 @@ void TestRenderer::recreateSwapChain() {
 /* Cleans up all objects that depend on the swapchain and its images. */
 void TestRenderer::cleanupSwapChain() {
 
-
     // Destroy offscreen main scene image buffer
     VulkanImage::destroy(device, offscreenImage, offscreenImageMemory);
-    // Destroy offscreen main scene depth buffer
-    VulkanImage::destroy(device, depthImage, depthImageMemory);
-
     // Destroy offscreen ImGui image buffer
     VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
 

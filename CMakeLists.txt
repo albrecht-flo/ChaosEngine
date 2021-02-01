@@ -5,15 +5,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set default compile flags
-#if(CMAKE_COMPILER_IS_GNUCXX)
-#    message(STATUS "GCC detected, adding compile flags")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
-#endif(CMAKE_COMPILER_IS_GNUCXX)
-#
-#if(MSVC)
-#    message(STATUS "MSVC detected, adding compile flags")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4 -WX")
-#endif(MSVC)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "GCC detected, adding compile flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+elseif(MSVC)
+    message(STATUS "MSVC detected, adding compile flags")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(EnableAddressSanitizer)

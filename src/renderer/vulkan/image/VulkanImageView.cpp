@@ -1,5 +1,7 @@
 #include "VulkanImageView.h"
 
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+
 #include <stdexcept>
 
 /* Creates an image view for an image. */
