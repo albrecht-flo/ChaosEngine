@@ -7,7 +7,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/VulkanRenderer2D.cpp
         renderer/vulkan/test/VulkanRendererOld.cpp
         renderer/vulkan/rendering/VulkanFrame.cpp
-        renderer/vulkan/rendering/VulkanRenderPass.cpp
+        renderer/vulkan/test/VulkanRenderPassOld.cpp
         renderer/vulkan/image/VulkanTexture.cpp
         renderer/vulkan/context/VulkanContext.cpp
         renderer/vulkan/context/VulkanDevice.cpp
@@ -34,7 +34,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
 
-        )
+        renderer/vulkan/rendering/VulkanRenderPass.cpp renderer/vulkan/rendering/VulkanRenderPass.h renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp renderer/vulkan/rendering/VulkanAttachmentBuilder.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/

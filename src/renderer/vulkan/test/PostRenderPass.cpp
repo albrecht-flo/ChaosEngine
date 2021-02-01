@@ -7,7 +7,7 @@
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPass(device, vulkanMemory, swapChain),
+        VulkanRenderPassOld(device, vulkanMemory, swapChain),
         backgroundTexture(device) {
 }
 

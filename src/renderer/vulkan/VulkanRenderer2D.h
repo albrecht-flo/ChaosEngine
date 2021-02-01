@@ -1,13 +1,19 @@
 #pragma once
 
-#include <src/renderer/vulkan/context/VulkanContext.h>
 #include "src/renderer/RendererAPI.h"
+#include "src/renderer/vulkan/rendering/VulkanFrame.h"
+#include "src/renderer/vulkan/image/VulkanFramebuffer.h"
+#include "src/renderer/vulkan/image/VulkanImageView.h"
+#include "src/renderer/vulkan/context/VulkanContext.h"
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 
 class VulkanRenderer2D : public RendererAPI {
 public:
     static constexpr uint32_t maxFramesInFlight = 2;
 private:
-    VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame);
+    VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
+                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers, VulkanRenderPass &&mainRenderPass,
+                     VkImage depthImage, VkDeviceMemory depthImageMemory, VulkanImageView&& depthImageView);
 
 public:
     ~VulkanRenderer2D() override = default;
@@ -16,7 +22,7 @@ public:
 
     VulkanRenderer2D &operator=(const VulkanRenderer2D &o) = delete;
 
-    VulkanRenderer2D(VulkanRenderer2D &&o) noexcept;
+    VulkanRenderer2D(VulkanRenderer2D &&o) = delete;
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
@@ -69,6 +75,12 @@ private:
     VulkanContext context;
     VulkanFrame frame;
     std::vector<VulkanCommandBuffer> primaryCommandBuffers;
+    std::vector<VulkanFramebuffer> swapChainFrameBuffers;
+    VulkanRenderPass mainRenderPass;
+
+    VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+    VulkanImageView depthImageView;
 
     uint32_t currentFrame = 0;
 };

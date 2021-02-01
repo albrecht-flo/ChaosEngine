@@ -6,7 +6,7 @@
 
 /* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPass(device, vulkanMemory, swapChain) {}
+        VulkanRenderPassOld(device, vulkanMemory, swapChain) {}
 
 void MainSceneRenderPass::init() {
     // Create the render rendering
@@ -155,8 +155,8 @@ void MainSceneRenderPass::createRenderPass() {
     renderPassInfo.pAttachments = attachments.data();
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-    renderPassInfo.pDependencies = dependencies.data();
+//    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+//    renderPassInfo.pDependencies = dependencies.data();
 
     if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
         throw std::runtime_error("[Vulkan] Failed to create render rendering!");

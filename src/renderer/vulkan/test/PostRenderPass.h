@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <array>
 
-#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
@@ -18,7 +18,7 @@
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/RenderObject.h"
 
-class PostRenderPass : public VulkanRenderPass {
+class PostRenderPass : public VulkanRenderPassOld {
 public:
     PostRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain);
 

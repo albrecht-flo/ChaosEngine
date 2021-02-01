@@ -1,50 +1,40 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
+#include <vulkan/vulkan.h>
+#include <vector>
+#include "VulkanAttachmentBuilder.h"
 
-#include <GLFW/glfw3.h>
+class VulkanDevice;
 
-#include <stdexcept>
-#include <array>
-
-#include "src/renderer/vulkan/context/VulkanDevice.h"
-#include "src/renderer/vulkan/context/VulkanSwapChain.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
-#include "src/renderer/data/Mesh.h"
-#include "src/renderer/vulkan/image/VulkanTexture.h"
-#include "src/renderer/data/RenderObject.h"
-
+/** This class wraps the vulkan render pass and its creation.
+ *  Note: Currently only one main graphics sub pass is supported.
+ *
+ *  This render pass will wait for previous stages to finish writing to its attachments through sub pass dependencies.
+ */
 class VulkanRenderPass {
+    // TODO: Create Frambuffers from RenderPasses, allowes for basic validity checks
+private:
+    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass);
+
+    void destroy();
+
 public:
-    VulkanRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain);
+    ~VulkanRenderPass();
 
-    ~VulkanRenderPass() = default;
+    VulkanRenderPass(const VulkanRenderPass &o) = delete;
 
-    virtual void init() = 0;
+    VulkanRenderPass &operator=(const VulkanRenderPass &o) = delete;
 
-    virtual void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) = 0;
+    VulkanRenderPass(VulkanRenderPass &&o) noexcept;
 
-    virtual void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) = 0;
+    VulkanRenderPass &operator=(VulkanRenderPass &&o) = delete;
 
-    virtual void cmdEnd(VkCommandBuffer &cmdBuf) = 0;
+    static VulkanRenderPass
+    Create(const VulkanDevice &device, std::vector<VulkanAttachmentDescription> attachmentDescriptions);
 
-    virtual void recreate() = 0;
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; };
 
-    virtual void destroy() = 0;
-
-    virtual void destroySwapChainDependent() = 0;
-
-    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
-
-protected:
-    // The common pointers to the vulkan context objects
-    VulkanDevice &device;
-    VulkanMemory &vulkanMemory;
-    VulkanSwapChain &swapChain;
-
-    // This vulkan render rendering
-    VkRenderPass renderPass = {};
-
+private:
+    const VulkanDevice &device;
+    VkRenderPass renderPass;
 };

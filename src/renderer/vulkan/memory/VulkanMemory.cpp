@@ -140,7 +140,7 @@ void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) {
 }
 
 /* Finds apropriate memory type if the physical device */
-uint32_t VulkanMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+uint32_t VulkanMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(device.getPhysicalDevice(), &memProperties);
 

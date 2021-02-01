@@ -17,7 +17,7 @@ static void check_imgui_vk_result(VkResult result) {
 /* Configures the render rendering with the attachments and subpasses */
 ImGuiRenderPass::ImGuiRenderPass(VulkanDevice &device,
                                  VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window, const VulkanInstance &instance) :
-        VulkanRenderPass(device, vulkanMemory, swapChain), window(window), instance(instance) {
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), window(window), instance(instance) {
 }
 
 void ImGuiRenderPass::init() {

@@ -247,7 +247,7 @@ void TestRenderer::drawFrame() {
 
     VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]}; // wait for the image to be available
     VkPipelineStageFlags waitStages[] = {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // wait for the image to be writeable before writing the color output
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }; // wait for the image to be writeable before writing the color output
     // This means that the vertex shader stage etc. can already be executed
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores; // semaphore to wait for before executing
@@ -306,6 +306,8 @@ void TestRenderer::recreateSwapChain() {
     // Destroy old objects
     cleanupSwapChain();
 
+    // The framebuffers depend on the image views of the swap chain
+    swapChainFramebuffers.clear();
     // Create new createSyncObjects
     surface = window.createSurface(instance.vk());
     swapChain.recreate(surface);
@@ -322,7 +324,7 @@ void TestRenderer::recreateSwapChain() {
     postRenderPass.setImageBufferViews(offscreenImageView.vk(), depthImageView.vk(), imGuiImageView.vk());
 
 
-    // Recreate the framebuffers for the render passes
+    // Recreate the framebuffers for the render passes (Destroys the old ones)
     createFramebuffers();
 
     createCommandBuffers();
@@ -331,23 +333,14 @@ void TestRenderer::recreateSwapChain() {
 /* Cleans up all objects that depend on the swapchain and its images. */
 void TestRenderer::cleanupSwapChain() {
 
-    // The framebuffers depend on the image views of the swap chain
-    swapChainFramebuffers.clear();
 
-    // Destroy offscreen main scene framebuffer
-//    VulkanFramebuffer::destroy(device, offscreenFramebuffer);
     // Destroy offscreen main scene image buffer
     VulkanImage::destroy(device, offscreenImage, offscreenImageMemory);
-//    VulkanImageView::destroy(device, offscreenImageView);/**/
     // Destroy offscreen main scene depth buffer
     VulkanImage::destroy(device, depthImage, depthImageMemory);
-//    VulkanImageView::destroy(device, depthImageView);
 
-    // Destroy offscreen ImGui framebuffer
-//    VulkanFramebuffer::destroy(device, imGuiFramebuffer);
     // Destroy offscreen ImGui image buffer
     VulkanImage::destroy(device, imGuiImage, imGuiImageMemory);
-//    VulkanImageView::destroy(device, imGuiImageView);
 
     // The command buffers depend on the amount of swapchain images
     for (auto &cmdBuffer : primaryCommandBuffers) {

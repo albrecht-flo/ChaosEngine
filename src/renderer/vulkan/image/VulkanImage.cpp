@@ -59,7 +59,7 @@ VkImage VulkanImage::createFromFile(const VulkanDevice &device, VulkanMemory &vu
 
 /* Creates an image for depth attachment and sample use. */
 VkImage
-VulkanImage::createDepthBufferImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                                     VkFormat depthFormat, VkDeviceMemory &depthImageMemory) {
 
     VkImage depthImage;
@@ -91,7 +91,7 @@ VkImage VulkanImage::createRawImage(const VulkanDevice &device,
 }
 
 /* Creates an image, allocates its memory and binds the two together. */
-void VulkanImage::createImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
+void VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
                               VkFormat format,
                               VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
                               VkImage &image, VkDeviceMemory &imageMemory) {

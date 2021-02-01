@@ -1,13 +1,9 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
-
+#include <vulkan/vulkan.h>
 #include <vector>
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
-
+class VulkanDevice;
 class VulkanFramebuffer {
 private:
     explicit VulkanFramebuffer(const VulkanDevice &device, VkFramebuffer frameBuffer);
@@ -26,7 +22,7 @@ public:
     VulkanFramebuffer &operator=(VulkanFramebuffer &&o) noexcept;
 
     static VulkanFramebuffer createFramebuffer(const VulkanDevice &device,
-                                               std::vector<VkImageView> attachments,
+                                               std::vector<VkImageView> attachmentImages,
                                                VkRenderPass renderPass, uint32_t width, uint32_t height);
 
     [[nodiscard]] inline VkFramebuffer vk() const { return framebuffer; }

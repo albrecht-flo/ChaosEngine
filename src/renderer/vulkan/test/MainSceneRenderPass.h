@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <array>
 
-#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
@@ -34,7 +34,7 @@ struct UniformMaterialObject {
     float shininess = 50;
 };
 
-class MainSceneRenderPass : public VulkanRenderPass {
+class MainSceneRenderPass : public VulkanRenderPassOld {
 public:
     MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain);
 
