@@ -8,9 +8,6 @@
 
 // TODO: massive refactor to be a RAII Wrapper + Builder
 class VulkanImage {
-private:
-    VulkanImage(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory);
-
 public:
     static VkImage createFromFile(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename,
                                   VkDeviceMemory &imageMemory/*TEMP*/);

@@ -4,11 +4,11 @@
 
 #include <string>
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 
+class VulkanDevice;
 class VulkanTexture {
 private:
     VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VulkanImageView &&imageView,

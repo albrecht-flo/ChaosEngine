@@ -1,23 +1,9 @@
 #include <stdexcept>
 #include <array>
+#include <src/renderer/vulkan/image/VulkanFramebuffer.h>
 #include "VulkanRenderPass.h"
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
-
-
-VulkanRenderPass::VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass)
-        : device(device), renderPass(renderPass) {}
-
-VulkanRenderPass::VulkanRenderPass(VulkanRenderPass &&o) noexcept
-        : device(o.device), renderPass(std::exchange(o.renderPass, nullptr)) {}
-
-VulkanRenderPass::~VulkanRenderPass() {
-    destroy();
-}
-
-void VulkanRenderPass::destroy() {
-    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
-}
 
 VulkanRenderPass
 VulkanRenderPass::Create(const VulkanDevice &device, std::vector<VulkanAttachmentDescription> attachmentDescriptions) {
@@ -81,5 +67,25 @@ VulkanRenderPass::Create(const VulkanDevice &device, std::vector<VulkanAttachmen
     }
 
 
-    return VulkanRenderPass(device, renderPass);
+    return VulkanRenderPass(device, renderPass, attachments.size());
+}
+
+VulkanRenderPass::VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount)
+        : device(device), renderPass(renderPass), attachmentCount(attachmentCount) {}
+
+VulkanRenderPass::VulkanRenderPass(VulkanRenderPass &&o) noexcept
+        : device(o.device), renderPass(std::exchange(o.renderPass, nullptr)), attachmentCount(o.attachmentCount) {}
+
+VulkanRenderPass::~VulkanRenderPass() {
+    destroy();
+}
+
+void VulkanRenderPass::destroy() {
+    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
+}
+
+VulkanFramebuffer
+VulkanRenderPass::createFrameBuffer(const std::vector<VkImageView> &attachmentImages, VkExtent2D extent) const {
+    assert(attachmentImages.size() == attachmentCount);
+    return VulkanFramebuffer::createFramebuffer(device, attachmentImages, renderPass, extent.width, extent.height);
 }

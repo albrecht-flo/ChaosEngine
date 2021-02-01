@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 struct VulkanBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
@@ -28,6 +30,25 @@ public:
             }
         }
     }
+
+    UniformBufferContent(const UniformBufferContent &o) = delete;
+
+    UniformBufferContent &operator=(const UniformBufferContent &o) = delete;
+
+    UniformBufferContent(UniformBufferContent &&o) noexcept
+            : m_data(std::exchange(o.m_data, nullptr)), m_size(std::exchange(o.m_size, 0)),
+              m_alignment(std::exchange(o.m_alignment, 0)) {}
+
+    UniformBufferContent &operator=(UniformBufferContent &&o) noexcept {
+        if (this == &o)
+            return *this;
+        destroy();
+        m_data = std::exchange(o.m_data, nullptr);
+        m_size = std::exchange(o.m_size, 0);
+        m_alignment = std::exchange(o.m_alignment, 0);
+        return *this;
+    }
+
 
     void destroy() {
         if (m_data != nullptr) {

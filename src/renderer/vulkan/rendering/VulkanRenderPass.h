@@ -12,9 +12,8 @@ class VulkanDevice;
  *  This render pass will wait for previous stages to finish writing to its attachments through sub pass dependencies.
  */
 class VulkanRenderPass {
-    // TODO: Create Frambuffers from RenderPasses, allowes for basic validity checks
 private:
-    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass);
+    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
 
     void destroy();
 
@@ -34,7 +33,11 @@ public:
 
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass; };
 
+    [[nodiscard]] VulkanFramebuffer
+    createFrameBuffer(const std::vector<VkImageView> &attachmentImages, VkExtent2D extent) const;
+
 private:
     const VulkanDevice &device;
     VkRenderPass renderPass;
+    int attachmentCount;
 };

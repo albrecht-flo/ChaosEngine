@@ -1,5 +1,7 @@
 #include "VulkanMemory.h"
 
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+
 #include <stdexcept>
 #include <cstring>
 

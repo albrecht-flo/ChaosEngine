@@ -3,9 +3,9 @@
 #include <vulkan/vulkan.h>
 #include <src/renderer/vulkan/command/VulkanCommandPool.h>
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanBuffer.h"
 
+class VulkanDevice;
 // TODO: This class needs to be refactored as soon as the Khronos Vulkan memory manager is added
 class VulkanMemory {
 public:

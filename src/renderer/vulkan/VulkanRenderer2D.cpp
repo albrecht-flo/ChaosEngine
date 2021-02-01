@@ -35,12 +35,11 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
     std::vector<VulkanFramebuffer> swapChainFramebuffers;
     swapChainFramebuffers.reserve(maxFramesInFlight);
     for (uint32_t i = 0; i < maxFramesInFlight; i++) {
-        swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
-                device,
-                {swapChain.getImageViews()[i].vk(), depthImage.vk()},
-                renderPass.vk(),
-                swapChain.getExtent().width, swapChain.getExtent().height
-        ));
+        swapChainFramebuffers.emplace_back(
+                renderPass.createFrameBuffer(
+                        {swapChain.getImageViews()[i].vk(), depthImage.vk()},
+                        swapChain.getExtent()
+                ));
     }
     return std::move(swapChainFramebuffers);
 }
