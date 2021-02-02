@@ -186,7 +186,8 @@ VulkanSwapChain::~VulkanSwapChain() {
 /* Stories frame buffers, image views and swap chain. */
 void VulkanSwapChain::destroy() {
     swapChainImageViews.clear();
-    vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
+    if (swapChain != nullptr)
+        vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
 }
 
 void VulkanSwapChain::recreate(VkSurfaceKHR mSurface) {

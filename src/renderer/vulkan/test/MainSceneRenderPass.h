@@ -88,7 +88,7 @@ private:
     DescriptorSetLayout descriptorSetLayoutMaterials{};
     DescriptorSetLayout descriptorSetLayoutLights{};
     PipelineLayout graphicsPipelineLayout{};
-    VulkanPipeline graphicsPipeline{};
+    VulkanPipeline graphicsPipeline;
 
     // The objects for uniform buffer linking
     VkDescriptorPool descriptorPoolCamera{};

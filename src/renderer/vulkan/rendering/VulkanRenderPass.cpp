@@ -81,7 +81,8 @@ VulkanRenderPass::~VulkanRenderPass() {
 }
 
 void VulkanRenderPass::destroy() {
-    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
+    if (renderPass != nullptr)
+        vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 }
 
 VulkanFramebuffer

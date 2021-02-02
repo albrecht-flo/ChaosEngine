@@ -59,7 +59,8 @@ VkImage VulkanImage::createFromFile(const VulkanDevice &device, VulkanMemory &vu
 
 /* Creates an image for depth attachment and sample use. */
 VkImage
-VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width,
+                                    uint32_t height,
                                     VkFormat depthFormat, VkDeviceMemory &depthImageMemory) {
 
     VkImage depthImage;
@@ -91,10 +92,11 @@ VkImage VulkanImage::createRawImage(const VulkanDevice &device,
 }
 
 /* Creates an image, allocates its memory and binds the two together. */
-void VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
-                              VkFormat format,
-                              VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-                              VkImage &image, VkDeviceMemory &imageMemory) {
+void
+VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
+                         VkFormat format,
+                         VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+                         VkImage &image, VkDeviceMemory &imageMemory) {
     // Create the image
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -224,6 +226,8 @@ VkFormat VulkanImage::getDepthFormat(const VulkanDevice &device) {
 
 /* Destroyes the image and the memory. */
 void VulkanImage::destroy(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory) {
-    vkDestroyImage(device.vk(), image, nullptr);
-    vkFreeMemory(device.vk(), imageMemory, nullptr);
+    if (image != nullptr)
+        vkDestroyImage(device.vk(), image, nullptr);
+    if (imageMemory != nullptr)
+        vkFreeMemory(device.vk(), imageMemory, nullptr);
 }

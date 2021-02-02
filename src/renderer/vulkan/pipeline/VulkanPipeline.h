@@ -1,13 +1,9 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
-
+#include <vulkan/vulkan.h>
 #include <vector>
 #include <string>
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanDescriptor.h"
 
 struct PipelineLayout {
@@ -15,37 +11,51 @@ struct PipelineLayout {
     std::vector<VkPushConstantRange> pushConstants;
 };
 
+/* TODO:
+ *  - Use Builder Pattern, because this is getting insane.
+ *  - Use Dynamic state for viewport size
+ *  // Later
+ *  - Shader loading from disk should be managed in ressource management.
+ */
+
 class VulkanPipeline {
-// Factory
+private:
+    VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
+
+    void destroy();
+
 public:
-    static VulkanPipeline create(VulkanDevice &device,
+    [[deprecated]] VulkanPipeline(const VulkanDevice &device)
+            : device(device), pipeline(nullptr), pipelineLayout(nullptr) {}
+
+    ~VulkanPipeline();
+
+
+    VulkanPipeline(const VulkanPipeline &o) = delete;
+
+    VulkanPipeline &operator=(const VulkanPipeline &o) = delete;
+
+    VulkanPipeline(VulkanPipeline &&o) noexcept;
+
+    VulkanPipeline &operator=(VulkanPipeline &&o) noexcept;
+
+
+    static VulkanPipeline Create(const VulkanDevice &device,
                                  VkVertexInputBindingDescription bindingDescription,
                                  VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
                                  VkExtent2D swapChainExtent,
                                  PipelineLayout descriptorLayout,
                                  VkRenderPass renderPass,
-                                 std::string shaderName,
+                                 const std::string &shaderName,
                                  bool depthTestEnabled = true);
 
-private:
-    static VkShaderModule createShaderModule(VulkanDevice &device, const std::vector<char> &code);
+    [[nodiscard]] inline const VkPipeline getPipeline() const { return pipeline; }
 
-    static std::vector<char> readFile(const std::string &filename);
+    [[nodiscard]] inline const VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 
-// Container
-public:
-    VulkanPipeline() :
-            pipeline(VK_NULL_HANDLE), pipelineLayout(VK_NULL_HANDLE) {}
-
-    ~VulkanPipeline() {}
-
-    void destroy(VulkanDevice &device);
 
 private:
-    VulkanPipeline(VkPipeline pipeline, VkPipelineLayout pipelineLayout) :
-            pipeline(pipeline), pipelineLayout(pipelineLayout) {}
-
-public: // can not be const because of copy operator =
+    const VulkanDevice &device;
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
 };

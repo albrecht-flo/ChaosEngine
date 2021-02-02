@@ -40,5 +40,6 @@ VulkanCommandPool::~VulkanCommandPool() {
 
 // Destroy the command pool
 void VulkanCommandPool::destroy() {
-    vkDestroyCommandPool(device.vk(), commandPool, nullptr);
+    if (commandPool != nullptr)
+        vkDestroyCommandPool(device.vk(), commandPool, nullptr);
 }

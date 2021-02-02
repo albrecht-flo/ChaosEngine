@@ -14,8 +14,9 @@ private:
     VulkanFrame(Window &window, const VulkanContext &context, std::vector<VkSemaphore> &&imageAvailableSemaphores,
                 std::vector<VkSemaphore> &&renderFinishedSemaphores, std::vector<VkFence> &&inFlightFences);
 
+    void destroy();
 public:
-    ~VulkanFrame() = default;
+    ~VulkanFrame();
 
     VulkanFrame(const VulkanFrame &o) = delete;
 

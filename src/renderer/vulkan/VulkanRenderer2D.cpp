@@ -1,6 +1,5 @@
+#include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
 #include "VulkanRenderer2D.h"
-
-#include "src/renderer/vulkan/image/VulkanImage.h"
 
 static std::vector<VulkanCommandBuffer>
 createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
@@ -56,7 +55,6 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color).build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
-
     VulkanRenderPass mainRenderPass = VulkanRenderPass::Create(context.getDevice(), attachments);
 
     VulkanImageBuffer depthBuffer = createDepthResources(context.getDevice(), context.getMemory(),
@@ -66,20 +64,30 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
                                                              mainRenderPass, depthBuffer.getImageView(),
                                                              maxFramesInFlight);
 
+    VulkanDataManager pipelineManager{};
+
+    auto vertexInput = VulkanVertexInput::Vertex_3_3_3_2;
+//    VulkanVertexInput pipeline = VulkanPipelineBuilder(mainRenderPass.vk(), vertexInput, "2DQuad")
+//            .build();
+//
+//    pipelineManager.addNewPipeline(pipeline);
+
     return VulkanRenderer2D(std::move(context), std::move(frame), std::move(swapChainFrameBuffers),
-                            std::move(mainRenderPass), std::move(depthBuffer));
+                            std::move(mainRenderPass), std::move(depthBuffer), std::move(pipelineManager));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
                                    std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
-                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer)
+                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer,
+                                   VulkanDataManager &&pipelineManager)
         : context(std::move(context)), frame(std::move(frame)), swapChainFrameBuffers(std::move(swapChainFrameBuffers)),
-          mainRenderPass(std::move(mainRenderPass)), depthBuffer(std::move(depthBuffer)) {}
+          mainRenderPass(std::move(mainRenderPass)), depthBuffer(std::move(depthBuffer)),
+          pipelineManager(std::move(pipelineManager)) {}
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
 void VulkanRenderer2D::join() {
-
+    context.getDevice().waitIdle();
 }
 
 void VulkanRenderer2D::beginScene() {

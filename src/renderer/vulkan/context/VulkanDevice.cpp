@@ -274,7 +274,8 @@ VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
 VulkanDevice::~VulkanDevice() { destroy(); }
 
 void VulkanDevice::destroy() {
-    vkDestroyDevice(device, nullptr);
+    if (device != nullptr)
+        vkDestroyDevice(device, nullptr);
 }
 
 /* Waits for all processing done on this device to finish. */

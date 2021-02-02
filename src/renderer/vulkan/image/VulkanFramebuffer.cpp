@@ -48,6 +48,7 @@ VulkanFramebuffer &VulkanFramebuffer::operator=(VulkanFramebuffer &&o) noexcept 
 }
 
 void VulkanFramebuffer::destroy() {
-    vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
+    if (framebuffer != nullptr)
+        vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
 }
 

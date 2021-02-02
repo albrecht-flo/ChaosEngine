@@ -86,8 +86,9 @@ static void setupDebugMessenger(VkInstance instance,
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
 /* Creates a vulkan instance with a debug callback and validation layers if requested. */
-VulkanInstance VulkanInstance::Create(const std::vector<const char *>& validationLayers, const std::string &applicationName,
-                                      const std::string &engineName) {
+VulkanInstance
+VulkanInstance::Create(const std::vector<const char *> &validationLayers, const std::string &applicationName,
+                       const std::string &engineName) {
     // Check the validation layers
     if (!validationLayers.empty() && !checkValidationLayerSupport(validationLayers)) {
         throw std::runtime_error("VULKAN: validation layers requested, but not available!");
@@ -168,6 +169,7 @@ void VulkanInstance::destroy() {
             func(instance, debugMessenger, nullptr);
         }
     }
-    vkDestroyInstance(instance, nullptr);
+    if (instance != nullptr)
+        vkDestroyInstance(instance, nullptr);
 }
 

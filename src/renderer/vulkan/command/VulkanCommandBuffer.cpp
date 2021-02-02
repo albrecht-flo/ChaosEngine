@@ -69,5 +69,6 @@ void VulkanCommandBuffer::end() {
 }
 
 void VulkanCommandBuffer::destroy() {
-    vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &buffer);
+    if (buffer != nullptr)
+        vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &buffer);
 }

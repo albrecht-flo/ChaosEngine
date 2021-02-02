@@ -61,6 +61,19 @@ VulkanFrame::VulkanFrame(Window &window, const VulkanContext &context,
           renderFinishedSemaphores(std::move(renderFinishedSemaphores)),
           inFlightFences(std::move(inFlightFences)) {}
 
+VulkanFrame::~VulkanFrame() {
+    destroy();
+};
+
+void VulkanFrame::destroy() {
+    // Destroy the synchronization objects
+    for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
+        vkDestroySemaphore(context.getDevice().vk(), renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(context.getDevice().vk(), imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(context.getDevice().vk(), inFlightFences[i], nullptr);
+    }
+}
+
 
 bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) {
     // Wait for the old frame to finish rendering

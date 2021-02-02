@@ -4,9 +4,9 @@
 #include "src/renderer/RendererAPI.h"
 #include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
-#include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "VulkanDataManager.h"
 
 class VulkanRenderer2D : public RendererAPI {
 public:
@@ -14,7 +14,7 @@ public:
 private:
     VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
                      std::vector<VulkanFramebuffer> &&swapChainFrameBuffers, VulkanRenderPass &&mainRenderPass,
-                     VulkanImageBuffer &&depthBuffer);
+                     VulkanImageBuffer &&depthBuffer, VulkanDataManager &&pipelineManager);
 
 public:
     ~VulkanRenderer2D() override = default;
@@ -80,6 +80,8 @@ private:
     VulkanRenderPass mainRenderPass;
 
     VulkanImageBuffer depthBuffer;
+
+    VulkanDataManager pipelineManager;
 
     uint32_t currentFrame = 0;
 };

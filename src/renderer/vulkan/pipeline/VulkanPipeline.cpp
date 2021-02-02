@@ -1,8 +1,46 @@
 #include "VulkanPipeline.h"
 
+#include "src/renderer/vulkan/context/VulkanDevice.h"
+
 #include <stdexcept>
 #include <fstream>
 #include <iostream>
+
+/* Create shader module form byte code */
+static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
+
+    VkShaderModule shaderModule;
+    if (vkCreateShaderModule(device.vk(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+        throw std::runtime_error("[Vulkan] Failed to create shader module!");
+    }
+
+    return shaderModule;
+}
+
+/* Reads a file from 'filename' and returns it in bytes. */
+static std::vector<char> readFile(const std::string &filename) {
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("[Vulkan] Failed to open file! " + filename);
+    }
+
+    size_t fileSize = (size_t) file.tellg();
+    std::vector<char> buffer(fileSize);
+
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+
+    file.close();
+
+    return std::move(buffer);
+}
+
+// ------------------------------------ Class Members ------------------------------------------------------------------
 
 /*	Creates shader modules
 	Configure vertex input
@@ -13,15 +51,15 @@
 	Configure blending
 	Build pipeline
 */
-VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
+VulkanPipeline VulkanPipeline::Create(const VulkanDevice &device,
                                       VkVertexInputBindingDescription bindingDescription,
                                       VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
                                       VkExtent2D swapChainExtent,
                                       PipelineLayout descriptorLayout,
                                       VkRenderPass renderPass,
-                                      std::string shaderName,
+                                      const std::string &shaderName,
                                       bool depthTestEnabled) {
-    // Create shader objects
+    // Create shader objects -------------------------------------------------------------------------------------------
     auto vertShaderCode = readFile("shaders/" + shaderName + ".vert.spv");
     auto fragShaderCode = readFile("shaders/" + shaderName + ".frag.spv");
 
@@ -42,7 +80,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
 
     VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
-    // Describes data format passed to the shader pipeline
+    // Describes data format passed to the shader pipeline -------------------------------------------------------------
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -50,13 +88,13 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
     vertexInputInfo.pVertexAttributeDescriptions = attributeDesciption;
 
-    // Describes primitive type and reset  (GL_TRIANGLE)
+    // Describes primitive type and reset  (GL_TRIANGLE) ---------------------------------------------------------------
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE; // if true 0xffff and 0xffffffff will restart in index buffer (only STRIPS)
 
-    // Define viewport
+    // Define viewport -------------------------------------------------------------------------------------------------
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -77,7 +115,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     viewportState.scissorCount = 1;
     viewportState.pScissors = &scissor;
 
-    // Configure Rasterizer
+    // Configure Rasterizer --------------------------------------------------------------------------------------------
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable = VK_FALSE; // -> discards fragments outside instead of clamping ! requires GPU feature
@@ -88,7 +126,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // define vertex ordering for back and front
     rasterizer.depthBiasEnable = VK_FALSE; // can be useful for shadow maps
 
-    // Configure Multisampling for fragment stage
+    // Configure Multisampling for fragment stage ----------------------------------------------------------------------
     VkPipelineMultisampleStateCreateInfo multisampling = {};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.sampleShadingEnable = VK_FALSE; // disabled for the moment -> tocome
@@ -98,7 +136,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
     multisampling.alphaToOneEnable = VK_FALSE; // Optional
 
-    // Configure depth testing
+    // Configure depth testing -----------------------------------------------------------------------------------------
     VkPipelineDepthStencilStateCreateInfo depthTesting = {};
     depthTesting.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthTesting.depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
@@ -112,7 +150,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     depthTesting.front = {};
     depthTesting.back = {};
 
-    // Defines color attatchment blending -> used for alpha blending
+    // Defines color attatchment blending -> used for alpha blending ---------------------------------------------------
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -137,7 +175,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    // Create pipeline layout from descriptor set layouts
+    // Create pipeline layout from descriptor set layouts --------------------------------------------------------------
     std::vector<VkDescriptorSetLayout> setLayouts;
     for (auto &layout : descriptorLayout.layouts) {
         setLayouts.emplace_back(layout.vDescriptorSetLayout);
@@ -155,7 +193,7 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
         throw std::runtime_error("[Vulkan] Failed to create pipeline layout!");
     }
 
-    // Build pipeline with all configurations
+    // Build pipeline with all configurations --------------------------------------------------------------------------
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = 2;
@@ -182,47 +220,32 @@ VulkanPipeline VulkanPipeline::create(VulkanDevice &device,
     vkDestroyShaderModule(device.vk(), fragShaderModule, nullptr);
     vkDestroyShaderModule(device.vk(), vertShaderModule, nullptr);
 
-    return VulkanPipeline(pipeline, pipelineLayout);
+    return VulkanPipeline{device, pipeline, pipelineLayout};
 }
 
+VulkanPipeline::VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
+        : device(device), pipeline(pipeline), pipelineLayout(pipelineLayout) {}
 
-/* Create shader module form byte code */
-VkShaderModule VulkanPipeline::createShaderModule(VulkanDevice &device, const std::vector<char> &code) {
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = code.size();
-    createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
-
-    VkShaderModule shaderModule;
-    if (vkCreateShaderModule(device.vk(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create shader module!");
-    }
-
-    return shaderModule;
+VulkanPipeline::~VulkanPipeline() {
+    destroy();
 }
 
-/* Reads a file from 'filename' and returns it in bytes. */
-std::vector<char> VulkanPipeline::readFile(const std::string &filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+VulkanPipeline::VulkanPipeline(VulkanPipeline &&o) noexcept
+        : device(o.device), pipeline(std::exchange(o.pipeline, nullptr)),
+          pipelineLayout(std::exchange(o.pipelineLayout, nullptr)) {}
 
-    if (!file.is_open()) {
-        throw std::runtime_error("[Vulkan] Failed to open file! " + filename);
-    }
-
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
+VulkanPipeline &VulkanPipeline::operator=(VulkanPipeline &&o) noexcept {
+    if (this == &o)
+        return *this;
+    destroy();
+    pipeline = std::exchange(o.pipeline, nullptr);
+    pipelineLayout = std::exchange(o.pipelineLayout, nullptr);
+    return *this;
 }
 
-void VulkanPipeline::destroy(VulkanDevice &device) {
-    if (pipeline != VK_NULL_HANDLE)
+void VulkanPipeline::destroy() {
+    if (pipeline != nullptr)
         vkDestroyPipeline(device.vk(), pipeline, nullptr);
-    if (pipelineLayout != VK_NULL_HANDLE)
+    if (pipelineLayout != nullptr)
         vkDestroyPipelineLayout(device.vk(), pipelineLayout, nullptr);
 }

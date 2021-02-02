@@ -7,7 +7,7 @@
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain),
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), postprocessingPipeline(device),
         backgroundTexture(device) {
 }
 
@@ -63,6 +63,18 @@ void PostRenderPass::init() {
                     }
             }
     };
+
+    // Pipeline creation
+    auto attributeDescription = Vertex::getAttributeDescriptions();
+    postprocessingPipeline = VulkanPipeline::Create(device,
+                                                    Vertex::getBindingDescription(),
+                                                    attributeDescription.data(),
+                                                    static_cast<uint32_t>(attributeDescription.size()),
+                                                    swapChain.getExtent(), postprocessingPipelineLayout,
+                                                    renderPass,
+                                                    "post", false
+    );
+
 
 
     // Create descriptor pool
@@ -162,17 +174,6 @@ void PostRenderPass::createRenderPass() {
 }
 
 void PostRenderPass::createPipelineAndDescriptors() {
-    // Pipeline creation
-    auto attributeDescription = Vertex::getAttributeDescriptions();
-    postprocessingPipeline = VulkanPipeline::create(device,
-                                                    Vertex::getBindingDescription(),
-                                                    attributeDescription.data(),
-                                                    static_cast<uint32_t>(attributeDescription.size()),
-                                                    swapChain.getExtent(), postprocessingPipelineLayout,
-                                                    renderPass,
-                                                    "post", false
-    );
-
     // Fill the descriptor set
     VulkanDescriptor::writeDescriptorSet(device, descriptorSet,
                                          {}, // No buffers
@@ -248,14 +249,14 @@ void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, Vk
 
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
-    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline.pipeline);
+    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline.getPipeline());
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            postprocessingPipeline.pipelineLayout,
+                            postprocessingPipeline.getPipelineLayout(),
                             0, 1, &descriptorSet, 0, nullptr);
 
-    vkCmdPushConstants(cmdBuf, postprocessingPipeline.pipelineLayout,
+    vkCmdPushConstants(cmdBuf, postprocessingPipeline.getPipelineLayout(),
                        VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float) * 2, &camera.near);
 }
 
@@ -272,8 +273,6 @@ void PostRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
 
 void PostRenderPass::destroySwapChainDependent() {
     // The pipeline, layouts and render rendering also deppend on the number of swapchain images and the framebuffers
-    postprocessingPipeline.destroy(device);
-
     vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
 }
@@ -282,6 +281,17 @@ void PostRenderPass::destroySwapChainDependent() {
 void PostRenderPass::recreate() {
     // Recreate the render rendering, because swap chain format has changed
     createRenderPass();
+
+    // Pipeline creation
+    auto attributeDescription = Vertex::getAttributeDescriptions();
+    postprocessingPipeline = VulkanPipeline::Create(device,
+                                                    Vertex::getBindingDescription(),
+                                                    attributeDescription.data(),
+                                                    static_cast<uint32_t>(attributeDescription.size()),
+                                                    swapChain.getExtent(), postprocessingPipelineLayout,
+                                                    renderPass,
+                                                    "post", false
+    );
 }
 
 void PostRenderPass::destroy() {

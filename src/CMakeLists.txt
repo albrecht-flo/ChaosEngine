@@ -34,7 +34,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
 
-        renderer/vulkan/rendering/VulkanRenderPass.cpp renderer/vulkan/rendering/VulkanRenderPass.h renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp renderer/vulkan/rendering/VulkanAttachmentBuilder.h)
+        renderer/vulkan/rendering/VulkanRenderPass.cpp renderer/vulkan/rendering/VulkanRenderPass.h renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp renderer/vulkan/rendering/VulkanAttachmentBuilder.h renderer/vulkan/VulkanDataManager.cpp renderer/vulkan/VulkanDataManager.h renderer/vulkan/pipeline/VulkanVertexInput.cpp renderer/vulkan/pipeline/VulkanVertexInput.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/

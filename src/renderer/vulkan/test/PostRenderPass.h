@@ -52,7 +52,7 @@ private:
     // Pipelines
     DescriptorSetLayout descriptorSetLayout{};
     PipelineLayout postprocessingPipelineLayout{};
-    VulkanPipeline postprocessingPipeline{};
+    VulkanPipeline postprocessingPipeline;
 
     VkImageView framebufferView{};
     VkSampler framebufferSampler{};

@@ -46,5 +46,6 @@ VulkanImageView &VulkanImageView::operator=(VulkanImageView &&o) noexcept {
 }
 
 void VulkanImageView::destroy() {
-    vkDestroyImageView(device.vk(), imageView, nullptr);
+    if (imageView != nullptr)
+        vkDestroyImageView(device.vk(), imageView, nullptr);
 }

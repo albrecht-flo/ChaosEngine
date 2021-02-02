@@ -6,7 +6,7 @@
 
 /* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain) {}
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), graphicsPipeline(device) {}
 
 void MainSceneRenderPass::init() {
     // Create the render rendering
@@ -60,7 +60,7 @@ void MainSceneRenderPass::init() {
     };
     // Pipeline creation
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    graphicsPipeline = VulkanPipeline::create(device,
+    graphicsPipeline = VulkanPipeline::Create(device,
                                               Vertex::getBindingDescription(),
                                               attributeDescription.data(),
                                               static_cast<uint32_t>(attributeDescription.size()),
@@ -349,15 +349,15 @@ void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImag
 
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
-    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.pipeline);
+    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.getPipeline());
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            graphicsPipeline.pipelineLayout,
+                            graphicsPipeline.getPipelineLayout(),
                             0, 1, &descriptorSetsCamera[currentImage], 0, nullptr);
     // Bind the lights descriptor set
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            graphicsPipeline.pipelineLayout,
+                            graphicsPipeline.getPipelineLayout(),
                             1, 1, &descriptorSetsLights[currentImage], 0, nullptr);
 }
 
@@ -367,7 +367,7 @@ void MainSceneRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj)
     if (robj.material < descriptorSetsMaterials.size()) {
         // Bind the material descriptor set to the pipeline // TOBE: not per renderobject
         vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                graphicsPipeline.pipelineLayout,
+                                graphicsPipeline.getPipelineLayout(),
                                 2, 1, &descriptorSetsMaterials[robj.material], 0, nullptr);
     } else {
         std::cerr << "MainSceneRenderPass: unknown materialRef (descriptorSet not fount) ref=" << robj.material
@@ -375,7 +375,7 @@ void MainSceneRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj)
     }
 
     // Set model matrix via push constant
-    vkCmdPushConstants(cmdBuf, graphicsPipeline.pipelineLayout,
+    vkCmdPushConstants(cmdBuf, graphicsPipeline.getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(robj.modelMat), &robj.modelMat);
 }
 
@@ -386,9 +386,6 @@ void MainSceneRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
 }
 
 void MainSceneRenderPass::destroySwapChainDependent() {
-    // The pipeline, layouts and render rendering also deppend on the number of swapchain images and the framebuffers
-    graphicsPipeline.destroy(device);
-
     // These uniform buffers are per frame and therefore depend on the number of swapchain images
     for (size_t i = 0; i < uniformBuffers.size(); i++) {
         vulkanMemory.destroy(uniformBuffers[i]);
@@ -403,7 +400,7 @@ void MainSceneRenderPass::destroySwapChainDependent() {
 void MainSceneRenderPass::recreate() {
     // Recreate the pipeline because the swap chain dimensions might have changed
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    graphicsPipeline = VulkanPipeline::create(device,
+    graphicsPipeline = VulkanPipeline::Create(device,
                                               Vertex::getBindingDescription(),
                                               attributeDescription.data(),
                                               static_cast<uint32_t>(attributeDescription.size()),
