@@ -1,10 +1,13 @@
 #pragma once
 
+#include "src/renderer/vulkan/image/VulkanFramebuffer.h"
+
 #include <vulkan/vulkan.h>
 #include <vector>
-#include "VulkanAttachmentBuilder.h"
 
 class VulkanDevice;
+
+struct VulkanAttachmentDescription;
 
 /** This class wraps the vulkan render pass and its creation.
  *  Note: Currently only one main graphics sub pass is supported.
@@ -29,9 +32,9 @@ public:
     VulkanRenderPass &operator=(VulkanRenderPass &&o) = delete;
 
     static VulkanRenderPass
-    Create(const VulkanDevice &device, std::vector<VulkanAttachmentDescription> attachmentDescriptions);
+    Create(const VulkanDevice &device, const std::vector<VulkanAttachmentDescription> &attachmentDescriptions);
 
-    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; };
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
 
     [[nodiscard]] VulkanFramebuffer
     createFrameBuffer(const std::vector<VkImageView> &attachmentImages, VkExtent2D extent) const;

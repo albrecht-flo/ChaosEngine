@@ -6,10 +6,6 @@
 
 #include "VulkanDescriptor.h"
 
-struct PipelineLayout {
-    std::vector<DescriptorSetLayout> layouts;
-    std::vector<VkPushConstantRange> pushConstants;
-};
 
 /* TODO:
  *  - Use Builder Pattern, because this is getting insane.
@@ -19,14 +15,11 @@ struct PipelineLayout {
  */
 
 class VulkanPipeline {
-private:
-    VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
-
-    void destroy();
-
 public:
     [[deprecated]] VulkanPipeline(const VulkanDevice &device)
             : device(device), pipeline(nullptr), pipelineLayout(nullptr) {}
+
+    VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
 
     ~VulkanPipeline();
 
@@ -53,6 +46,9 @@ public:
 
     [[nodiscard]] inline const VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
 
+
+private:
+    void destroy();
 
 private:
     const VulkanDevice &device;

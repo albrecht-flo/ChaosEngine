@@ -7,7 +7,9 @@ class VulkanVertexInput {
 public:
     static VulkanVertexInput Vertex_3_3_3_2;
 public:
-    VulkanVertexInput(const VkVertexInputBindingDescription &bindingDescription,
+    VulkanVertexInput() = default;
+
+    VulkanVertexInput(std::vector<VkVertexInputBindingDescription> &&bindingDescription,
                       std::vector<VkVertexInputAttributeDescription> &&attributeDescriptions);
 
     ~VulkanVertexInput() = default;
@@ -23,11 +25,11 @@ public:
     [[nodiscard]] inline const std::vector<VkVertexInputAttributeDescription> &
     getAttributeDescriptions() const { return attributeDescriptions; }
 
-    [[nodiscard]] inline const VkVertexInputBindingDescription &
+    [[nodiscard]] inline const std::vector<VkVertexInputBindingDescription> &
     getBindingDescription() const { return bindingDescription; }
 
 private:
-    VkVertexInputBindingDescription bindingDescription;
+    std::vector<VkVertexInputBindingDescription> bindingDescription;
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 };
 
@@ -48,7 +50,8 @@ public:
     VulkanVertexInput build() {
         auto vInputRate = (inputRate == InputRate::Vertex) ? VK_VERTEX_INPUT_RATE_VERTEX
                                                            : VK_VERTEX_INPUT_RATE_INSTANCE;
-        return VulkanVertexInput{VkVertexInputBindingDescription{binding, stride, vInputRate}, std::move(attributes)};
+        return VulkanVertexInput{{VkVertexInputBindingDescription{binding, stride, vInputRate}},
+                                 std::move(attributes)};
     }
 
 private:

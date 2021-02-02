@@ -5,23 +5,28 @@ set(RENDER_ENGINE_SOURCES
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
         renderer/vulkan/VulkanRenderer2D.cpp
-        renderer/vulkan/test/VulkanRendererOld.cpp
+        renderer/vulkan/VulkanDataManager.cpp
         renderer/vulkan/rendering/VulkanFrame.cpp
-        renderer/vulkan/test/VulkanRenderPassOld.cpp
-        renderer/vulkan/image/VulkanTexture.cpp
+        renderer/vulkan/rendering/VulkanRenderPass.cpp
+        renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp
         renderer/vulkan/context/VulkanContext.cpp
         renderer/vulkan/context/VulkanDevice.cpp
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp
+        renderer/vulkan/memory/VulkanMemory.cpp
         renderer/vulkan/command/VulkanCommandBuffer.cpp
         renderer/vulkan/command/VulkanCommandPool.cpp
         renderer/vulkan/image/VulkanImage.cpp
         renderer/vulkan/image/VulkanSampler.cpp
         renderer/vulkan/image/VulkanFramebuffer.cpp
         renderer/vulkan/image/VulkanImageView.cpp
-        renderer/vulkan/memory/VulkanMemory.cpp
+        renderer/vulkan/image/VulkanTexture.cpp
+        renderer/vulkan/pipeline/VulkanVertexInput.cpp
         renderer/vulkan/pipeline/VulkanDescriptor.cpp
+        renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
         renderer/vulkan/pipeline/VulkanPipeline.cpp
+        renderer/vulkan/test/VulkanRendererOld.cpp
+        renderer/vulkan/test/VulkanRenderPassOld.cpp
         renderer/vulkan/test/TestRenderer.cpp
         renderer/vulkan/test/MainSceneRenderPass.cpp
         renderer/vulkan/test/PostRenderPass.cpp
@@ -33,8 +38,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
-
-        renderer/vulkan/rendering/VulkanRenderPass.cpp renderer/vulkan/rendering/VulkanRenderPass.h renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp renderer/vulkan/rendering/VulkanAttachmentBuilder.h renderer/vulkan/VulkanDataManager.cpp renderer/vulkan/VulkanDataManager.h renderer/vulkan/pipeline/VulkanVertexInput.cpp renderer/vulkan/pipeline/VulkanVertexInput.h)
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/

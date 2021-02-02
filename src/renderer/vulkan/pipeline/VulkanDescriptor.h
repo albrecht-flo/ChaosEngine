@@ -1,8 +1,6 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <vector>
 
@@ -11,6 +9,11 @@
 struct DescriptorSetLayout {
     VkDescriptorSetLayout vDescriptorSetLayout;
     std::vector<VkDescriptorSetLayoutBinding> bindings;
+};
+
+struct PipelineLayout {
+    std::vector<DescriptorSetLayout> layouts;
+    std::vector<VkPushConstantRange> pushConstants;
 };
 
 struct DescriptorBufferInfo {

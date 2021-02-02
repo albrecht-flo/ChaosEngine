@@ -4,9 +4,9 @@
 
 #include <glm/glm.hpp>
 
-VulkanVertexInput::VulkanVertexInput(const VkVertexInputBindingDescription &bindingDescription,
+VulkanVertexInput::VulkanVertexInput(std::vector<VkVertexInputBindingDescription> &&bindingDescription,
                                      std::vector<VkVertexInputAttributeDescription> &&attributeDescriptions)
-        : attributeDescriptions(std::move(attributeDescriptions)), bindingDescription(bindingDescription) {}
+        : attributeDescriptions(std::move(attributeDescriptions)), bindingDescription(std::move(bindingDescription)) {}
 
 
 struct Vertex {

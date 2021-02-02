@@ -1,5 +1,7 @@
-#include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
+#include <src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h>
 #include "VulkanRenderer2D.h"
+#include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
+#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 
 static std::vector<VulkanCommandBuffer>
 createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
@@ -66,12 +68,6 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
 
     VulkanDataManager pipelineManager{};
 
-    auto vertexInput = VulkanVertexInput::Vertex_3_3_3_2;
-//    VulkanVertexInput pipeline = VulkanPipelineBuilder(mainRenderPass.vk(), vertexInput, "2DQuad")
-//            .build();
-//
-//    pipelineManager.addNewPipeline(pipeline);
-
     return VulkanRenderer2D(std::move(context), std::move(frame), std::move(swapChainFrameBuffers),
                             std::move(mainRenderPass), std::move(depthBuffer), std::move(pipelineManager));
 }
@@ -130,6 +126,27 @@ VulkanRenderer2D::renderObject(RendererAPI::MeshRef meshRef, RendererAPI::Materi
 // ------------------------------------ Data management methods --------------------------------------------------------
 
 RendererAPI::ShaderRef VulkanRenderer2D::loadShader() {
+    struct Vertex {
+        glm::vec3 pos;
+        glm::vec3 color;
+        glm::vec3 normal;
+        glm::vec2 uv;
+    };
+    VulkanVertexInput Vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
+            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
+            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
+            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
+            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
+
+    VulkanPipeline pipeline = VulkanPipelineBuilder(context.getDevice(), mainRenderPass, "base", Vertex_3P_3C_3N_2U)
+            .setTopology(Topology::TriangleList)
+            .setPolygonMode(PolygonMode::Fill)
+            .setCullFace(CullFace::CCLW)
+            .setDepthTestEnabled(true)
+            .setDepthCompare(CompareOp::Less)
+            .build();
+
+    pipelineManager.addNewPipeline(std::move(pipeline));
     return RendererAPI::ShaderRef();
 }
 

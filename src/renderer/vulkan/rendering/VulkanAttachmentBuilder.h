@@ -9,19 +9,19 @@ enum class AttachmentType {
     Color, Depth
 };
 
-struct VulkanAttachmentDescription {
-
-    AttachmentType attachmentType;
-    VkAttachmentDescription attachment;
-    VkImageLayout attachmentLayout;
-};
-
 enum class AttachmentLoadOp {
     Preserve, Clear, Undefined
 };
 
 enum class AttachmentStoreOp {
     Store, Undefined
+};
+
+struct VulkanAttachmentDescription {
+
+    AttachmentType attachmentType;
+    VkAttachmentDescription attachment;
+    VkImageLayout attachmentLayout;
 };
 
 class VulkanDevice;
@@ -33,7 +33,9 @@ public:
 
     ~VulkanAttachmentBuilder() = default;
 
-    VulkanAttachmentDescription build() { return {attachmentType, attachment, attachmentLayout}; }
+    inline VulkanAttachmentDescription build() {
+        return VulkanAttachmentDescription{attachmentType, attachment, attachmentLayout};
+    }
 
     inline VulkanAttachmentBuilder &format(VkFormat format) {
         attachment.format = format;

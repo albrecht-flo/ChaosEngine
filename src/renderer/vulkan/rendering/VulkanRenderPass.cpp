@@ -1,12 +1,14 @@
-#include <stdexcept>
-#include <array>
-#include <src/renderer/vulkan/image/VulkanFramebuffer.h>
 #include "VulkanRenderPass.h"
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
+#include "VulkanAttachmentBuilder.h"
+
+#include <stdexcept>
+#include <array>
 
 VulkanRenderPass
-VulkanRenderPass::Create(const VulkanDevice &device, std::vector<VulkanAttachmentDescription> attachmentDescriptions) {
+VulkanRenderPass::Create(const VulkanDevice &device,
+                         const std::vector<VulkanAttachmentDescription> &attachmentDescriptions) {
     assert(!attachmentDescriptions.empty());
     std::vector<VkAttachmentReference> colorAttachmentRefs;
     std::vector<VkAttachmentReference> depthAttachmentRefs;
