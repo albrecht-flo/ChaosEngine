@@ -54,7 +54,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
                                                     VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                                                     void * /*pUserData*/) {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+//    if(!std::strcmp(pCallbackData->pMessage, "Device Extension:"))
+    if(std::string(pCallbackData->pMessage).find("Device Extension:") == std::string::npos)
+        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }

@@ -13,7 +13,7 @@ VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
         : device(o.device), commandPool(o.commandPool) {}
 
 
-void VulkanMemory::destroy(VulkanBuffer buffer) {
+void VulkanMemory::destroy(VulkanBuffer buffer) const {
     vkDestroyBuffer(device.vk(), buffer.buffer, nullptr);
     vkFreeMemory(device.vk(), buffer.memory, nullptr);
 }
@@ -21,7 +21,7 @@ void VulkanMemory::destroy(VulkanBuffer buffer) {
 /* Creates a new buffer with dedicated device memory ! bad !
 	Optimal should be few big device memory regions and buffers into these regions */
 void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                                VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
+                                VkBuffer &buffer, VkDeviceMemory &bufferMemory) const {
     // Create buffer
     // Buffers only define the memory but need to be linked to the actuall memory
     VkBufferCreateInfo bufferInfo = {};
@@ -54,7 +54,7 @@ void VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
 }
 
 /* Copies the contents of a source buffer to a destination buffer on the GPU. */
-void VulkanMemory::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void VulkanMemory::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     // Put copy cmd
@@ -67,14 +67,14 @@ void VulkanMemory::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSi
 }
 
 /* Copies data to buffer. */
-void VulkanMemory::copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size) {
+void VulkanMemory::copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size) const {
     void *bufferData;
     vkMapMemory(device.vk(), memory, 0, size, 0, &bufferData);
     memcpy(bufferData, data, (size_t) size);
     vkUnmapMemory(device.vk(), memory);
 }
 
-void VulkanMemory::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+void VulkanMemory::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferImageCopy region = {};
@@ -99,7 +99,7 @@ void VulkanMemory::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t wi
 /* Creates a new command buffer for single time use and begins recording it. 
 	TOBE moved
 	*/
-VkCommandBuffer VulkanMemory::beginSingleTimeCommands() {
+VkCommandBuffer VulkanMemory::beginSingleTimeCommands() const {
     // Should be in its own command pool which has the VK_COMMAND_POOL_CREATE_TRANSIENT_BIT enabled during creation
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -123,7 +123,7 @@ VkCommandBuffer VulkanMemory::beginSingleTimeCommands() {
 /* Ends the command buffer, submits it to the queue, waits for it to finish and deletes the buffer.
 	TOBE moved
 	*/
-void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) {
+void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) const {
     // Finish command buffer
     vkEndCommandBuffer(commandBuffer);
 
@@ -157,7 +157,7 @@ uint32_t VulkanMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 }
 
 const VulkanUniformBuffer
-VulkanMemory::createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flags, uint32_t count, bool aligned) {
+VulkanMemory::createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flags, uint32_t count, bool aligned) const {
     VkDeviceSize uboSize = (long) elementSize * count;
     VkDeviceSize alignment = 0;
     if (aligned) { // Align the data

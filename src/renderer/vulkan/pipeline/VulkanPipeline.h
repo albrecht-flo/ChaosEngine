@@ -38,7 +38,7 @@ public:
 
     static VulkanPipeline Create(const VulkanDevice &device,
                                  VkVertexInputBindingDescription bindingDescription,
-                                 VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
+                                 const VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
                                  VkExtent2D swapChainExtent,
                                  VulkanPipelineLayout descriptorLayout,
                                  VkRenderPass renderPass,

@@ -87,13 +87,27 @@ VulkanPipeline VulkanPipelineBuilder::build() {
 
     // Define dynamic state for viewport -------------------------------------------------------------------------------
     VkDynamicState dynamicStates[] = {
-            VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_LINE_WIDTH
+            VK_DYNAMIC_STATE_VIEWPORT
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = sizeof(dynamicStates);
+    dynamicState.dynamicStateCount = 1;
     dynamicState.pDynamicStates = dynamicStates;
+
+    VkViewport viewport = {};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = 0.0f;
+    viewport.height = 0.0f;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+
+    VkPipelineViewportStateCreateInfo viewportState = {};
+    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewportState.viewportCount = 1;
+    viewportState.pViewports = &viewport;
+    viewportState.scissorCount = 0;
 
     // Configure Rasterizer --------------------------------------------------------------------------------------------
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
@@ -162,7 +176,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     pipelineInfo.pStages = shaderStages;
     pipelineInfo.pVertexInputState = &vertexInputInfo;
     pipelineInfo.pInputAssemblyState = &inputAssembly;
-    pipelineInfo.pViewportState = nullptr; // To be set at runtime via vkCmdSetViewport
+    pipelineInfo.pViewportState = &viewportState; // To be set at runtime via vkCmdSetViewport
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
@@ -173,7 +187,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-    VkPipeline pipeline;
+    VkPipeline pipeline{};
     if (vkCreateGraphicsPipelines(device.vk(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) !=
         VK_SUCCESS) {
         throw std::runtime_error("[Vulkan] Failed to create graphics pipeline!");

@@ -10,7 +10,7 @@
 // TODO: massive refactor to be a RAII Wrapper + Builder
 class VulkanImage {
 public:
-    static VkImage createFromFile(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename,
+    static VkImage createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
                                   VkDeviceMemory &imageMemory/*TEMP*/);
 
     static VkImage
@@ -35,7 +35,7 @@ private:
                 VkDeviceMemory &imageMemory);
 
     static void
-    transitionImageLayout(VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
+    transitionImageLayout(const VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
                           VkImageLayout newLayout);
 
     static bool hasStencilComponent(VkFormat format);

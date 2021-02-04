@@ -29,7 +29,7 @@ public:
     VulkanTexture &operator=(VulkanTexture &&o) noexcept;
 
     static VulkanTexture
-    createTexture(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename);
+    createTexture(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename);
 
     inline VkImage getImage() const { return image; }
 

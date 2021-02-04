@@ -28,7 +28,6 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
         throw std::runtime_error("[GLFW] Failed to create a window!");
     }
 
-    glfwSwapInterval(1);
     // Setup callbacks
     glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
 

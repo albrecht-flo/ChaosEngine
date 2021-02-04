@@ -8,7 +8,7 @@
 
 
 /* Creates an image for use as a texture from a file. */
-VkImage VulkanImage::createFromFile(const VulkanDevice &device, VulkanMemory &vulkanMemory, const std::string &filename,
+VkImage VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
                                     VkDeviceMemory &imageMemory) {
     int texWidth, texHeight, texChannels;
 
@@ -139,7 +139,7 @@ VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanM
 
 /* Transitions the image layout. */
 void
-VulkanImage::transitionImageLayout(VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
+VulkanImage::transitionImageLayout(const VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
                                    VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer = vulkanMemory.beginSingleTimeCommands();
 

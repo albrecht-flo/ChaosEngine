@@ -5,9 +5,9 @@
 #include "src/renderer/vulkan/image/VulkanImage.h"
 
 VulkanTexture
-VulkanTexture::createTexture(const VulkanDevice &device, VulkanMemory &vulkanMemroy, const std::string &filename) {
+VulkanTexture::createTexture(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename) {
     VkDeviceMemory imageMemory;
-    VkImage image = VulkanImage::createFromFile(device, vulkanMemroy, filename, imageMemory);
+    VkImage image = VulkanImage::createFromFile(device, vulkanMemory, filename, imageMemory);
     VulkanImageView imageView = VulkanImageView::Create(device, image, VK_FORMAT_R8G8B8A8_UNORM,
                                                         VK_IMAGE_ASPECT_COLOR_BIT);
     VkSampler sampler = VulkanSampler::create(device);

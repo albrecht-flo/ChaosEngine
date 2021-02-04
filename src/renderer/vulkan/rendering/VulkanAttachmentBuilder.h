@@ -50,22 +50,22 @@ public:
         return *this;
     }
 
-    inline VulkanAttachmentBuilder &loadStore(std::pair<AttachmentLoadOp, AttachmentStoreOp> ops) {
-        attachment.loadOp = getVkLoadOp(ops.first);
-        attachment.storeOp = getVkStoreOp(ops.second);
+    inline VulkanAttachmentBuilder &loadStore(AttachmentLoadOp loadOp, AttachmentStoreOp storeOp) {
+        attachment.loadOp = getVkLoadOp(loadOp);
+        attachment.storeOp = getVkStoreOp(storeOp);
 
         return *this;
     }
 
-    inline VulkanAttachmentBuilder &stencilLoadSave(std::pair<AttachmentLoadOp, AttachmentStoreOp> ops) {
-        attachment.stencilLoadOp = getVkLoadOp(ops.first);
-        attachment.stencilStoreOp = getVkStoreOp(ops.second);
+    inline VulkanAttachmentBuilder &stencilLoadSave(AttachmentLoadOp loadOp, AttachmentStoreOp storeOp) {
+        attachment.stencilLoadOp = getVkLoadOp(loadOp);
+        attachment.stencilStoreOp = getVkStoreOp(storeOp);
         return *this;
     }
 
-    inline VulkanAttachmentBuilder &layoutInitFinal(std::pair<VkImageLayout, VkImageLayout> initFinal) {
-        attachment.initialLayout = initFinal.first;
-        attachment.finalLayout = initFinal.second;
+    inline VulkanAttachmentBuilder &layoutInitFinal(VkImageLayout initialLayout, VkImageLayout finalLayout) {
+        attachment.initialLayout = initialLayout;
+        attachment.finalLayout = finalLayout;
         return *this;
     }
 
