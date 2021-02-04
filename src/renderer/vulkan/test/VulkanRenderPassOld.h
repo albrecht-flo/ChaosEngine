@@ -1,8 +1,6 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <stdexcept>
 #include <array>
@@ -36,15 +34,9 @@ public:
 
     virtual void destroySwapChainDependent() = 0;
 
-    [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
-
 protected:
     // The common pointers to the vulkan context objects
     VulkanDevice &device;
     VulkanMemory &vulkanMemory;
     VulkanSwapChain &swapChain;
-
-    // This vulkan render rendering
-    VkRenderPass renderPass = {};
-
 };

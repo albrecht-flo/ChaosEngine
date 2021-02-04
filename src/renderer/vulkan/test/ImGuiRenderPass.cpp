@@ -5,6 +5,8 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include <stdexcept>
+#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
+#include <src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h>
 
 #include "src/renderer/window/Window.h"
 
@@ -16,12 +18,15 @@ static void check_imgui_vk_result(VkResult result) {
 
 /* Configures the render rendering with the attachments and subpasses */
 ImGuiRenderPass::ImGuiRenderPass(VulkanDevice &device,
-                                 VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window, const VulkanInstance &instance) :
+                                 VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window,
+                                 const VulkanInstance &instance) :
         VulkanRenderPassOld(device, vulkanMemory, swapChain), window(window), instance(instance) {
 }
 
 void ImGuiRenderPass::init() {
-    createRenderPass();
+    std::vector<VulkanAttachmentDescription> attachments;
+    attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
 
     // Create descriptor pool for ImGui
     descriptorPool = VulkanDescriptor::createPool(device,
@@ -78,73 +83,12 @@ void ImGuiRenderPass::init() {
     init_info.MinImageCount = swapChain.size();
     init_info.ImageCount = swapChain.size();
     init_info.CheckVkResultFn = check_imgui_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, renderPass);
+    ImGui_ImplVulkan_Init(&init_info, renderPass->vk());
 
     // Upload font texture
     VkCommandBuffer cmdBuf = vulkanMemory.beginSingleTimeCommands();
     ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
     vulkanMemory.endSingleTimeCommands(cmdBuf);
-}
-
-/* Creates the vulkan render rendering, describing all attachments, subpasses and subpass dependencies. */
-void ImGuiRenderPass::createRenderPass() {
-    // Configures color attachment processing
-    VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = VK_FORMAT_R8G8B8A8_UNORM;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // no multisampling so only 1
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // clear before new frame
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // store results instead of discarding them
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render rendering
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render rendering
-
-    // Subpasses references one or more color attachments
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0; // reference to the attachments array passed to the subpass
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // color buffer attachment
-
-    // For the moment we only have 1 subpass
-    VkSubpassDescription subpass = {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-
-    // Configure subpass dependency
-    // We want our subpass to wait for the previous stage to finish reading the color attachment
-    std::array<VkSubpassDependency, 2> dependencies = {};
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL; // implicit prior subpass
-    dependencies[0].dstSubpass = 0; // ! must be higher than srcSubpass, VK_SUBPASS_EXTERNAL would be implicit next subpass
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // want to wait for swap chain to finish reading framebuffer
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // make following color subpasses wait for this one to finish
-    dependencies[0].srcAccessMask = 0;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    dependencies[1].srcSubpass = 0; // implicit prior subpass
-    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL; // ! must be higher than srcSubpass, VK_SUBPASS_EXTERNAL would be implicit next subpass
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // want to wait for swap chain to finish reading framebuffer
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // make following color subpasses wait for this one to finish
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    // Combine subpasses, dependencies and attachments to render rendering
-    std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-    renderPassInfo.pDependencies = dependencies.data();
-
-    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create ImGui render rendering!");
-    }
-
-#ifdef M_DEBUG
-    std::cout << "ImGuiRenderPass: created render rendering (" << renderPass << ")" << std::endl;
-#endif
 }
 
 // Rendering stuff
@@ -153,7 +97,7 @@ void ImGuiRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, V
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass; // the renderpass to use
+    renderPassInfo.renderPass = renderPass->vk(); // the renderpass to use
     renderPassInfo.framebuffer = framebuffer; // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = swapChain.getExtent(); // based on swap chain
@@ -193,8 +137,6 @@ void ImGuiRenderPass::destroy() {
     // The descriptor pool and sets depend also on the number of images in the swapchain
     vkDestroyDescriptorPool(device.vk(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
-
-    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
 
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();

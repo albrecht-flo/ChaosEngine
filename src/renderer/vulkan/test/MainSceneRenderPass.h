@@ -8,6 +8,7 @@
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
@@ -58,8 +59,9 @@ public:
 
     MaterialRef createMaterial(const TexturePhongMaterial &material);
 
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
 private:
-    void createRenderPass();
+    VulkanRenderPass createRenderPass();
 
     void createBufferedDescriptorSetLayout();
 
@@ -83,6 +85,7 @@ private: // Internal buffer data
     std::vector<VulkanUniformBuffer> materialUniformBuffers{};
     std::array<VulkanUniformBuffer, 2> lightUniformBuffers{};
 private:
+    std::unique_ptr<VulkanRenderPass> renderPass;
     // Pipelines
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutCameraBuf;
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutMaterials;

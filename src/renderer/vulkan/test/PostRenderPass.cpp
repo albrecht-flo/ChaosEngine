@@ -3,6 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
+#include <src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h>
+#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
 
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
@@ -12,7 +14,10 @@ PostRenderPass::PostRenderPass(VulkanDevice &device,
 
 void PostRenderPass::init() {
     // Create the render rendering
-    createRenderPass();
+    std::vector<VulkanAttachmentDescription> attachments;
+    attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
+
 
     // This descriptor set contains the textures for composition
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
@@ -40,7 +45,7 @@ void PostRenderPass::init() {
                                    attributeDescription.data(),
                                    static_cast<uint32_t>(attributeDescription.size()),
                                    swapChain.getExtent(), std::move(postprocessingPipelineLayout),
-                                   renderPass,
+                                   renderPass->vk(),
                                    "post", false
             ));
 
@@ -88,62 +93,6 @@ void PostRenderPass::setImageBufferViews(VkImageView newFramebufferView,
     depthBufferView = newDepthBufferView;
     imGuiImageView = newImGuiImageView;
     createPipelineAndDescriptors();
-}
-
-/* Creates the vulkan render rendering, describing all attachments, subpasses and subpass dependencies. */
-void PostRenderPass::createRenderPass() {
-    // Configures color attachment processing
-    VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format = swapChain.getFormat();
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // no multisampling so only 1
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // clear before new frame
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // store results instead of discarding them
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // should be presented in the swap chain
-
-    // Subpasses references one or more color attachments
-    VkAttachmentReference colorAttachmentRef = {};
-    colorAttachmentRef.attachment = 0; // reference to the attachments array passed to the subpass
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // color buffer attachment
-
-    // For the moment we only have 1 subpass
-    VkSubpassDescription subpass = {};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = nullptr;
-
-    // Configure subpass dependency
-    // We want our subpass to wait for the previous stage to finish reading the color attachment
-    VkSubpassDependency dependency = {};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // implicit prior subpass
-    dependency.dstSubpass = 0; // ! must be higher than srcSubpass, VK_SUBPASS_EXTERNAL would be implicit next subpass
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // want to wait for swap chain to finish reading framebuffer
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // make following color subpasses wait for this one to finish
-    dependency.srcAccessMask = 0;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-
-    // Combine subpasses, dependencies and attachments to render rendering
-    std::array<VkAttachmentDescription, 1> attachments = {colorAttachment};
-    VkRenderPassCreateInfo renderPassInfo = {};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    renderPassInfo.pAttachments = attachments.data();
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-
-    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create render rendering!");
-    }
-
-#ifdef M_DEBUG
-    std::cout << "PostRenderPass: created render rendering (" << renderPass << ")" << std::endl;
-#endif
 }
 
 void PostRenderPass::createPipelineAndDescriptors() {
@@ -206,7 +155,7 @@ void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, Vk
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = renderPass; // the renderpass to use
+    renderPassInfo.renderPass = renderPass->vk(); // the renderpass to use
     renderPassInfo.framebuffer = framebuffer; // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = swapChain.getExtent(); // based on swap chain
@@ -246,15 +195,10 @@ void PostRenderPass::cmdEnd(VkCommandBuffer &cmdBuf) {
 
 void PostRenderPass::destroySwapChainDependent() {
     // The pipeline, layouts and render rendering also deppend on the number of swapchain images and the framebuffers
-    vkDestroyRenderPass(device.vk(), renderPass, nullptr);
-
 }
 
 /* Recreates this render rendering to fit the new swap chain. */
 void PostRenderPass::recreate() {
-    // Recreate the render rendering, because swap chain format has changed
-    createRenderPass();
-
     // Pipeline creation
     auto attributeDescription = Vertex::getAttributeDescriptions();
     *postprocessingPipeline = VulkanPipeline::Create(device,
@@ -263,7 +207,7 @@ void PostRenderPass::recreate() {
                                                      static_cast<uint32_t>(attributeDescription.size()),
                                                      swapChain.getExtent(),
                                                      postprocessingPipeline->releasePipelineLayout(),
-                                                     renderPass,
+                                                     renderPass->vk(),
                                                      "post", false
     );
 }

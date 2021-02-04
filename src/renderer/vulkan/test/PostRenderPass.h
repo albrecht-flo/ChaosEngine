@@ -10,6 +10,7 @@
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
@@ -43,13 +44,14 @@ public:
 
     void destroySwapChainDependent() override;
 
-private:
-    void createRenderPass();
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
 
+private:
     void createPipelineAndDescriptors();
 
 private:
     // Pipelines
+    std::unique_ptr<VulkanRenderPass> renderPass;
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayout;
     std::unique_ptr<VulkanPipeline> postprocessingPipeline;
 

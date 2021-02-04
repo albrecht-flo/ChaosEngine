@@ -16,11 +16,11 @@ struct VulkanAttachmentDescription;
  */
 class VulkanRenderPass {
 private:
-    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
 
     void destroy();
 
 public:
+    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
     ~VulkanRenderPass();
 
     VulkanRenderPass(const VulkanRenderPass &o) = delete;

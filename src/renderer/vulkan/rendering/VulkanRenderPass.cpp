@@ -13,7 +13,7 @@ VulkanRenderPass::Create(const VulkanDevice &device,
     std::vector<VkAttachmentReference> colorAttachmentRefs;
     std::vector<VkAttachmentReference> depthAttachmentRefs;
 
-    std::vector<VkAttachmentDescription> attachments(attachmentDescriptions.size());
+    std::vector<VkAttachmentDescription> attachments;
 
     for (int i = 0; i < attachmentDescriptions.size(); ++i) {
         VkAttachmentReference attachmentRef = {};

@@ -1,8 +1,6 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <stdexcept>
 #include <array>
@@ -10,6 +8,7 @@
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
@@ -20,7 +19,8 @@
 
 class ImGuiRenderPass : public VulkanRenderPassOld {
 public:
-    ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window, const VulkanInstance &instance);
+    ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window,
+                    const VulkanInstance &instance);
 
     ~ImGuiRenderPass() = default;
 
@@ -38,13 +38,16 @@ public:
 
     void destroySwapChainDependent() override;
 
+    [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
+
 private:
-    void createRenderPass();
+    VulkanRenderPass createRenderPass();
 
 private:
     Window &window;
     const VulkanInstance &instance;
     // The objects for uniform buffer linking
     VkDescriptorPool descriptorPool = {};
+    std::unique_ptr<VulkanRenderPass> renderPass;
 };
 
