@@ -84,11 +84,10 @@ private: // Internal buffer data
     std::array<VulkanUniformBuffer, 2> lightUniformBuffers{};
 private:
     // Pipelines
-    DescriptorSetLayout descriptorSetLayoutCameraBuf{};
-    DescriptorSetLayout descriptorSetLayoutMaterials{};
-    DescriptorSetLayout descriptorSetLayoutLights{};
-    PipelineLayout graphicsPipelineLayout{};
-    VulkanPipeline graphicsPipeline;
+    std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutCameraBuf;
+    std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutMaterials;
+    std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutLights;
+    std::unique_ptr<VulkanPipeline> graphicsPipeline;
 
     // The objects for uniform buffer linking
     VkDescriptorPool descriptorPoolCamera{};

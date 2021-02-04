@@ -7,8 +7,7 @@
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain), postprocessingPipeline(device),
-        backgroundTexture(device) {
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), backgroundTexture(device) {
 }
 
 void PostRenderPass::init() {
@@ -16,64 +15,34 @@ void PostRenderPass::init() {
     createRenderPass();
 
     // This descriptor set contains the textures for composition
-    descriptorSetLayout = VulkanDescriptor::createDescriptorSetLayout(
-            device,
-            {
-                    VkDescriptorSetLayoutBinding{ // Color attachment from main scene
-                            .binding=0,
-                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            .descriptorCount=1,
-                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-                            .pImmutableSamplers=nullptr
-                    },
-                    VkDescriptorSetLayoutBinding{ // Depth attachment from main scene
-                            .binding=1,
-                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            .descriptorCount=1,
-                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-                            .pImmutableSamplers=nullptr
-                    },
-                    VkDescriptorSetLayoutBinding{ // Background texture
-                            .binding=2,
-                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            .descriptorCount=1,
-                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-                            .pImmutableSamplers=nullptr
-                    },
-                    VkDescriptorSetLayoutBinding{ // ImGui framebuffer texture
-                            .binding=3,
-                            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                            .descriptorCount=1,
-                            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-                            .pImmutableSamplers=nullptr
-                    },
-            });
+    descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetBuilder(device)
+                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)// Color attachment from main scene
+                    .addBinding(1, DescriptorType::Texture, ShaderStage::Fragment)// Depth attachment from main scene
+                    .addBinding(2, DescriptorType::Texture, ShaderStage::Fragment)// Background texture
+                    .addBinding(3, DescriptorType::Texture, ShaderStage::Fragment)// ImGui framebuffer texture
+                    .build()
+    );
+
 
 
     // Pipeline layout
-    postprocessingPipelineLayout = PipelineLayout{
-            .layouts = {
-                    descriptorSetLayout
-            },
-            .pushConstants = {
-                    VkPushConstantRange{
-                            .stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT,
-                            .offset = 0,
-                            .size = sizeof(float) * 2
-                    }
-            }
-    };
+    auto postprocessingPipelineLayout = VulkanPipelineLayoutBuilder(device)
+            .addPushConstant(sizeof(float) * 2, 0, ShaderStage::Fragment)
+            .addDescriptorSet(*descriptorSetLayout)
+            .build();
 
     // Pipeline creation
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    postprocessingPipeline = VulkanPipeline::Create(device,
-                                                    Vertex::getBindingDescription(),
-                                                    attributeDescription.data(),
-                                                    static_cast<uint32_t>(attributeDescription.size()),
-                                                    swapChain.getExtent(), postprocessingPipelineLayout,
-                                                    renderPass,
-                                                    "post", false
-    );
+    postprocessingPipeline = std::make_unique<VulkanPipeline>(
+            VulkanPipeline::Create(device,
+                                   Vertex::getBindingDescription(),
+                                   attributeDescription.data(),
+                                   static_cast<uint32_t>(attributeDescription.size()),
+                                   swapChain.getExtent(), std::move(postprocessingPipelineLayout),
+                                   renderPass,
+                                   "post", false
+            ));
 
 
 
@@ -81,25 +50,29 @@ void PostRenderPass::init() {
     descriptorPool = VulkanDescriptor::createPool(device,
                                                   {
                                                           VkDescriptorPoolSize{ // Color attachment from main scene rendering
-                                                                  .type = descriptorSetLayout.bindings[0].descriptorType,
+                                                                  .type = descriptorSetLayout->getBinding(
+                                                                          0).descriptorType,
                                                                   .descriptorCount = 1
                                                           },
                                                           VkDescriptorPoolSize{ // Depth attachment form main scene rendering
-                                                                  .type = descriptorSetLayout.bindings[1].descriptorType,
+                                                                  .type = descriptorSetLayout->getBinding(
+                                                                          1).descriptorType,
                                                                   .descriptorCount = 1
                                                           },
                                                           VkDescriptorPoolSize{ // Background texture
-                                                                  .type = descriptorSetLayout.bindings[2].descriptorType,
+                                                                  .type = descriptorSetLayout->getBinding(
+                                                                          2).descriptorType,
                                                                   .descriptorCount = 1
                                                           },
                                                           VkDescriptorPoolSize{ // ImGui framebuffer texture
-                                                                  .type = descriptorSetLayout.bindings[3].descriptorType,
+                                                                  .type = descriptorSetLayout->getBinding(
+                                                                          3).descriptorType,
                                                                   .descriptorCount = 1
                                                           },
                                                   });
 
     descriptorSet = VulkanDescriptor::allocateDescriptorSet(device,
-                                                            descriptorSetLayout, descriptorPool);
+                                                            *descriptorSetLayout, descriptorPool);
 
     // Create the samplers for the attachments of previous passes
     framebufferSampler = VulkanSampler::create(device);
@@ -249,14 +222,14 @@ void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, Vk
 
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
-    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline.getPipeline());
+    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline->getPipeline());
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            postprocessingPipeline.getPipelineLayout(),
+                            postprocessingPipeline->getPipelineLayout(),
                             0, 1, &descriptorSet, 0, nullptr);
 
-    vkCmdPushConstants(cmdBuf, postprocessingPipeline.getPipelineLayout(),
+    vkCmdPushConstants(cmdBuf, postprocessingPipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float) * 2, &camera.near);
 }
 
@@ -284,13 +257,14 @@ void PostRenderPass::recreate() {
 
     // Pipeline creation
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    postprocessingPipeline = VulkanPipeline::Create(device,
-                                                    Vertex::getBindingDescription(),
-                                                    attributeDescription.data(),
-                                                    static_cast<uint32_t>(attributeDescription.size()),
-                                                    swapChain.getExtent(), postprocessingPipelineLayout,
-                                                    renderPass,
-                                                    "post", false
+    *postprocessingPipeline = VulkanPipeline::Create(device,
+                                                     Vertex::getBindingDescription(),
+                                                     attributeDescription.data(),
+                                                     static_cast<uint32_t>(attributeDescription.size()),
+                                                     swapChain.getExtent(),
+                                                     postprocessingPipeline->releasePipelineLayout(),
+                                                     renderPass,
+                                                     "post", false
     );
 }
 
@@ -304,6 +278,4 @@ void PostRenderPass::destroy() {
     // The descriptor pool and sets depend also on the number of images in the swapchain
     vkDestroyDescriptorPool(device.vk(), descriptorPool,
                             nullptr); // this also destroys the descriptor sets of this pools
-
-    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayout.vDescriptorSetLayout, nullptr);
 }

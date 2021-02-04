@@ -6,7 +6,7 @@
 
 /* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain), graphicsPipeline(device) {}
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), graphicsPipeline(nullptr) {}
 
 void MainSceneRenderPass::init() {
     // Create the render rendering
@@ -15,58 +15,37 @@ void MainSceneRenderPass::init() {
     // Descriptor layout for this pipeline and the pool
     createBufferedDescriptorSetLayout();
 
-    auto textureLayBind = VkDescriptorSetLayoutBinding{ // Texture descriptor
-            .binding=0,
-            .descriptorType=VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            .descriptorCount=1,
-            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-            .pImmutableSamplers=nullptr
-    };
-    auto materialLayBind = VkDescriptorSetLayoutBinding{ // Material parameter descriptor
-            .binding=1,
-            .descriptorType=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount=1,
-            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-            .pImmutableSamplers=nullptr
-    };
-    descriptorSetLayoutMaterials = VulkanDescriptor::createDescriptorSetLayout(
-            device, {textureLayBind, materialLayBind});
+    descriptorSetLayoutMaterials = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetBuilder(device)
+                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
+                    .addBinding(1, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+                    .build()
+    );
 
-    auto lightsLayBind = VkDescriptorSetLayoutBinding{ // Lights descriptor
-            .binding=0,
-            .descriptorType=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            .descriptorCount=1,
-            .stageFlags=VK_SHADER_STAGE_FRAGMENT_BIT,
-            .pImmutableSamplers=nullptr
-    };
-
-    descriptorSetLayoutLights = VulkanDescriptor::createDescriptorSetLayout(
-            device, {lightsLayBind}
+    descriptorSetLayoutLights = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetBuilder(device)
+                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+                    .build()
     );
 
     // Pipeline layout
-    graphicsPipelineLayout = PipelineLayout{
-            .layouts={
-                    descriptorSetLayoutCameraBuf, // Camera parameters + worldLight
-                    descriptorSetLayoutLights, // Lights[3]
-                    descriptorSetLayoutMaterials // Material parameters + texture
-            },
-            .pushConstants{
-                    VkPushConstantRange{ // Model matrix
-                            .stageFlags=VK_SHADER_STAGE_VERTEX_BIT,
-                            .offset=0, .size=sizeof(glm::mat4)
-                    }
-            }
-    };
+    auto graphicsPipelineLayout = VulkanPipelineLayoutBuilder(device)
+            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
+            .addDescriptorSet(*descriptorSetLayoutCameraBuf)
+            .addDescriptorSet(*descriptorSetLayoutLights)
+            .addDescriptorSet(*descriptorSetLayoutMaterials)
+            .build();
+
     // Pipeline creation
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    graphicsPipeline = VulkanPipeline::Create(device,
-                                              Vertex::getBindingDescription(),
-                                              attributeDescription.data(),
-                                              static_cast<uint32_t>(attributeDescription.size()),
-                                              swapChain.getExtent(), graphicsPipelineLayout, renderPass,
-                                              "base"
-    );
+    graphicsPipeline = std::make_unique<VulkanPipeline>(
+            VulkanPipeline::Create(device,
+                                   Vertex::getBindingDescription(),
+                                   attributeDescription.data(),
+                                   static_cast<uint32_t>(attributeDescription.size()),
+                                   swapChain.getExtent(), std::move(graphicsPipelineLayout), renderPass,
+                                   "base"
+            ));
 
     // Create pipeline resources
     createUniformBuffers();
@@ -77,11 +56,13 @@ void MainSceneRenderPass::init() {
     descriptorPoolMaterials = VulkanDescriptor::createPool(device,
                                                            {
                                                                    VkDescriptorPoolSize{ // Texture
-                                                                           .type = descriptorSetLayoutMaterials.bindings[0].descriptorType,
+                                                                           .type = descriptorSetLayoutMaterials->getBinding(
+                                                                                   0).descriptorType,
                                                                            .descriptorCount = 1024
                                                                    },
                                                                    VkDescriptorPoolSize{ // Material parameters buffer
-                                                                           .type = descriptorSetLayoutMaterials.bindings[1].descriptorType,
+                                                                           .type = descriptorSetLayoutMaterials->getBinding(
+                                                                                   1).descriptorType,
                                                                            .descriptorCount = 1024
                                                                    }
                                                            });
@@ -172,19 +153,11 @@ void MainSceneRenderPass::createRenderPass() {
    */
 void MainSceneRenderPass::createBufferedDescriptorSetLayout() {
 
-    descriptorSetLayoutCameraBuf = VulkanDescriptor::createDescriptorSetLayout(device,
-                                                                               {
-                                                                                       VkDescriptorSetLayoutBinding{ // Camera + worldLight
-                                                                                               .binding=0,
-                                                                                               .descriptorType=VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                                               .descriptorCount=1,
-                                                                                               .stageFlags=
-                                                                                               VK_SHADER_STAGE_VERTEX_BIT |
-                                                                                               VK_SHADER_STAGE_FRAGMENT_BIT,
-                                                                                               .pImmutableSamplers=nullptr
-                                                                                       }
-                                                                               });
-
+    descriptorSetLayoutCameraBuf = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetBuilder(device)
+                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::VertexFragment)
+                    .build()
+    );
 }
 
 /* Creates the descriptor pool for the buffered uniforms. */
@@ -192,7 +165,8 @@ void MainSceneRenderPass::createBufferedDescriptorPool() {
     descriptorPoolCamera = VulkanDescriptor::createPool(device,
                                                         {
                                                                 VkDescriptorPoolSize{  // Camera + worldLight
-                                                                        .type=descriptorSetLayoutCameraBuf.bindings[0].descriptorType,
+                                                                        .type=descriptorSetLayoutCameraBuf->getBinding(
+                                                                                0).descriptorType,
                                                                         .descriptorCount = swapChain.size()
                                                                 }
                                                         });
@@ -221,7 +195,7 @@ void MainSceneRenderPass::createBufferedDescriptorSets() {
     descriptorSetsCamera.resize(swapChain.size());
     for (size_t i = 0; i < descriptorSetsCamera.size(); i++) {
         descriptorSetsCamera[i] = VulkanDescriptor::allocateDescriptorSet(
-                device, descriptorSetLayoutCameraBuf,
+                device, *descriptorSetLayoutCameraBuf,
                 descriptorPoolCamera);
     }
 
@@ -251,7 +225,8 @@ void MainSceneRenderPass::createLightStructures() {
     descriptorPoolLights = VulkanDescriptor::createPool(device,
                                                         {
                                                                 VkDescriptorPoolSize{
-                                                                        .type = descriptorSetLayoutLights.bindings[0].descriptorType,
+                                                                        .type = descriptorSetLayoutLights->getBinding(
+                                                                                0).descriptorType,
                                                                         .descriptorCount = swapChain.size()
                                                                 }
                                                         });
@@ -285,7 +260,7 @@ void MainSceneRenderPass::createLightStructures() {
     descriptorSetsLights.resize(swapChain.size());
     for (size_t i = 0; i < swapChain.size(); i++) {
         descriptorSetsLights[i] = VulkanDescriptor::allocateDescriptorSet(device,
-                                                                          descriptorSetLayoutLights,
+                                                                          *descriptorSetLayoutLights,
                                                                           descriptorPoolLights);
 
         VulkanDescriptor::writeDescriptorSet(device, descriptorSetsLights[i],
@@ -349,25 +324,25 @@ void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImag
 
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
-    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.getPipeline());
+    vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->getPipeline());
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            graphicsPipeline.getPipelineLayout(),
+                            graphicsPipeline->getPipelineLayout(),
                             0, 1, &descriptorSetsCamera[currentImage], 0, nullptr);
     // Bind the lights descriptor set
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            graphicsPipeline.getPipelineLayout(),
+                            graphicsPipeline->getPipelineLayout(),
                             1, 1, &descriptorSetsLights[currentImage], 0, nullptr);
 }
 
-/* Setup all descriptors and push commands for this render object. */
+/* Setup all descriptors and push constants for this render object. */
 void MainSceneRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) {
 
     if (robj.material < descriptorSetsMaterials.size()) {
         // Bind the material descriptor set to the pipeline // TOBE: not per renderobject
         vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                graphicsPipeline.getPipelineLayout(),
+                                graphicsPipeline->getPipelineLayout(),
                                 2, 1, &descriptorSetsMaterials[robj.material], 0, nullptr);
     } else {
         std::cerr << "MainSceneRenderPass: unknown materialRef (descriptorSet not fount) ref=" << robj.material
@@ -375,7 +350,7 @@ void MainSceneRenderPass::cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj)
     }
 
     // Set model matrix via push constant
-    vkCmdPushConstants(cmdBuf, graphicsPipeline.getPipelineLayout(),
+    vkCmdPushConstants(cmdBuf, graphicsPipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(robj.modelMat), &robj.modelMat);
 }
 
@@ -400,12 +375,13 @@ void MainSceneRenderPass::destroySwapChainDependent() {
 void MainSceneRenderPass::recreate() {
     // Recreate the pipeline because the swap chain dimensions might have changed
     auto attributeDescription = Vertex::getAttributeDescriptions();
-    graphicsPipeline = VulkanPipeline::Create(device,
-                                              Vertex::getBindingDescription(),
-                                              attributeDescription.data(),
-                                              static_cast<uint32_t>(attributeDescription.size()),
-                                              swapChain.getExtent(), graphicsPipelineLayout, renderPass,
-                                              "base"
+    *graphicsPipeline = VulkanPipeline::Create(device,
+                                               Vertex::getBindingDescription(),
+                                               attributeDescription.data(),
+                                               static_cast<uint32_t>(attributeDescription.size()),
+                                               swapChain.getExtent(), graphicsPipeline->releasePipelineLayout(),
+                                               renderPass,
+                                               "base"
     );
 
     // The UniformBuffers depend on the ammount of swap chain images
@@ -421,10 +397,6 @@ void MainSceneRenderPass::destroy() {
     // this also destroys the descriptor sets of this pool
     vkDestroyDescriptorPool(device.vk(), descriptorPoolMaterials, nullptr);
     vkDestroyDescriptorPool(device.vk(), descriptorPoolLights, nullptr);
-
-    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutCameraBuf.vDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutMaterials.vDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device.vk(), descriptorSetLayoutLights.vDescriptorSetLayout, nullptr);
 
     for (size_t i = 0; i < materialUniformBuffers.size(); i++) {
         vulkanMemory.destroy(materialUniformBuffers[i]);
@@ -464,7 +436,7 @@ MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &mate
     // Create and write descriptor set for this material
     descriptorSetsMaterials.emplace_back(
             VulkanDescriptor::allocateDescriptorSet(device,
-                                                    descriptorSetLayoutMaterials, descriptorPoolMaterials)
+                                                    *descriptorSetLayoutMaterials, descriptorPoolMaterials)
     );
     MaterialRef ref = descriptorSetsMaterials.size() - 1;
     VulkanDescriptor::writeDescriptorSet(device, descriptorSetsMaterials[ref],

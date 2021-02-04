@@ -5,8 +5,6 @@
 
 class VulkanVertexInput {
 public:
-    static VulkanVertexInput Vertex_3_3_3_2;
-public:
     VulkanVertexInput() = default;
 
     VulkanVertexInput(std::vector<VkVertexInputBindingDescription> &&bindingDescription,

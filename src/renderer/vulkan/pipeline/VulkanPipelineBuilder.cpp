@@ -1,6 +1,7 @@
 #include "VulkanPipelineBuilder.h"
 
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 
 #include <stdexcept>
 #include <fstream>
@@ -43,6 +44,7 @@ static std::vector<char> readFile(const std::string &filename) {
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 VulkanPipeline VulkanPipelineBuilder::build() {
+    assert(("The Layout was moved and no new one was provided.", layoutValid));
     assert(!vertexShaderName.empty());
     assert(!fragmentShaderName.empty());
 
@@ -153,25 +155,6 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    // Create pipeline layout from descriptor set layouts --------------------------------------------------------------
-    PipelineLayout descriptorLayout{};// TODO
-    std::vector<VkDescriptorSetLayout> setLayouts;
-    for (auto &layout : descriptorLayout.layouts) {
-        setLayouts.emplace_back(layout.vDescriptorSetLayout);
-    }
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorLayout.layouts.size());
-    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(descriptorLayout.pushConstants.size());
-    pipelineLayoutInfo.pPushConstantRanges = descriptorLayout.pushConstants.data();
-
-    VkPipelineLayout pipelineLayout;
-    if (vkCreatePipelineLayout(device.vk(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create pipeline layout!");
-    }
-
     // Build pipeline with all configurations --------------------------------------------------------------------------
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -185,7 +168,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDepthStencilState = &depthTesting;
     pipelineInfo.pDynamicState = &dynamicState;
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = layout.vk();
     pipelineInfo.renderPass = renderPass.vk();
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -200,5 +183,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     vkDestroyShaderModule(device.vk(), fragShaderModule, nullptr);
     vkDestroyShaderModule(device.vk(), vertShaderModule, nullptr);
 
-    return VulkanPipeline{device, pipeline, pipelineLayout};
+    layoutValid = false; // It gets moved so we need a new one for the next build
+
+    return VulkanPipeline{device, pipeline, std::move(layout)};
 }

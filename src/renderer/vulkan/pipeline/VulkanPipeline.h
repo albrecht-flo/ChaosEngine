@@ -5,6 +5,7 @@
 #include <string>
 
 #include "VulkanDescriptor.h"
+#include "VulkanDescriptorSetLayout.h"
 
 
 /* TODO:
@@ -13,16 +14,18 @@
  *  // Later
  *  - Shader loading from disk should be managed in ressource management.
  */
+class VulkanPipelineBuilder;
 
 class VulkanPipeline {
+private:
+    friend VulkanPipelineBuilder;
+
+    VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VulkanPipelineLayout &&pipelineLayout);
+
+    void destroy();
+
 public:
-    [[deprecated]] VulkanPipeline(const VulkanDevice &device)
-            : device(device), pipeline(nullptr), pipelineLayout(nullptr) {}
-
-    VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout);
-
     ~VulkanPipeline();
-
 
     VulkanPipeline(const VulkanPipeline &o) = delete;
 
@@ -37,21 +40,19 @@ public:
                                  VkVertexInputBindingDescription bindingDescription,
                                  VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
                                  VkExtent2D swapChainExtent,
-                                 PipelineLayout descriptorLayout,
+                                 VulkanPipelineLayout descriptorLayout,
                                  VkRenderPass renderPass,
                                  const std::string &shaderName,
                                  bool depthTestEnabled = true);
 
-    [[nodiscard]] inline const VkPipeline getPipeline() const { return pipeline; }
+    [[nodiscard]] inline VkPipeline getPipeline() const { return pipeline; }
 
-    [[nodiscard]] inline const VkPipelineLayout getPipelineLayout() const { return pipelineLayout; }
+    [[nodiscard]] inline VkPipelineLayout getPipelineLayout() const { return pipelineLayout.vk(); }
 
-
-private:
-    void destroy();
+    inline VulkanPipelineLayout releasePipelineLayout() { return std::move(pipelineLayout); }
 
 private:
     const VulkanDevice &device;
     VkPipeline pipeline;
-    VkPipelineLayout pipelineLayout;
+    VulkanPipelineLayout pipelineLayout;
 };

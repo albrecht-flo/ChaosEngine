@@ -50,9 +50,8 @@ private:
 
 private:
     // Pipelines
-    DescriptorSetLayout descriptorSetLayout{};
-    PipelineLayout postprocessingPipelineLayout{};
-    VulkanPipeline postprocessingPipeline;
+    std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayout;
+    std::unique_ptr<VulkanPipeline> postprocessingPipeline;
 
     VkImageView framebufferView{};
     VkSampler framebufferSampler{};

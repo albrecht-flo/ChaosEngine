@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 DescriptorSetLayout VulkanDescriptor::createDescriptorSetLayout(
-        VulkanDevice &device,
+        const VulkanDevice &device,
         std::vector<VkDescriptorSetLayoutBinding> descriptorBindings) {
 
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -19,7 +19,7 @@ DescriptorSetLayout VulkanDescriptor::createDescriptorSetLayout(
     return DescriptorSetLayout{layout, descriptorBindings};
 }
 
-VkDescriptorPool VulkanDescriptor::createPool(VulkanDevice &device,
+VkDescriptorPool VulkanDescriptor::createPool(const VulkanDevice &device,
                                               std::vector<VkDescriptorPoolSize> poolSizes) {
     uint32_t maxSets = 0;
     for (auto &poolSize : poolSizes)
@@ -36,37 +36,28 @@ VkDescriptorPool VulkanDescriptor::createPool(VulkanDevice &device,
         throw std::runtime_error("[Vulkan] Failed to create descriptor pool!");
     }
 
-#ifdef M_DEBUG
-    printf("Created pool(%x) with maxSets = %d, types: ", descriptorPool, maxSets);
-    for(auto& t : poolSizes)
-        printf("(%d, %d), ", t.type, t.descriptorCount);
-    printf("\n");
-#endif // DEBUG
-
     return descriptorPool;
 }
 
-VkDescriptorSet VulkanDescriptor::allocateDescriptorSet(VulkanDevice &device,
-                                                        DescriptorSetLayout layout, VkDescriptorPool descriptorPool) {
+VkDescriptorSet VulkanDescriptor::allocateDescriptorSet(const VulkanDevice &device,
+                                                        const VulkanDescriptorSetLayout &layout, VkDescriptorPool descriptorPool) {
     // Create the descriptor sets
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool; // the pool from which to create them
     allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &layout.vDescriptorSetLayout; // the layouts
+    auto vDescSetLayout = layout.vk();
+    allocInfo.pSetLayouts = &vDescSetLayout; // the layouts
 
     VkDescriptorSet descriptorSet;
     if (vkAllocateDescriptorSets(device.vk(), &allocInfo, &descriptorSet) != VK_SUCCESS) {
         throw std::runtime_error("[Vulkan] Failed to allocate descriptor set!");
     }
-#ifdef M_DEBUG
-    printf("Allocated new descriptor set(%x) from %x\n", descriptorSet, descriptorPool);
-#endif // DEBUG
 
     return descriptorSet;
 }
 
-void VulkanDescriptor::writeDescriptorSet(VulkanDevice &device, VkDescriptorSet descriptorSet,
+void VulkanDescriptor::writeDescriptorSet(const VulkanDevice &device, VkDescriptorSet descriptorSet,
                                           std::vector<DescriptorBufferInfo> bufferInfos,
                                           std::vector<DescriptorImageInfo> imageInfos) {
 

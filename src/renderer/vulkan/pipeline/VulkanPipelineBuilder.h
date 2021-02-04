@@ -2,9 +2,11 @@
 
 #include "VulkanVertexInput.h"
 #include "VulkanPipeline.h"
+#include "VulkanDescriptorSetLayout.h"
 
 #include <string>
 #include <utility>
+#include <memory>
 #include <cassert>
 
 class VulkanRenderPass;
@@ -27,14 +29,21 @@ enum class CompareOp {
 
 class VulkanPipelineBuilder {
 public:
-    VulkanPipelineBuilder(const VulkanDevice &device, const VulkanRenderPass &renderPass, const std::string &shaderName,
-                          VulkanVertexInput input)
-            : device(device), renderPass(renderPass), vertexShaderName(shaderName), fragmentShaderName(shaderName),
-              vertexInput(std::move(input)) {}
+    VulkanPipelineBuilder(const VulkanDevice &device, const VulkanRenderPass &renderPass,
+                          VulkanPipelineLayout&& layout, VulkanVertexInput input,
+                          const std::string &shaderName)
+            : device(device), renderPass(renderPass), layout(std::move(layout)), vertexShaderName(shaderName),
+              fragmentShaderName(shaderName), vertexInput(std::move(input)) {}
 
     ~VulkanPipelineBuilder() = default;
 
     VulkanPipeline build();
+
+    VulkanPipelineBuilder &setLayout(VulkanPipelineLayout &&pLayout) {
+        layout = std::move(pLayout);
+        layoutValid = true;
+        return *this;
+    }
 
     VulkanPipelineBuilder &setVertexShader(const std::string &pVertexShaderName) {
         vertexShaderName = pVertexShaderName;
@@ -80,6 +89,7 @@ public:
 private:
     const VulkanDevice &device;
     const VulkanRenderPass &renderPass;
+    VulkanPipelineLayout layout;
     std::string vertexShaderName;
     std::string fragmentShaderName;
     VulkanVertexInput vertexInput;
@@ -89,6 +99,8 @@ private:
     CullFace cullFace = CullFace::CCLW;
     bool depthTestEnabled = true;
     CompareOp depthCompare = CompareOp::Less;
+    // Internal error catching ----------------------------
+    bool layoutValid = true;
 
 private: // Translation helpers
     static VkPrimitiveTopology getVkTopology(Topology topology) {

@@ -1,4 +1,5 @@
 #include <src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h>
+#include <src/renderer/vulkan/pipeline/VulkanDescriptorSetLayout.h>
 #include "VulkanRenderer2D.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
@@ -126,19 +127,33 @@ VulkanRenderer2D::renderObject(RendererAPI::MeshRef meshRef, RendererAPI::Materi
 // ------------------------------------ Data management methods --------------------------------------------------------
 
 RendererAPI::ShaderRef VulkanRenderer2D::loadShader() {
-    struct Vertex {
+    struct MVertex {
         glm::vec3 pos;
         glm::vec3 color;
         glm::vec3 normal;
         glm::vec2 uv;
     };
-    VulkanVertexInput Vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
-            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
-            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
-            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
-            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
+    VulkanVertexInput Vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(MVertex), InputRate::Vertex)
+            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, pos))
+            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, color))
+            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, normal))
+            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(MVertex, uv)).build();
 
-    VulkanPipeline pipeline = VulkanPipelineBuilder(context.getDevice(), mainRenderPass, "base", Vertex_3P_3C_3N_2U)
+    VulkanDescriptorSetLayout cameraDescriptorLayout = VulkanDescriptorSetBuilder(context.getDevice())
+            .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex, 1)
+            .build();
+    VulkanDescriptorSetLayout materialDescriptorLayout = VulkanDescriptorSetBuilder(context.getDevice())
+            .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
+            .build();
+
+    VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
+            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
+            .addDescriptorSet(cameraDescriptorLayout) // set = 0
+            .addDescriptorSet(materialDescriptorLayout) // set = 1
+            .build();
+
+    VulkanPipeline pipeline = VulkanPipelineBuilder(context.getDevice(), mainRenderPass,
+                                                    std::move(pipelineLayout), Vertex_3P_3C_3N_2U, "base")
             .setTopology(Topology::TriangleList)
             .setPolygonMode(PolygonMode::Fill)
             .setCullFace(CullFace::CCLW)

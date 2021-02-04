@@ -55,7 +55,7 @@ VulkanPipeline VulkanPipeline::Create(const VulkanDevice &device,
                                       VkVertexInputBindingDescription bindingDescription,
                                       VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
                                       VkExtent2D swapChainExtent,
-                                      PipelineLayout descriptorLayout,
+                                      VulkanPipelineLayout descriptorLayout,
                                       VkRenderPass renderPass,
                                       const std::string &shaderName,
                                       bool depthTestEnabled) {
@@ -175,24 +175,6 @@ VulkanPipeline VulkanPipeline::Create(const VulkanDevice &device,
     colorBlending.blendConstants[2] = 0.0f;
     colorBlending.blendConstants[3] = 0.0f;
 
-    // Create pipeline layout from descriptor set layouts --------------------------------------------------------------
-    std::vector<VkDescriptorSetLayout> setLayouts;
-    for (auto &layout : descriptorLayout.layouts) {
-        setLayouts.emplace_back(layout.vDescriptorSetLayout);
-    }
-
-    VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorLayout.layouts.size());
-    pipelineLayoutInfo.pSetLayouts = setLayouts.data();
-    pipelineLayoutInfo.pushConstantRangeCount = static_cast<uint32_t>(descriptorLayout.pushConstants.size());
-    pipelineLayoutInfo.pPushConstantRanges = descriptorLayout.pushConstants.data();
-
-    VkPipelineLayout pipelineLayout;
-    if (vkCreatePipelineLayout(device.vk(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create pipeline layout!");
-    }
-
     // Build pipeline with all configurations --------------------------------------------------------------------------
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -205,7 +187,7 @@ VulkanPipeline VulkanPipeline::Create(const VulkanDevice &device,
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDepthStencilState = &depthTesting;
-    pipelineInfo.layout = pipelineLayout;
+    pipelineInfo.layout = descriptorLayout.vk();
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = 0;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -220,11 +202,11 @@ VulkanPipeline VulkanPipeline::Create(const VulkanDevice &device,
     vkDestroyShaderModule(device.vk(), fragShaderModule, nullptr);
     vkDestroyShaderModule(device.vk(), vertShaderModule, nullptr);
 
-    return VulkanPipeline{device, pipeline, pipelineLayout};
+    return VulkanPipeline{device, pipeline, std::move(descriptorLayout)};
 }
 
-VulkanPipeline::VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VkPipelineLayout pipelineLayout)
-        : device(device), pipeline(pipeline), pipelineLayout(pipelineLayout) {}
+VulkanPipeline::VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VulkanPipelineLayout&& pipelineLayout)
+        : device(device), pipeline(pipeline), pipelineLayout(std::move(pipelineLayout)) {}
 
 VulkanPipeline::~VulkanPipeline() {
     destroy();
@@ -232,20 +214,18 @@ VulkanPipeline::~VulkanPipeline() {
 
 VulkanPipeline::VulkanPipeline(VulkanPipeline &&o) noexcept
         : device(o.device), pipeline(std::exchange(o.pipeline, nullptr)),
-          pipelineLayout(std::exchange(o.pipelineLayout, nullptr)) {}
+          pipelineLayout(std::move(o.pipelineLayout)) {}
 
 VulkanPipeline &VulkanPipeline::operator=(VulkanPipeline &&o) noexcept {
     if (this == &o)
         return *this;
     destroy();
     pipeline = std::exchange(o.pipeline, nullptr);
-    pipelineLayout = std::exchange(o.pipelineLayout, nullptr);
+    pipelineLayout = std::move(o.pipelineLayout);
     return *this;
 }
 
 void VulkanPipeline::destroy() {
     if (pipeline != nullptr)
         vkDestroyPipeline(device.vk(), pipeline, nullptr);
-    if (pipelineLayout != nullptr)
-        vkDestroyPipelineLayout(device.vk(), pipelineLayout, nullptr);
 }

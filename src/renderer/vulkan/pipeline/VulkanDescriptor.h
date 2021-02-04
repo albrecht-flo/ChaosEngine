@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
+#include "VulkanDescriptorSetLayout.h"
 
 struct DescriptorSetLayout {
     VkDescriptorSetLayout vDescriptorSetLayout;
@@ -32,19 +33,22 @@ struct DescriptorImageInfo {
     uint32_t count;
 };
 
+// TODO: Create Builder
+//  https://vulkan-tutorial.com/Uniform_buffers/Descriptor_layout_and_buffer
+//  https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets
 class VulkanDescriptor {
 public:
     static DescriptorSetLayout createDescriptorSetLayout(
-            VulkanDevice &device,
+            const VulkanDevice &device,
             std::vector<VkDescriptorSetLayoutBinding> descriptorBindings);
 
-    static VkDescriptorPool createPool(VulkanDevice &device,
+    static VkDescriptorPool createPool(const VulkanDevice &device,
                                        std::vector<VkDescriptorPoolSize> poolSizes);
 
-    static VkDescriptorSet allocateDescriptorSet(VulkanDevice &device,
-                                                 DescriptorSetLayout layout, VkDescriptorPool descriptorPool);
+    static VkDescriptorSet allocateDescriptorSet(const VulkanDevice &device,
+                                                 const VulkanDescriptorSetLayout &layout, VkDescriptorPool descriptorPool);
 
-    static void writeDescriptorSet(VulkanDevice &device, VkDescriptorSet descriptorSet,
+    static void writeDescriptorSet(const VulkanDevice &device, VkDescriptorSet descriptorSet,
                                    std::vector<DescriptorBufferInfo> bufferInfos,
                                    std::vector<DescriptorImageInfo> imageInfos = {}
     );

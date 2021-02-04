@@ -86,7 +86,7 @@
 		- Post processing
 		- Batch rendering
 		- Geometry shader
-		- Tesselation shader
+		- TesselationControl shader
 		- Text rendering
 		- Particles
 		- Shadows

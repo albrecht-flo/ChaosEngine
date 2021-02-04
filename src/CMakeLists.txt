@@ -21,6 +21,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/image/VulkanFramebuffer.cpp
         renderer/vulkan/image/VulkanImageView.cpp
         renderer/vulkan/image/VulkanTexture.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorSetLayout.cpp
         renderer/vulkan/pipeline/VulkanVertexInput.cpp
         renderer/vulkan/pipeline/VulkanDescriptor.cpp
         renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
