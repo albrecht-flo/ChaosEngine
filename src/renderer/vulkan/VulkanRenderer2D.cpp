@@ -118,7 +118,7 @@ void VulkanRenderer2D::setup() {
                                                         .setDepthCompare(CompareOp::Less)
                                                         .build());
 
-    descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice(), 1)
+    descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
                                                                             0).descriptorType, maxFramesInFlight)
                                                                     .addDescriptor(materialDescriptorLayout->getBinding(
@@ -135,7 +135,7 @@ void VulkanRenderer2D::setup() {
                 false
         ));
         perFrameDescriptorSets.emplace_back(descriptorPool->allocate(*cameraDescriptorLayout));
-        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
+//        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
     }
 }
 

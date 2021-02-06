@@ -45,10 +45,11 @@ VulkanDescriptorSet VulkanDescriptorPool::allocate(const VulkanDescriptorSetLayo
 }
 
 // --------------------------- VulkanDescriptorSet Class Members -------------------------------------------------------
-VulkanDescriptorSet::VulkanDescriptorSetOperation &
-VulkanDescriptorSet::VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uint64_t bufferOffset,
-                                                               uint64_t bufferRange, uint32_t arrayElement,
-                                                               uint32_t descriptorCount) {
+void
+VulkanDescriptorSetOperation::writeBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VkBuffer buffer,
+                                          uint64_t bufferOffset,
+                                          uint64_t bufferRange, uint32_t arrayElement,
+                                          uint32_t descriptorCount) {
     VkDescriptorBufferInfo info{
             .buffer = buffer,
             .offset = bufferOffset,
@@ -66,22 +67,54 @@ VulkanDescriptorSet::VulkanDescriptorSetOperation::writeBuffer(uint32_t binding,
     writeInfo.pImageInfo = nullptr;
     writeInfo.pTexelBufferView = nullptr;
 
+    std::vector<VkWriteDescriptorSet> descriptorWrites;
+    descriptorWrites.push_back(writeInfo);
+    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
+                           0, nullptr);
+}
+
+VulkanDescriptorSetOperation &
+VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uint64_t bufferOffset,
+                                          uint64_t bufferRange, uint32_t arrayElement,
+                                          uint32_t descriptorCount) {
+    VkDescriptorBufferInfo info{
+            .buffer = buffer,
+            .offset = bufferOffset,
+            .range = bufferRange,
+    };
+
+    bufferInfos.emplace_back(std::move(info));
+
+    VkWriteDescriptorSet writeInfo = {};
+    writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeInfo.dstSet = descriptorSet;
+    writeInfo.dstBinding = binding;
+    writeInfo.dstArrayElement = arrayElement;
+    writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeInfo.descriptorCount = descriptorCount;
+    writeInfo.pBufferInfo = &bufferInfos.back();
+    writeInfo.pImageInfo = nullptr;
+    writeInfo.pTexelBufferView = nullptr;
+
     descriptorWrites.emplace_back(writeInfo);
-    confirmed = true;
+    confirmed = false;
     return *this;
 }
 
-VulkanDescriptorSet::VulkanDescriptorSetOperation &
-VulkanDescriptorSet::VulkanDescriptorSetOperation::writeImageSampler(uint32_t binding, VkSampler sampler,
-                                                                     const VulkanImageView &imageView,
-                                                                     VkImageLayout imageLayout,
-                                                                     uint32_t arrayElement, uint32_t descriptorCount) {
+
+VulkanDescriptorSetOperation &
+VulkanDescriptorSetOperation::writeImageSampler(uint32_t binding, VkSampler sampler,
+                                                const VulkanImageView &imageView,
+                                                VkImageLayout imageLayout,
+                                                uint32_t arrayElement, uint32_t descriptorCount) {
 
     VkDescriptorImageInfo info{
             .sampler = sampler,
             .imageView = imageView.vk(),
             .imageLayout = imageLayout,
     };
+
+    imageInfos.emplace_back(std::move(info));
 
     VkWriteDescriptorSet writeInfo = {};
     writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -90,9 +123,15 @@ VulkanDescriptorSet::VulkanDescriptorSetOperation::writeImageSampler(uint32_t bi
     writeInfo.dstArrayElement = arrayElement;
     writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeInfo.descriptorCount = descriptorCount;
-    writeInfo.pImageInfo = &info;
+    writeInfo.pImageInfo = &imageInfos.back();
 
     descriptorWrites.emplace_back(writeInfo);
-    confirmed = true;
+    confirmed = false;
     return *this;
+}
+
+void VulkanDescriptorSetOperation::commit() {
+    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
+                           0, nullptr);
+    confirmed = true;
 }

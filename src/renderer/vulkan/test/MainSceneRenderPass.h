@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <array>
 #include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
+#include <src/renderer/vulkan/pipeline/VulkanDescriptorSet.h>
 
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
@@ -66,8 +67,6 @@ public:
 private:
     void createBufferedDescriptorSetLayout();
 
-    void createBufferedDescriptorPool();
-
     void createBufferedDescriptorSets();
 
     void createUniformBuffers();
@@ -95,11 +94,11 @@ private:
     VulkanVertexInput vertex_3P_3C_3N_2U;
 
     // The objects for uniform buffer linking
-    VkDescriptorPool descriptorPoolCamera{};
-    std::vector<VkDescriptorSet> descriptorSetsCamera{};
-    VkDescriptorPool descriptorPoolMaterials{};
-    std::vector<VkDescriptorSet> descriptorSetsMaterials{};
-    VkDescriptorPool descriptorPoolLights{};
-    std::vector<VkDescriptorSet> descriptorSetsLights{};
+    std::unique_ptr<VulkanDescriptorPool> descriptorPoolCamera{};
+    std::vector<VulkanDescriptorSet> descriptorSetsCamera{};
+    std::unique_ptr<VulkanDescriptorPool> descriptorPoolMaterials{};
+    std::vector<VulkanDescriptorSet> descriptorSetsMaterials{};
+    std::unique_ptr<VulkanDescriptorPool> descriptorPoolLights{};
+    std::vector<VulkanDescriptorSet> descriptorSetsLights{};
 };
 
