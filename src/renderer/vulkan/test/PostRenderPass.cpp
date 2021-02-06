@@ -29,7 +29,7 @@ void PostRenderPass::init() {
 
     // This descriptor set contains the textures for composition
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetBuilder(device)
+            VulkanDescriptorSetLayoutBuilder(device)
                     .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)// Color attachment from main scene
                     .addBinding(1, DescriptorType::Texture, ShaderStage::Fragment)// Depth attachment from main scene
                     .addBinding(2, DescriptorType::Texture, ShaderStage::Fragment)// Background texture

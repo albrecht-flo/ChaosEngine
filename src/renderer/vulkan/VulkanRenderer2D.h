@@ -9,12 +9,17 @@
 #include "VulkanDataManager.h"
 
 class VulkanRenderer2D : public RendererAPI {
-public:
+private:
+    struct CameraUbo {
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     static constexpr uint32_t maxFramesInFlight = 2;
 private:
     VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
-                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers, VulkanRenderPass &&mainRenderPass,
-                     VulkanImageBuffer &&depthBuffer, VulkanDataManager &&pipelineManager);
+                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
+                     VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer);
 
 public:
     ~VulkanRenderer2D() override = default;
@@ -30,6 +35,9 @@ public:
     static VulkanRenderer2D Create(Window &window);
 
     // Lifecycle
+    /// Setup for all dynamic resources
+    void setup() override;
+
     /// Wait for GPU tasks to finish
     void join() override;
 
@@ -51,12 +59,6 @@ public:
     void renderObject(MeshRef meshRef, MaterialRef materialRef, glm::mat4 modelMat) override;
 
     // Data upload commands
-    /*** Load a shader program from disk and upload it to the GPU.
-     *
-     * @return A reference to the created shader program.
-     */
-    ShaderRef loadShader(/*Resource definition*/) override;
-
     /*** Load a mesh from disk and upload it to the GPU.
      *
      * @return A reference to the created mesh.
@@ -82,6 +84,19 @@ private:
     VulkanImageBuffer depthBuffer;
 
     VulkanDataManager pipelineManager;
+    VulkanMemory vulkanMemory;
 
     uint32_t currentFrame = 0;
+
+    // Dynamic resources -----------------------------------------------------
+    std::unique_ptr<VulkanVertexInput> vertex_3P_3C_3N_2U;
+    std::unique_ptr<VulkanDescriptorSetLayout> cameraDescriptorLayout;
+    std::unique_ptr<VulkanDescriptorSetLayout> materialDescriptorLayout;
+    std::unique_ptr<VulkanPipeline> pipeline;
+    std::unique_ptr<VulkanDescriptorPool> descriptorPool;
+
+    // ----- Per Frame resources
+    std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
+    std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
 };
+

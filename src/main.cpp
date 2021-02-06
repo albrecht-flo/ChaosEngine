@@ -25,11 +25,10 @@
  *
 	Current:
         - Proper logging
+        TODO: Cleanup Builder classes
 
 		- Learn about image layouts
 		- layout transitions
-		- pipeline Parameters
-
 		- add tinyobjloader library
 			x model loading
 			- material loading
@@ -65,8 +64,6 @@
             - sub rendering dependencies
 		- Pipeline handling
 			- Shaders
-			- Pipeline
-			- RenderPass
 		- Swap chain
 			- Cleanup
 			- Creation -> Parameters
@@ -235,7 +232,6 @@ std::vector<RenderComponent> setupRendering(RendererAPI &renderer) {
 
     RenderComponent comp{};
     comp.modelMat = glm::identity<glm::mat4>();
-    comp.shader = renderer.loadShader();
     comp.mesh = renderer.loadMesh();
     comp.material = renderer.loadMaterial();
 

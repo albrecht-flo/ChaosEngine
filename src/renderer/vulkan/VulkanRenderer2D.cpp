@@ -1,5 +1,7 @@
 #include <src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h>
 #include <src/renderer/vulkan/pipeline/VulkanDescriptorSetLayout.h>
+#include <src/renderer/vulkan/pipeline/VulkanDescriptorSet.h>
+#include <src/renderer/data/Mesh.h>
 #include "VulkanRenderer2D.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
@@ -67,25 +69,82 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
                                                              mainRenderPass, depthBuffer.getImageView(),
                                                              maxFramesInFlight);
 
-    VulkanDataManager pipelineManager{};
 
     return VulkanRenderer2D(std::move(context), std::move(frame), std::move(swapChainFrameBuffers),
-                            std::move(mainRenderPass), std::move(depthBuffer), std::move(pipelineManager));
+                            std::move(mainRenderPass), std::move(depthBuffer));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
                                    std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
-                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer,
-                                   VulkanDataManager &&pipelineManager)
+                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer)
         : context(std::move(context)), frame(std::move(frame)), swapChainFrameBuffers(std::move(swapChainFrameBuffers)),
           mainRenderPass(std::move(mainRenderPass)), depthBuffer(std::move(depthBuffer)),
-          pipelineManager(std::move(pipelineManager)) {}
+          pipelineManager{}, vulkanMemory(context.getDevice(), context.getCommandPool()) {}
 
-// ------------------------------------ Rendering methods --------------------------------------------------------------
+
+// ------------------------------------ Lifecycle methods --------------------------------------------------------------
+
+void VulkanRenderer2D::setup() {
+    vertex_3P_3C_3N_2U = std::make_unique<VulkanVertexInput>(
+            VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
+                    .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
+                    .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
+                    .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
+                    .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build());
+
+    cameraDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetLayoutBuilder(context.getDevice())
+                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex, 1)
+                    .build());
+    materialDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
+            VulkanDescriptorSetLayoutBuilder(context.getDevice())
+                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
+                    .build());
+
+    VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
+            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
+            .addDescriptorSet(*cameraDescriptorLayout) // set = 0
+            .addDescriptorSet(*materialDescriptorLayout) // set = 1
+            .build();
+
+    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), mainRenderPass,
+                                                                      std::move(pipelineLayout), *vertex_3P_3C_3N_2U,
+                                                                      "2DSprite")
+                                                        .setFragmentShader("2DStaticSprite")
+                                                        .setTopology(Topology::TriangleList)
+                                                        .setPolygonMode(PolygonMode::Fill)
+                                                        .setCullFace(CullFace::CCLW)
+                                                        .setDepthTestEnabled(true)
+                                                        .setDepthCompare(CompareOp::Less)
+                                                        .build());
+
+    descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice(), 1)
+                                                                    .addDescriptor(cameraDescriptorLayout->getBinding(
+                                                                            0).descriptorType, maxFramesInFlight)
+                                                                    .addDescriptor(materialDescriptorLayout->getBinding(
+                                                                            0).descriptorType, 1024)
+                                                                    .setMaxSets(maxFramesInFlight * 1024)
+                                                                    .build());
+
+    perFrameDescriptorSets.reserve(maxFramesInFlight);
+    perFrameUniformBuffers.reserve(perFrameDescriptorSets.size());
+
+    for (size_t i = 0; i < perFrameDescriptorSets.size(); i++) {
+        perFrameUniformBuffers.emplace_back(vulkanMemory.createUniformBuffer(
+                sizeof(CameraUbo), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1,
+                false
+        ));
+        perFrameDescriptorSets.emplace_back(descriptorPool->allocate(*cameraDescriptorLayout));
+        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
+    }
+}
+
 
 void VulkanRenderer2D::join() {
     context.getDevice().waitIdle();
 }
+
+// ------------------------------------ Rendering methods --------------------------------------------------------------
 
 void VulkanRenderer2D::beginScene() {
 
@@ -109,7 +168,7 @@ void VulkanRenderer2D::recreateSwapChain() {
     swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(),
                                                         mainRenderPass, depthBuffer.getImageView(), maxFramesInFlight);
 
-    // Recreate render passes
+    // Update framebuffer bindings as textures in post processing
 }
 
 void VulkanRenderer2D::flush() {
@@ -125,45 +184,6 @@ VulkanRenderer2D::renderObject(RendererAPI::MeshRef meshRef, RendererAPI::Materi
 }
 
 // ------------------------------------ Data management methods --------------------------------------------------------
-
-RendererAPI::ShaderRef VulkanRenderer2D::loadShader() {
-    struct MVertex {
-        glm::vec3 pos;
-        glm::vec3 color;
-        glm::vec3 normal;
-        glm::vec2 uv;
-    };
-    VulkanVertexInput Vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(MVertex), InputRate::Vertex)
-            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, pos))
-            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, color))
-            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(MVertex, normal))
-            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(MVertex, uv)).build();
-
-    VulkanDescriptorSetLayout cameraDescriptorLayout = VulkanDescriptorSetBuilder(context.getDevice())
-            .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex, 1)
-            .build();
-    VulkanDescriptorSetLayout materialDescriptorLayout = VulkanDescriptorSetBuilder(context.getDevice())
-            .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
-            .build();
-
-    VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
-            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
-            .addDescriptorSet(cameraDescriptorLayout) // set = 0
-            .addDescriptorSet(materialDescriptorLayout) // set = 1
-            .build();
-
-    VulkanPipeline pipeline = VulkanPipelineBuilder(context.getDevice(), mainRenderPass,
-                                                    std::move(pipelineLayout), Vertex_3P_3C_3N_2U, "base")
-            .setTopology(Topology::TriangleList)
-            .setPolygonMode(PolygonMode::Fill)
-            .setCullFace(CullFace::CCLW)
-            .setDepthTestEnabled(true)
-            .setDepthCompare(CompareOp::Less)
-            .build();
-
-    pipelineManager.addNewPipeline(std::move(pipeline));
-    return RendererAPI::ShaderRef();
-}
 
 RendererAPI::MeshRef VulkanRenderer2D::loadMesh() {
     return RendererAPI::MeshRef();

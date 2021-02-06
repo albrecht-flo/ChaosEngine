@@ -50,15 +50,15 @@ namespace VulkanPipelineUtility {
     }
 }
 
-class VulkanDescriptorSetBuilder {
+class VulkanDescriptorSetLayoutBuilder {
 public:
-    explicit VulkanDescriptorSetBuilder(const VulkanDevice &device)
+    explicit VulkanDescriptorSetLayoutBuilder(const VulkanDevice &device)
             : device(device) {}
 
-    ~VulkanDescriptorSetBuilder() = default;
+    ~VulkanDescriptorSetLayoutBuilder() = default;
 
-    VulkanDescriptorSetBuilder &addBinding(uint32_t binding, DescriptorType type,
-                                           ShaderStage stage, uint32_t size = 1);
+    VulkanDescriptorSetLayoutBuilder &addBinding(uint32_t binding, DescriptorType type,
+                                                 ShaderStage stage, uint32_t size = 1);
 
     VulkanDescriptorSetLayout build();
 
@@ -69,7 +69,7 @@ private:
 
 
 class VulkanDescriptorSetLayout {
-    friend VulkanDescriptorSetBuilder;
+    friend VulkanDescriptorSetLayoutBuilder;
 private:
     VulkanDescriptorSetLayout(const VulkanDevice &device, VkDescriptorSetLayout layout,
                               std::vector<VkDescriptorSetLayoutBinding> descriptorBindings)

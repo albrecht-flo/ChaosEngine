@@ -26,6 +26,8 @@ public:
     virtual ~RendererAPI();
 
     // Lifecycle
+    /// Setup for all dynamic resources
+    virtual void setup() = 0;
     /// Wait for GPU tasks to finish
     virtual void join() = 0;
 
@@ -48,12 +50,6 @@ public:
     virtual void renderObject(MeshRef meshRef, MaterialRef materialRef, glm::mat4 modelMat) = 0;
 
     // Data upload commands
-    /*** Load a shader program from disk and upload it to the GPU.
-     *
-     * @return A reference to the created shader program.
-     */
-    virtual ShaderRef loadShader(/*Resource definition*/) = 0;
-
     /*** Load a mesh from disk and upload it to the GPU.
      *
      * @return A reference to the created mesh.

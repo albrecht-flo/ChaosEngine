@@ -32,14 +32,14 @@ void MainSceneRenderPass::init() {
     createBufferedDescriptorSetLayout();
 
     descriptorSetLayoutMaterials = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetBuilder(device)
+            VulkanDescriptorSetLayoutBuilder(device)
                     .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
                     .addBinding(1, DescriptorType::UniformBuffer, ShaderStage::Fragment)
                     .build()
     );
 
     descriptorSetLayoutLights = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetBuilder(device)
+            VulkanDescriptorSetLayoutBuilder(device)
                     .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Fragment)
                     .build()
     );
@@ -93,7 +93,7 @@ void MainSceneRenderPass::init() {
 void MainSceneRenderPass::createBufferedDescriptorSetLayout() {
 
     descriptorSetLayoutCameraBuf = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetBuilder(device)
+            VulkanDescriptorSetLayoutBuilder(device)
                     .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::VertexFragment)
                     .build()
     );

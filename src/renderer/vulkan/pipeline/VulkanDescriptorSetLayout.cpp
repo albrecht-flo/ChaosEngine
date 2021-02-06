@@ -6,10 +6,10 @@
 
 using namespace VulkanPipelineUtility;
 
-// ----------------------- VulkanDescriptorSetBuilder Class Members -------------------------------------------------
+// ----------------------- VulkanDescriptorSetLayoutBuilder Class Members -------------------------------------------------
 
-VulkanDescriptorSetBuilder &
-VulkanDescriptorSetBuilder::addBinding(uint32_t binding, DescriptorType type, ShaderStage stage, uint32_t size) {
+VulkanDescriptorSetLayoutBuilder &
+VulkanDescriptorSetLayoutBuilder::addBinding(uint32_t binding, DescriptorType type, ShaderStage stage, uint32_t size) {
     assert(("Bindings must have different binding indices!",
             std::find_if(descriptorBindings.begin(), descriptorBindings.end(),
                          [&](VkDescriptorSetLayoutBinding b) { return b.binding == binding; }) ==
@@ -27,7 +27,7 @@ VulkanDescriptorSetBuilder::addBinding(uint32_t binding, DescriptorType type, Sh
     return *this;
 }
 
-VulkanDescriptorSetLayout VulkanDescriptorSetBuilder::build() {
+VulkanDescriptorSetLayout VulkanDescriptorSetLayoutBuilder::build() {
     VkDescriptorSetLayoutCreateInfo layoutInfo = {};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(descriptorBindings.size());

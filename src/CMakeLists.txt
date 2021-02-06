@@ -39,7 +39,7 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
-        )
+        renderer/vulkan/pipeline/VulkanDescriptorSet.cpp renderer/vulkan/pipeline/VulkanDescriptorSet.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/
