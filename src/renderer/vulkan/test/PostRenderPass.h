@@ -1,23 +1,19 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.h>
 
 #include <stdexcept>
 #include <array>
 
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
-#include "src/renderer/vulkan/context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
-#include "src/renderer/data/Mesh.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
-#include "src/renderer/data/RenderObject.h"
 
 class PostRenderPass : public VulkanRenderPassOld {
 public:
@@ -32,7 +28,8 @@ public:
 
     void init() override;
 
-    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
+    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth,
+                  uint32_t viewportHeight ) override;
 
     void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
@@ -54,6 +51,7 @@ private:
     std::unique_ptr<VulkanRenderPass> renderPass;
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayout;
     std::unique_ptr<VulkanPipeline> postprocessingPipeline;
+    VulkanVertexInput vertex_3P_3C_3N_2U;
 
     VkImageView framebufferView{};
     VkSampler framebufferSampler{};

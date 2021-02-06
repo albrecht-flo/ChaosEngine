@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <array>
+#include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
 
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
@@ -45,7 +46,8 @@ public:
 
     void updateUniformBuffer(uint32_t currentImage, Camera &camera, LightObject &worldLight);
 
-    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
+    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth,
+                  uint32_t viewportHeight) override;
 
     void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
@@ -60,9 +62,8 @@ public:
     MaterialRef createMaterial(const TexturePhongMaterial &material);
 
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
-private:
-    VulkanRenderPass createRenderPass();
 
+private:
     void createBufferedDescriptorSetLayout();
 
     void createBufferedDescriptorPool();
@@ -91,6 +92,7 @@ private:
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutMaterials;
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayoutLights;
     std::unique_ptr<VulkanPipeline> graphicsPipeline;
+    VulkanVertexInput vertex_3P_3C_3N_2U;
 
     // The objects for uniform buffer linking
     VkDescriptorPool descriptorPoolCamera{};

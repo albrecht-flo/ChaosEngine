@@ -30,7 +30,7 @@ enum class CompareOp {
 class VulkanPipelineBuilder {
 public:
     VulkanPipelineBuilder(const VulkanDevice &device, const VulkanRenderPass &renderPass,
-                          VulkanPipelineLayout&& layout, VulkanVertexInput input,
+                          VulkanPipelineLayout &&layout, VulkanVertexInput input,
                           const std::string &shaderName)
             : device(device), renderPass(renderPass), layout(std::move(layout)), vertexShaderName(shaderName),
               fragmentShaderName(shaderName), vertexInput(std::move(input)) {}
@@ -86,6 +86,12 @@ public:
         return *this;
     }
 
+    VulkanPipelineBuilder &setViewportDimensions(uint32_t width, uint32_t height) {
+        viewportExtent.width = width;
+        viewportExtent.height = height;
+        return *this;
+    }
+
 private:
     const VulkanDevice &device;
     const VulkanRenderPass &renderPass;
@@ -99,6 +105,7 @@ private:
     CullFace cullFace = CullFace::CCLW;
     bool depthTestEnabled = true;
     CompareOp depthCompare = CompareOp::Less;
+    VkExtent2D viewportExtent{0, 0};
     // Internal error catching ----------------------------
     bool layoutValid = true;
 
@@ -137,9 +144,9 @@ private: // Translation helpers
 
     static VkFrontFace getVkCullFace(CullFace cullFace) {
         switch (cullFace) {
-            case CullFace::CLW:
-                return VK_FRONT_FACE_COUNTER_CLOCKWISE;
             case CullFace::CCLW:
+                return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+            case CullFace::CLW:
                 return VK_FRONT_FACE_CLOCKWISE;
         }
         assert("Unknown Cull Type");

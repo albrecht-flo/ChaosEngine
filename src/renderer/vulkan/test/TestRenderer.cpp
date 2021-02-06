@@ -172,7 +172,8 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     VkCommandBuffer cmdBuf = primaryCommandBuffers[currentImage].vk();
 
     // Let the render rendering setup context descriptors
-    mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer.vk());
+    mainGraphicsPass.cmdBegin(cmdBuf, currentImage, offscreenFramebuffer.vk(), swapChain.getWidth(),
+                              swapChain.getHeight());
 
     for (auto &robj : renderObjects) {
         // Let the render rendering setup per model descriptors
@@ -203,7 +204,8 @@ void TestRenderer::updateCommandBuffer(uint32_t currentImage) {
     // !!!							postRenderPass->dependency.srcSubPass EXTERNAL
 
     // Start post processing render rendering
-    postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage].vk());
+    postRenderPass.cmdBegin(cmdBuf, currentImage, swapChainFramebuffers[currentImage].vk(), swapChain.getWidth(),
+                            swapChain.getHeight());
     // Bind previous color attachment to fragment shader sampler
     postRenderPass.cmdRender(cmdBuf, quadRobj);
     // Bind a screen filling quad to render the previous render passes to

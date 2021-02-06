@@ -4,11 +4,12 @@
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
 
-#include <stdexcept>
-#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
-#include <src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h>
-
 #include "src/renderer/window/Window.h"
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+
+#include <stdexcept>
+
 
 static void check_imgui_vk_result(VkResult result) {
     if (result != VK_SUCCESS)
@@ -93,7 +94,8 @@ void ImGuiRenderPass::init() {
 
 // Rendering stuff
 /* Begin the render rendering and setup all context descriptors . */
-void ImGuiRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
+void ImGuiRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer,
+                               uint32_t viewportWidth, uint32_t viewportHeight) {
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

@@ -1,15 +1,23 @@
 #include "PostRenderPass.h"
 
+#include "src/renderer/vulkan/context/VulkanSwapChain.h"
+#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "src/renderer/data/Mesh.h"
+
 #include <iostream>
 #include <stdexcept>
-#include <cstring>
-#include <src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h>
-#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
+#include <string>
 
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
         VulkanRenderPassOld(device, vulkanMemory, swapChain), backgroundTexture(device) {
+    vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
+            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
+            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
+            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
+            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
 }
 
 void PostRenderPass::init() {
@@ -38,16 +46,16 @@ void PostRenderPass::init() {
             .build();
 
     // Pipeline creation
-    auto attributeDescription = Vertex::getAttributeDescriptions();
     postprocessingPipeline = std::make_unique<VulkanPipeline>(
-            VulkanPipeline::Create(device,
-                                   Vertex::getBindingDescription(),
-                                   attributeDescription.data(),
-                                   static_cast<uint32_t>(attributeDescription.size()),
-                                   swapChain.getExtent(), std::move(postprocessingPipelineLayout),
-                                   renderPass->vk(),
-                                   "post", false
-            ));
+            VulkanPipelineBuilder(device, *renderPass, std::move(postprocessingPipelineLayout), vertex_3P_3C_3N_2U,
+                                  "post")
+                    .setTopology(Topology::TriangleList)
+                    .setPolygonMode(PolygonMode::Fill)
+                    .setCullFace(CullFace::CCLW)
+                    .setDepthTestEnabled(false)
+                    .setDepthCompare(CompareOp::Less)
+                    .build()
+    );
 
 
 
@@ -150,7 +158,8 @@ void PostRenderPass::createPipelineAndDescriptors() {
 
 // Rendering stuff
 /* Begin the render rendering and setup all context descriptors . */
-void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
+void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer,
+                              uint32_t viewportWidth, uint32_t viewportHeight) {
 
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
@@ -172,6 +181,20 @@ void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, Vk
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
     vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline->getPipeline());
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(viewportWidth);
+    viewport.height = static_cast<float>(viewportHeight);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
+
+    VkRect2D scissor = {}; // !!! Important, otherwise ImGui sets this
+    scissor.offset = {0, 0};
+    scissor.extent = {viewportWidth, viewportHeight};
+    vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -199,17 +222,6 @@ void PostRenderPass::destroySwapChainDependent() {
 
 /* Recreates this render rendering to fit the new swap chain. */
 void PostRenderPass::recreate() {
-    // Pipeline creation
-    auto attributeDescription = Vertex::getAttributeDescriptions();
-    *postprocessingPipeline = VulkanPipeline::Create(device,
-                                                     Vertex::getBindingDescription(),
-                                                     attributeDescription.data(),
-                                                     static_cast<uint32_t>(attributeDescription.size()),
-                                                     swapChain.getExtent(),
-                                                     postprocessingPipeline->releasePipelineLayout(),
-                                                     renderPass->vk(),
-                                                     "post", false
-    );
 }
 
 void PostRenderPass::destroy() {

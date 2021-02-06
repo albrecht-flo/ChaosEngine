@@ -41,7 +41,12 @@ public:
             : binding(binding), stride(stride), inputRate(inputRate), attributes() {}
 
     VertexAttributeBuilder &addAttribute(uint32_t location, VkFormat format, uint32_t offset) {
-        attributes.emplace_back(VkVertexInputAttributeDescription{binding, location, format, offset});
+        attributes.emplace_back(VkVertexInputAttributeDescription{
+                .location = location,
+                .binding = binding,
+                .format = format,
+                .offset = offset}
+        );
         return *this;
     }
 

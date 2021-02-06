@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <cassert>
+#include <src/renderer/data/Mesh.h>
 
 /* Create shader module form byte code */
 static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
@@ -87,7 +88,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
 
     // Define dynamic state for viewport -------------------------------------------------------------------------------
     VkDynamicState dynamicStates[] = {
-            VK_DYNAMIC_STATE_VIEWPORT
+            VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -98,16 +99,22 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     VkViewport viewport = {};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = 0.0f;
-    viewport.height = 0.0f;
+    viewport.width = static_cast<float>(viewportExtent.width);
+    viewport.height = static_cast<float>(viewportExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
+
+    // Apply scissors to viewport, need to be updated dynamically
+    VkRect2D scissor = {};
+    scissor.offset = {0, 0};
+    scissor.extent = viewportExtent;
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
     viewportState.pViewports = &viewport;
-    viewportState.scissorCount = 0;
+    viewportState.scissorCount = 1;
+    viewportState.pScissors = &scissor;
 
     // Configure Rasterizer --------------------------------------------------------------------------------------------
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
@@ -181,7 +188,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDepthStencilState = &depthTesting;
-    pipelineInfo.pDynamicState = &dynamicState;
+//    pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = layout.vk();
     pipelineInfo.renderPass = renderPass.vk();
     pipelineInfo.subpass = 0;
@@ -201,3 +208,4 @@ VulkanPipeline VulkanPipelineBuilder::build() {
 
     return VulkanPipeline{device, pipeline, std::move(layout)};
 }
+

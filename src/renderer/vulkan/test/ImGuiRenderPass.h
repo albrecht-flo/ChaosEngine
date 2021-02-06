@@ -26,7 +26,8 @@ public:
 
     void init() override;
 
-    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) override;
+    void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth = 0,
+                  uint32_t viewportHeight = 0) override;
 
     void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
@@ -39,9 +40,6 @@ public:
     void destroySwapChainDependent() override;
 
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
-
-private:
-    VulkanRenderPass createRenderPass();
 
 private:
     Window &window;

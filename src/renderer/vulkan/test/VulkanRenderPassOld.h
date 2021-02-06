@@ -10,7 +10,6 @@
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
-#include "src/renderer/data/Mesh.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/RenderObject.h"
 
@@ -22,7 +21,9 @@ public:
 
     virtual void init() = 0;
 
-    virtual void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) = 0;
+    virtual void
+    cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth = 0,
+             uint32_t viewportHeight = 0) = 0;
 
     virtual void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) = 0;
 

@@ -1,14 +1,22 @@
 #include "MainSceneRenderPass.h"
 
+#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
-#include <src/renderer/vulkan/rendering/VulkanRenderPass.h>
-#include <src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h>
 
 /* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain), graphicsPipeline(nullptr) {}
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), graphicsPipeline(nullptr) {
+    vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
+            .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
+            .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
+            .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
+            .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
+}
 
 void MainSceneRenderPass::init() {
     // Create the render rendering
@@ -45,15 +53,15 @@ void MainSceneRenderPass::init() {
             .build();
 
     // Pipeline creation
-    auto attributeDescription = Vertex::getAttributeDescriptions();
     graphicsPipeline = std::make_unique<VulkanPipeline>(
-            VulkanPipeline::Create(device,
-                                   Vertex::getBindingDescription(),
-                                   attributeDescription.data(),
-                                   static_cast<uint32_t>(attributeDescription.size()),
-                                   swapChain.getExtent(), std::move(graphicsPipelineLayout), renderPass->vk(),
-                                   "base"
-            ));
+            VulkanPipelineBuilder(device, *renderPass, std::move(graphicsPipelineLayout), vertex_3P_3C_3N_2U, "base")
+                    .setTopology(Topology::TriangleList)
+                    .setPolygonMode(PolygonMode::Fill)
+                    .setCullFace(CullFace::CCLW)
+                    .setDepthTestEnabled(true)
+                    .setDepthCompare(CompareOp::Less)
+                    .build()
+    );
 
     // Create pipeline resources
     createUniformBuffers();
@@ -234,7 +242,8 @@ void MainSceneRenderPass::updateUniformBuffer(uint32_t currentImage,
 
 // Rendering stuff
 /* Begin the render rendering and setup all context descriptors . */
-void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer) {
+void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer,
+                                   uint32_t viewportWidth, uint32_t viewportHeight) {
 
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
@@ -256,6 +265,20 @@ void MainSceneRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImag
     // Now vkCmd... can be written do define the draw call
     // Bind the pipline as a graphics pipeline
     vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline->getPipeline());
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(viewportWidth);
+    viewport.height = static_cast<float>(viewportHeight);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = {0, 0};
+    scissor.extent = {viewportWidth, viewportHeight};
+    vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
     // Bind the descriptor set to the pipeline
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -304,17 +327,6 @@ void MainSceneRenderPass::destroySwapChainDependent() {
 
 /* Recreates this render rendering to fit the new swap chain. */
 void MainSceneRenderPass::recreate() {
-    // Recreate the pipeline because the swap chain dimensions might have changed
-    auto attributeDescription = Vertex::getAttributeDescriptions();
-    *graphicsPipeline = VulkanPipeline::Create(device,
-                                               Vertex::getBindingDescription(),
-                                               attributeDescription.data(),
-                                               static_cast<uint32_t>(attributeDescription.size()),
-                                               swapChain.getExtent(), graphicsPipeline->releasePipelineLayout(),
-                                               renderPass->vk(),
-                                               "base"
-    );
-
     // The UniformBuffers depend on the ammount of swap chain images
     createUniformBuffers();
 
