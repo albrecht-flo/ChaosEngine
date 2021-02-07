@@ -4,13 +4,9 @@
 #include <vector>
 #include <string>
 
-#include "VulkanDescriptor.h"
 #include "VulkanDescriptorSetLayout.h"
 
-
 /* TODO:
- *  - Use Builder Pattern, because this is getting insane.
- *  - Use Dynamic state for viewport size
  *  // Later
  *  - Shader loading from disk should be managed in ressource management.
  */

@@ -5,7 +5,6 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include "src/renderer/window/Window.h"
-#include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 
 #include <stdexcept>
@@ -13,7 +12,7 @@
 
 static void check_imgui_vk_result(VkResult result) {
     if (result != VK_SUCCESS)
-        throw std::runtime_error("[ImGui - Vulkan] Error in ImGui Vulkan code.");
+        throw std::runtime_error("[ERROR] [ImGui - Vulkan] Error in ImGui Vulkan code.");
 
 }
 
@@ -30,30 +29,22 @@ void ImGuiRenderPass::init() {
     renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
 
     // Create descriptor pool for ImGui
-    descriptorPool = VulkanDescriptor::createPool(device,
-                                                  {
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-                                                          VkDescriptorPoolSize{
-                                                                  VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-                                                                               1000},
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-                                                                               1000},
-                                                          VkDescriptorPoolSize{
-                                                                  VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-                                                          VkDescriptorPoolSize{
-                                                                  VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                               1000},
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                                                                               1000},
-                                                          VkDescriptorPoolSize{
-                                                                  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-                                                          VkDescriptorPoolSize{
-                                                                  VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-                                                          VkDescriptorPoolSize{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-                                                                               1000}
-                                                  });
+    descriptorPool = std::make_unique<VulkanDescriptorPool>(
+            VulkanDescriptorPoolBuilder(device)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_SAMPLER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
+                    .addDescriptor(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
+                    .setMaxSets(1000 * 11)
+                    .build()
+    );
 
     // Initialize ImGui
 
@@ -62,7 +53,7 @@ void ImGuiRenderPass::init() {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
@@ -79,7 +70,7 @@ void ImGuiRenderPass::init() {
     init_info.QueueFamily = device.getPresentQueueFamily();
     init_info.Queue = device.getPresentQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
-    init_info.DescriptorPool = descriptorPool;
+    init_info.DescriptorPool = descriptorPool->vk();
     init_info.Allocator = nullptr;
     init_info.MinImageCount = swapChain.size();
     init_info.ImageCount = swapChain.size();
@@ -136,10 +127,6 @@ void ImGuiRenderPass::recreate() {
 }
 
 void ImGuiRenderPass::destroy() {
-    // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(device.vk(), descriptorPool,
-                            nullptr); // this also destroys the descriptor sets of this pools
-
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

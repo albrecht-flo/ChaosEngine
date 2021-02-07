@@ -3,6 +3,10 @@
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
+#include "src/renderer/vulkan/image/VulkanImage.h"
+#include "src/renderer/vulkan/image/VulkanSampler.h"
+#include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/Mesh.h"
 
 #include <iostream>
@@ -60,32 +64,19 @@ void PostRenderPass::init() {
 
 
     // Create descriptor pool
-    descriptorPool = VulkanDescriptor::createPool(device,
-                                                  {
-                                                          VkDescriptorPoolSize{ // Color attachment from main scene rendering
-                                                                  .type = descriptorSetLayout->getBinding(
-                                                                          0).descriptorType,
-                                                                  .descriptorCount = 1
-                                                          },
-                                                          VkDescriptorPoolSize{ // Depth attachment form main scene rendering
-                                                                  .type = descriptorSetLayout->getBinding(
-                                                                          1).descriptorType,
-                                                                  .descriptorCount = 1
-                                                          },
-                                                          VkDescriptorPoolSize{ // Background texture
-                                                                  .type = descriptorSetLayout->getBinding(
-                                                                          2).descriptorType,
-                                                                  .descriptorCount = 1
-                                                          },
-                                                          VkDescriptorPoolSize{ // ImGui framebuffer texture
-                                                                  .type = descriptorSetLayout->getBinding(
-                                                                          3).descriptorType,
-                                                                  .descriptorCount = 1
-                                                          },
-                                                  });
+    descriptorPool = std::make_unique<VulkanDescriptorPool>(
+            VulkanDescriptorPoolBuilder(device)
+                    .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType,
+                                   1)// Color attachment from main scene rendering
+                    .addDescriptor(descriptorSetLayout->getBinding(1).descriptorType,
+                                   1)// Depth attachment form main scene rendering
+                    .addDescriptor(descriptorSetLayout->getBinding(2).descriptorType, 1)// Background texture
+                    .addDescriptor(descriptorSetLayout->getBinding(3).descriptorType, 1)// ImGui framebuffer texture
+                    .setMaxSets(1)
+                    .build()
+    );
 
-    descriptorSet = VulkanDescriptor::allocateDescriptorSet(device,
-                                                            *descriptorSetLayout, descriptorPool);
+    descriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
 
     // Create the samplers for the attachments of previous passes
     framebufferSampler = VulkanSampler::create(device);
@@ -105,55 +96,13 @@ void PostRenderPass::setImageBufferViews(VkImageView newFramebufferView,
 
 void PostRenderPass::createPipelineAndDescriptors() {
     // Fill the descriptor set
-    VulkanDescriptor::writeDescriptorSet(device, descriptorSet,
-                                         {}, // No buffers
-                                         {
-                                                 DescriptorImageInfo{
-                                                         .descriptorInfo = VkDescriptorImageInfo{
-                                                                 .sampler =   framebufferSampler,
-                                                                 .imageView = framebufferView,
-                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-                                                         },
-                                                         .binding = 0,
-                                                         .arrayElement = 0,
-                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                         .count = 1
-                                                 },
-                                                 DescriptorImageInfo{
-                                                         .descriptorInfo = VkDescriptorImageInfo{
-                                                                 .sampler =   depthBufferSampler,
-                                                                 .imageView = depthBufferView,
-                                                                 .imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                                         },
-                                                         .binding = 1,
-                                                         .arrayElement = 0,
-                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                         .count = 1
-                                                 },
-                                                 DescriptorImageInfo{
-                                                         .descriptorInfo = VkDescriptorImageInfo{
-                                                                 .sampler =   backgroundTexture.getSampler(),
-                                                                 .imageView = backgroundTexture.getImageView().vk(),
-                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-                                                         },
-                                                         .binding = 2,
-                                                         .arrayElement = 0,
-                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                         .count = 1
-                                                 },
-                                                 DescriptorImageInfo{
-                                                         .descriptorInfo = VkDescriptorImageInfo{
-                                                                 .sampler =   imGuiImageSampler,
-                                                                 .imageView = imGuiImageView,
-                                                                 .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-                                                         },
-                                                         .binding = 3,
-                                                         .arrayElement = 0,
-                                                         .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                         .count = 1
-                                                 }
-                                         }
-    );
+    descriptorSet->startWriting()
+            .writeImageSampler(0, framebufferSampler, framebufferView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            .writeImageSampler(1, depthBufferSampler, depthBufferView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+            .writeImageSampler(2, backgroundTexture.getSampler(), backgroundTexture.getImageView().vk(),
+                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            .writeImageSampler(3, imGuiImageSampler, imGuiImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            .commit();
 }
 
 // Rendering stuff
@@ -197,9 +146,10 @@ void PostRenderPass::cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, Vk
     vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
     // Bind the descriptor set to the pipeline
+    auto desc = descriptorSet->vk();
     vkCmdBindDescriptorSets(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS,
                             postprocessingPipeline->getPipelineLayout(),
-                            0, 1, &descriptorSet, 0, nullptr);
+                            0, 1, &desc, 0, nullptr);
 
     vkCmdPushConstants(cmdBuf, postprocessingPipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float) * 2, &camera.near);
@@ -231,7 +181,4 @@ void PostRenderPass::destroy() {
     VulkanSampler::destroy(device, depthBufferSampler);
     VulkanSampler::destroy(device, imGuiImageSampler);
 
-    // The descriptor pool and sets depend also on the number of images in the swapchain
-    vkDestroyDescriptorPool(device.vk(), descriptorPool,
-                            nullptr); // this also destroys the descriptor sets of this pools
 }

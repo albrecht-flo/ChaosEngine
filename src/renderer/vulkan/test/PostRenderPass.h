@@ -6,13 +6,10 @@
 #include <array>
 
 #include "VulkanRenderPassOld.h"
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/image/VulkanSampler.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 
 class PostRenderPass : public VulkanRenderPassOld {
@@ -29,7 +26,7 @@ public:
     void init() override;
 
     void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth,
-                  uint32_t viewportHeight ) override;
+                  uint32_t viewportHeight) override;
 
     void cmdRender(VkCommandBuffer &cmdBuf, RenderObject &robj) override;
 
@@ -60,8 +57,8 @@ private:
     VkImageView imGuiImageView{};
     VkSampler imGuiImageSampler{};
     // The objects for uniform buffer linking
-    VkDescriptorPool descriptorPool{};
-    VkDescriptorSet descriptorSet{};
+    std::unique_ptr<VulkanDescriptorPool> descriptorPool;
+    std::unique_ptr<VulkanDescriptorSet> descriptorSet;
 
     Camera camera{};
     VulkanTexture backgroundTexture;

@@ -7,10 +7,7 @@
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
-#include "src/renderer/vulkan/image/VulkanTexture.h"
+#include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/data/RenderObject.h"
 
 class VulkanRenderPassOld {

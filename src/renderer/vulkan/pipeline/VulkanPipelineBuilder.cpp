@@ -1,12 +1,12 @@
 #include "VulkanPipelineBuilder.h"
 
+#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 
 #include <stdexcept>
 #include <fstream>
 #include <cassert>
-#include <src/renderer/data/Mesh.h>
 
 /* Create shader module form byte code */
 static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {

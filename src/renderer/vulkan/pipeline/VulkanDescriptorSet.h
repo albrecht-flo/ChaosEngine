@@ -34,18 +34,29 @@ public:
                 uint32_t arrayElement = 0, uint32_t descriptorCount = 1);
 
     VulkanDescriptorSetOperation &
-    writeImageSampler(uint32_t binding, VkSampler sampler, const VulkanImageView &imageView,
+    writeImageSampler(uint32_t binding, VkSampler sampler, VkImageView imageView,
                       VkImageLayout imageLayout, uint32_t arrayElement = 0, uint32_t descriptorCount = 1);
 
     void commit();
 
 private:
+    enum class DescriptorInfoType {
+        Buffer, Image
+    };
+    struct DescriptorInfo {
+        DescriptorInfoType type;
+        VkWriteDescriptorSet descriptorWrite;
+        union {
+            VkDescriptorBufferInfo bufferInfo;
+            VkDescriptorImageInfo imageInfo;
+        };
+    };
+private:
     const VulkanDevice &device;
     VkDescriptorSet descriptorSet;
-    std::vector<VkWriteDescriptorSet> descriptorWrites;
-    std::vector<VkDescriptorBufferInfo> bufferInfos;
-    std::vector<VkDescriptorImageInfo> imageInfos;
+    std::vector<DescriptorInfo> descriptorWrites;
     bool confirmed = false;
+
 };
 
 

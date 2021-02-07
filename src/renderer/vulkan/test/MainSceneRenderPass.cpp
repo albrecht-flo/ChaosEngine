@@ -319,7 +319,7 @@ MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &mate
     MaterialRef ref = descriptorSetsMaterials.size() - 1;
     descriptorSetsMaterials[ref].startWriting()
             .writeBuffer(1, materialBuffer.buffer)
-            .writeImageSampler(0, texture.getSampler(), texture.getImageView(),
+            .writeImageSampler(0, texture.getSampler(), texture.getImageView().vk(),
                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             .commit();
     return ref;

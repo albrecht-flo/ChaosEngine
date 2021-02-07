@@ -6,17 +6,12 @@
 #include <array>
 
 #include "VulkanRenderPassOld.h"
-#include "src/renderer/vulkan/context/VulkanDevice.h"
-#include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/image/VulkanSampler.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
-#include "src/renderer/data/Mesh.h"
-#include "src/renderer/vulkan/image/VulkanTexture.h"
-#include "src/renderer/data/RenderObject.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 
+// Base on ImGui Vulkan examples and https://frguthmann.github.io/posts/vulkan_imgui/
+
+class RenderObject;
 class ImGuiRenderPass : public VulkanRenderPassOld {
 public:
     ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window,
@@ -45,7 +40,7 @@ private:
     Window &window;
     const VulkanInstance &instance;
     // The objects for uniform buffer linking
-    VkDescriptorPool descriptorPool = {};
     std::unique_ptr<VulkanRenderPass> renderPass;
+    std::unique_ptr<VulkanDescriptorPool> descriptorPool;
 };
 

@@ -13,7 +13,6 @@
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptor.h"
 #include "src/renderer/data/Mesh.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/RenderObject.h"

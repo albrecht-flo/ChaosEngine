@@ -4,7 +4,6 @@
 
 #include <stdexcept>
 #include <fstream>
-#include <iostream>
 
 /* Create shader module form byte code */
 static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
@@ -42,7 +41,7 @@ static std::vector<char> readFile(const std::string &filename) {
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-VulkanPipeline::VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VulkanPipelineLayout&& pipelineLayout)
+VulkanPipeline::VulkanPipeline(const VulkanDevice &device, VkPipeline pipeline, VulkanPipelineLayout &&pipelineLayout)
         : device(device), pipeline(pipeline), pipelineLayout(std::move(pipelineLayout)) {}
 
 VulkanPipeline::~VulkanPipeline() {

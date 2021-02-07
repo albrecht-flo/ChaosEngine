@@ -77,13 +77,11 @@ VulkanDescriptorSetOperation &
 VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uint64_t bufferOffset,
                                           uint64_t bufferRange, uint32_t arrayElement,
                                           uint32_t descriptorCount) {
-    VkDescriptorBufferInfo info{
+    VkDescriptorBufferInfo bufferInfo{
             .buffer = buffer,
             .offset = bufferOffset,
             .range = bufferRange,
     };
-
-    bufferInfos.emplace_back(std::move(info));
 
     VkWriteDescriptorSet writeInfo = {};
     writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -92,11 +90,10 @@ VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uin
     writeInfo.dstArrayElement = arrayElement;
     writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeInfo.descriptorCount = descriptorCount;
-    writeInfo.pBufferInfo = &bufferInfos.back();
-    writeInfo.pImageInfo = nullptr;
-    writeInfo.pTexelBufferView = nullptr;
+    writeInfo.pBufferInfo = nullptr; // To be set at commmit
 
-    descriptorWrites.emplace_back(writeInfo);
+    descriptorWrites.emplace_back(
+            DescriptorInfo{.type = DescriptorInfoType::Buffer, .descriptorWrite=writeInfo, .bufferInfo=bufferInfo});
     confirmed = false;
     return *this;
 }
@@ -104,17 +101,15 @@ VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uin
 
 VulkanDescriptorSetOperation &
 VulkanDescriptorSetOperation::writeImageSampler(uint32_t binding, VkSampler sampler,
-                                                const VulkanImageView &imageView,
+                                                VkImageView imageView,
                                                 VkImageLayout imageLayout,
                                                 uint32_t arrayElement, uint32_t descriptorCount) {
 
-    VkDescriptorImageInfo info{
+    VkDescriptorImageInfo imageInfo{
             .sampler = sampler,
-            .imageView = imageView.vk(),
+            .imageView = imageView,
             .imageLayout = imageLayout,
     };
-
-    imageInfos.emplace_back(std::move(info));
 
     VkWriteDescriptorSet writeInfo = {};
     writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -123,15 +118,27 @@ VulkanDescriptorSetOperation::writeImageSampler(uint32_t binding, VkSampler samp
     writeInfo.dstArrayElement = arrayElement;
     writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     writeInfo.descriptorCount = descriptorCount;
-    writeInfo.pImageInfo = &imageInfos.back();
+    writeInfo.pImageInfo = nullptr; // to be set a commit
 
-    descriptorWrites.emplace_back(writeInfo);
+    descriptorWrites.emplace_back(
+            DescriptorInfo{.type = DescriptorInfoType::Image, .descriptorWrite=writeInfo, .imageInfo=imageInfo});
     confirmed = false;
     return *this;
 }
 
 void VulkanDescriptorSetOperation::commit() {
-    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
+    std::vector<VkWriteDescriptorSet> writes;
+    writes.reserve(descriptorWrites.size());
+    for (const auto& desc : descriptorWrites) {
+        writes.emplace_back(desc.descriptorWrite);
+        if (desc.type == DescriptorInfoType::Buffer) {
+            writes.back().pBufferInfo = &desc.bufferInfo;
+        } else if (desc.type == DescriptorInfoType::Image) {
+            writes.back().pImageInfo = &desc.imageInfo;
+        } else { assert(("Missing branch for type in commit!", false)); }
+    }
+
+    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(writes.size()), writes.data(),
                            0, nullptr);
     confirmed = true;
 }
