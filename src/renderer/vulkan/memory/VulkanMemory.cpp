@@ -181,7 +181,7 @@ VulkanMemory::createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flag
 	The buffer is a transfer_dst and device_local.
 	The data is transmitted using a staging buffer. 
 	*/
-const VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags) {
+const VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags) const {
     // Staging buffer to contain data for transfer
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;

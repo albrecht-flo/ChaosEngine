@@ -1,28 +1,31 @@
 #pragma once
 
 #include <src/renderer/vulkan/image/VulkanImage.h>
-#include "src/renderer/RendererAPI.h"
+#include <src/renderer/data/RenderObject.h>
 #include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "VulkanDataManager.h"
 
-class VulkanRenderer2D : public RendererAPI {
+class VulkanRenderer2D {
 private:
+    /// Camera uniform object. Alignas 16 to ensure proper alignment with the GPU storage
     struct CameraUbo {
-        glm::mat4 view;
-        glm::mat4 proj;
+        alignas(16) glm::mat4 view;
+        alignas(16) glm::mat4 proj;
     };
 
-    static constexpr uint32_t maxFramesInFlight = 2;
+    static constexpr uint32_t maxFramesInFlight = 3;
 private:
-    VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
-                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
-                     VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer);
+    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanFrame &&frame,
+                     std::vector<VulkanCommandBuffer> &&primaryCommandBuffers, VulkanRenderPass &&mainRenderPass,
+                     VulkanImageBuffer &&depthBuffer, std::vector<VulkanFramebuffer> &&swapChainFrameBuffers);
 
 public:
-    ~VulkanRenderer2D() override = default;
+    ~VulkanRenderer2D() = default;
 
     VulkanRenderer2D(const VulkanRenderer2D &o) = delete;
 
@@ -30,52 +33,40 @@ public:
 
     VulkanRenderer2D(VulkanRenderer2D &&o) = delete;
 
+
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
     static VulkanRenderer2D Create(Window &window);
 
     // Lifecycle
     /// Setup for all dynamic resources
-    void setup() override;
+    void setup();
 
     /// Wait for GPU tasks to finish
-    void join() override;
+    void join();
 
     // Context commands
     /// Start recording commands with this renderer
-    void beginScene(/*environment, camera*/) override;
-
-    /// Define the shader to user for the next render commands
-    void useShader(ShaderRef shaderRef) override;
+    void beginScene(const glm::mat4 &cameraTransform);
 
     /// Stop recording commands with this renderer
-    void endScene(/*Post Processing config*/) override;
+    void endScene(/*Post Processing config*/);
 
     /// Submit recorded commands to gpu
-    void flush() override;
+    void flush();
 
     // Rendering commands
     /// Render an object with its material and model matrix
-    void renderObject(MeshRef meshRef, MaterialRef materialRef, glm::mat4 modelMat) override;
+    void renderQuad(glm::mat4 modelMat, glm::vec4 color);
 
-    // Data upload commands
-    /*** Load a mesh from disk and upload it to the GPU.
-     *
-     * @return A reference to the created mesh.
-     */
-    MeshRef loadMesh(/*Resource definition*/) override;
-
-    /*** Load a material from disk and upload it to the GPU.
-     *
-     * @return A reference to the created material.
-     */
-    MaterialRef loadMaterial(/*Resource definition*/) override;
 
 private:
     void recreateSwapChain();
 
+    void updateUniformBuffer(glm::mat4 viewMat);
+
 private:
-    VulkanContext context;
+    std::unique_ptr<VulkanContext> context;
     VulkanFrame frame;
     std::vector<VulkanCommandBuffer> primaryCommandBuffers;
     std::vector<VulkanFramebuffer> swapChainFrameBuffers;
@@ -84,7 +75,6 @@ private:
     VulkanImageBuffer depthBuffer;
 
     VulkanDataManager pipelineManager;
-    VulkanMemory vulkanMemory;
 
     uint32_t currentFrame = 0;
 
@@ -98,5 +88,10 @@ private:
     // ----- Per Frame resources
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
+    UniformBufferContent<CameraUbo> uboContent;
+
+
+    // TEMP
+    RenderMesh quadMesh;
 };
 

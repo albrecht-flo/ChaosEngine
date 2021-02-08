@@ -12,7 +12,8 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
-#include <src/renderer/RendererAPI.h>
+#include <src/renderer/RenderAPI.h>
+#include <src/renderer/vulkan/VulkanRenderer2D.h>
 
 
 #include "renderer/window/Window.h"
@@ -209,7 +210,7 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
         // Update camera
         renderer.setViewMatrix(glm::lookAt(origin, origin + target, cameraUp));
 
-        // TODO: Render Entities using the RendererAPI
+        // TODO: Render Entities using the RenderAPI
 
         // Render the frame
         renderer.drawFrame();
@@ -219,47 +220,62 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
 
 }
 
-// TODO: this is just a dummy for api development
-struct RenderComponent {
-    glm::mat4 modelMat; // Would be in Transform Component
-    RendererAPI::ShaderRef shader;
-    RendererAPI::MeshRef mesh;
-    RendererAPI::MaterialRef material;
-};
 
-std::vector<RenderComponent> setupRendering(RendererAPI &renderer) {
-    std::vector<RenderComponent> components;
+void run2(Window &window, VulkanRenderer2D &renderer) {
 
-    RenderComponent comp{};
-    comp.modelMat = glm::identity<glm::mat4>();
-    comp.mesh = renderer.loadMesh();
-    comp.material = renderer.loadMaterial();
+    // FPS counter
+    auto startTime = std::chrono::high_resolution_clock::now();
+    uint32_t frameCounter = 0;
+    auto delatTimer = startTime;
+    float fpsDelta = 0;
+    // Camera points
+    glm::vec3 origin = glm::vec3(0, 0, +0.0f);
+    glm::vec3 target = glm::vec3(0, 0, -1.0f);
+    glm::vec3 cameraUp = glm::vec3(0, 1.0f, 0);
 
-    components.emplace_back(comp);
-    return std::move(components);
-}
+    std::cout << "Start rendering" << std::endl;
+    while (!window.shouldClose()) {
+        // ImGui stuff
+//        ImGui_ImplVulkan_NewFrame();
+//        ImGui_ImplGlfw_NewFrame();
+//        ImGui::NewFrame();
+//        ImGui::ShowDemoWindow();
+//        ImGui::Render();
 
-int render(RendererAPI &renderer, const std::vector<RenderComponent> &components) {
-    renderer.beginScene(/*Set Camera*/);
+        // FPS counter + delta time calculation
+        frameCounter++;
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - delatTimer).count();
+        fpsDelta += deltaTime;
+        delatTimer = currentTime;
+        if (fpsDelta >= 1.0f) {
+            fpsDelta -= 1.0f;
+            std::cout << "FPS: " << frameCounter << std::endl;
+            frameCounter = 0;
+        }
 
-    for (const auto &comp : components) {
-        renderer.useShader(comp.shader);
-        renderer.renderObject(comp.mesh, comp.material, comp.modelMat);
+        // Update
+        // Get window events
+        window.poolEvents();
+        // Close window with ESC and Ctrl+Q
+        if (window.isKeyDown(GLFW_KEY_ESCAPE) ||
+            (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL)))
+            window.close();
+
+        renderer.beginScene(glm::lookAt(origin, origin + target, cameraUp));
+        auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3.0f));
+        modelMat1 = glm::scale(modelMat1, glm::vec3(0.5, 0.5, 0.5));
+        renderer.renderQuad(modelMat1, glm::vec4(1, 0, 0.5f, 1));
+        auto modelMat2 = glm::translate(glm::mat4(1.0f), glm::vec3(1, 0, -3.1f));
+        modelMat2 = glm::scale(modelMat2, glm::vec3(0.5, 0.5, 0.5));
+        renderer.renderQuad(modelMat2, glm::vec4(1, 1, 0.5f, 1));
+        renderer.endScene();
+        renderer.flush();
     }
+    // Wait for renderer to finish before ending
+    renderer.join();
 
-    renderer.endScene(/*Post Processing config*/);
-
-    // ImGui Code
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
-    ImGui::Render();
-
-    renderer.flush();
-    return 0;
 }
-
 
 int main() {
     std::cout << "Renderer starting..." << std::endl;
@@ -267,13 +283,16 @@ int main() {
     ModelLoader modelLoader;
     Window window = Window::Create("Test Engine");
 
-    TestRenderer renderer(window);
-    renderer.init();
+//    TestRenderer renderer(window);
+//    renderer.init();
+//    run(window, renderer, modelLoader);
 
-    run(window, renderer, modelLoader);
+    VulkanRenderer2D renderer2D = VulkanRenderer2D::Create(window);
+    renderer2D.setup();
+    run2(window, renderer2D);
 
     modelLoader.cleanup();
-    renderer.cleanup();
+//    renderer.cleanup();
     window.cleanup();
 
     return EXIT_SUCCESS;

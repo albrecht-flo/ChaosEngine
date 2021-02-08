@@ -2,6 +2,8 @@
 #include <src/renderer/vulkan/pipeline/VulkanDescriptorSetLayout.h>
 #include <src/renderer/vulkan/pipeline/VulkanDescriptorSet.h>
 #include <src/renderer/data/Mesh.h>
+#include <src/renderer/data/ModelLoader.h>
+#include <src/renderer/data/RenderObject.h>
 #include "VulkanRenderer2D.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
@@ -51,35 +53,36 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
 VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
-    VulkanContext context = VulkanContext::Create(window);
+    auto context = std::make_unique<VulkanContext>(window);
 
-    auto primaryCommandBuffers = createPrimaryCommandBuffers(context.getDevice(), context.getCommandPool(),
+    auto primaryCommandBuffers = createPrimaryCommandBuffers(context->getDevice(), context->getCommandPool(),
                                                              maxFramesInFlight);
-    VulkanFrame frame = VulkanFrame::Create(window, context, maxFramesInFlight);
+    VulkanFrame frame = VulkanFrame::Create(window, *context, maxFramesInFlight);
 
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color).build());
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
-    VulkanRenderPass mainRenderPass = VulkanRenderPass::Create(context.getDevice(), attachments);
+    attachments.emplace_back(VulkanAttachmentBuilder(context->getDevice(), AttachmentType::Color).build());
+    attachments.emplace_back(VulkanAttachmentBuilder(context->getDevice(), AttachmentType::Depth).build());
+    VulkanRenderPass mainRenderPass = VulkanRenderPass::Create(context->getDevice(), attachments);
 
-    VulkanImageBuffer depthBuffer = createDepthResources(context.getDevice(), context.getMemory(),
-                                                         context.getSwapChain().getExtent());
+    VulkanImageBuffer depthBuffer = createDepthResources(context->getDevice(), context->getMemory(),
+                                                         context->getSwapChain().getExtent());
 
-    auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(),
+    auto swapChainFrameBuffers = createSwapChainFrameBuffers(context->getDevice(), context->getSwapChain(),
                                                              mainRenderPass, depthBuffer.getImageView(),
                                                              maxFramesInFlight);
 
 
-    return VulkanRenderer2D(std::move(context), std::move(frame), std::move(swapChainFrameBuffers),
-                            std::move(mainRenderPass), std::move(depthBuffer));
+    return VulkanRenderer2D(std::move(context), std::move(frame), std::move(primaryCommandBuffers),
+                            std::move(mainRenderPass), std::move(depthBuffer), std::move(swapChainFrameBuffers));
 }
 
-VulkanRenderer2D::VulkanRenderer2D(VulkanContext &&context, VulkanFrame &&frame,
-                                   std::vector<VulkanFramebuffer> &&swapChainFrameBuffers,
-                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer)
-        : context(std::move(context)), frame(std::move(frame)), swapChainFrameBuffers(std::move(swapChainFrameBuffers)),
+VulkanRenderer2D::VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanFrame &&frame,
+                                   std::vector<VulkanCommandBuffer> &&primaryCommandBuffers,
+                                   VulkanRenderPass &&mainRenderPass, VulkanImageBuffer &&depthBuffer,
+                                   std::vector<VulkanFramebuffer> &&swapChainFrameBuffers)
+        : context(std::move(context)), frame(std::move(frame)), primaryCommandBuffers(std::move(primaryCommandBuffers)),
           mainRenderPass(std::move(mainRenderPass)), depthBuffer(std::move(depthBuffer)),
-          pipelineManager{}, vulkanMemory(context.getDevice(), context.getCommandPool()) {}
+          swapChainFrameBuffers(std::move(swapChainFrameBuffers)) {}
 
 
 // ------------------------------------ Lifecycle methods --------------------------------------------------------------
@@ -93,21 +96,22 @@ void VulkanRenderer2D::setup() {
                     .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build());
 
     cameraDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetLayoutBuilder(context.getDevice())
+            VulkanDescriptorSetLayoutBuilder(context->getDevice())
                     .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex, 1)
                     .build());
     materialDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
-            VulkanDescriptorSetLayoutBuilder(context.getDevice())
+            VulkanDescriptorSetLayoutBuilder(context->getDevice())
                     .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
                     .build());
 
-    VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
+    VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context->getDevice())
             .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
+            .addPushConstant(sizeof(glm::vec4), 0, ShaderStage::Fragment)
             .addDescriptorSet(*cameraDescriptorLayout) // set = 0
-            .addDescriptorSet(*materialDescriptorLayout) // set = 1
+//            .addDescriptorSet(*materialDescriptorLayout) // set = 1
             .build();
 
-    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), mainRenderPass,
+    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context->getDevice(), mainRenderPass,
                                                                       std::move(pipelineLayout), *vertex_3P_3C_3N_2U,
                                                                       "2DSprite")
                                                         .setFragmentShader("2DStaticSprite")
@@ -118,7 +122,7 @@ void VulkanRenderer2D::setup() {
                                                         .setDepthCompare(CompareOp::Less)
                                                         .build());
 
-    descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())
+    descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context->getDevice())
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
                                                                             0).descriptorType, maxFramesInFlight)
                                                                     .addDescriptor(materialDescriptorLayout->getBinding(
@@ -126,46 +130,122 @@ void VulkanRenderer2D::setup() {
                                                                     .setMaxSets(maxFramesInFlight * 1024)
                                                                     .build());
 
+
+    perFrameUniformBuffers.resize(maxFramesInFlight);
+    for (size_t i = 0; i < perFrameUniformBuffers.capacity(); i++) {
+        perFrameUniformBuffers[i] = context->getMemory().createUniformBuffer(
+                sizeof(CameraUbo),
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                1, false);
+    }
+    uboContent = UniformBufferContent<CameraUbo>(1);
+
     perFrameDescriptorSets.reserve(maxFramesInFlight);
     perFrameUniformBuffers.reserve(perFrameDescriptorSets.size());
-
-    for (size_t i = 0; i < perFrameDescriptorSets.size(); i++) {
-        perFrameUniformBuffers.emplace_back(vulkanMemory.createUniformBuffer(
+    for (size_t i = 0; i < perFrameDescriptorSets.capacity(); i++) {
+        perFrameUniformBuffers.emplace_back(context->getMemory().createUniformBuffer(
                 sizeof(CameraUbo), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 1,
                 false
         ));
         perFrameDescriptorSets.emplace_back(descriptorPool->allocate(*cameraDescriptorLayout));
-//        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
+        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
     }
+
+    auto quad = ModelLoader::getQuad();
+    VulkanBuffer vertexBuffer = context->getMemory().createInputBuffer(
+            quad.vertices.size() * sizeof(quad.vertices[0]), quad.vertices.data(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    VulkanBuffer indexBuffer = context->getMemory().createInputBuffer(
+            quad.indices.size() * sizeof(quad.indices[0]), quad.indices.data(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+
+    quadMesh = {.vertexBuffer=vertexBuffer, .indexBuffer=indexBuffer,
+            .indexCount=static_cast<uint32_t>(quad.indices.size())};
 }
 
 
 void VulkanRenderer2D::join() {
-    context.getDevice().waitIdle();
+    context->getDevice().waitIdle();
 }
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
-void VulkanRenderer2D::beginScene() {
+void VulkanRenderer2D::updateUniformBuffer(glm::mat4 viewMat) {
+    CameraUbo *ubo = uboContent.at(currentFrame);
+    ubo->view = viewMat;
+    ubo->proj = glm::perspective(glm::radians(55.0f),
+                                 context->getSwapChain().getExtent().width /
+                                 (float) context->getSwapChain().getExtent().height, 0.1f, 100.0f);
+    ubo->proj[1][1] *= -1;
 
+    // Copy that data to the uniform buffer
+    context->getMemory().copyDataToBuffer(perFrameUniformBuffers[currentFrame].buffer,
+                                          perFrameUniformBuffers[currentFrame].memory,
+                                          uboContent.data(), uboContent.size());
 }
 
-void VulkanRenderer2D::useShader(RendererAPI::ShaderRef shaderRef) {
+void VulkanRenderer2D::beginScene(const glm::mat4 &cameraTransform) {
+    updateUniformBuffer(cameraTransform);
+
+    primaryCommandBuffers[currentFrame].begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+// Define render rendering to draw with
+    VkRenderPassBeginInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = mainRenderPass.vk(); // the renderpass to use
+    renderPassInfo.framebuffer = swapChainFrameBuffers[currentFrame].vk(); // the attatchment
+    renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
+    renderPassInfo.renderArea.extent = context->getSwapChain().getExtent(); // based on swap chain
+
+    // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(primaryCommandBuffers[currentFrame].vk(), &renderPassInfo,
+                         VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
+
+    // Now vkCmd... can be written do define the draw call
+    // Bind the pipline as a graphics pipeline
+    vkCmdBindPipeline(primaryCommandBuffers[currentFrame].vk(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                      pipeline->getPipeline());
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(context->getSwapChain().getWidth());
+    viewport.height = static_cast<float>(context->getSwapChain().getHeight());
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(primaryCommandBuffers[currentFrame].vk(), 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = {0, 0};
+    scissor.extent = {context->getSwapChain().getWidth(), context->getSwapChain().getHeight()};
+    vkCmdSetScissor(primaryCommandBuffers[currentFrame].vk(), 0, 1, &scissor);
+
+    // Bind the descriptor set to the pipeline
+    auto cameraDescriptor = perFrameDescriptorSets[currentFrame].vk();
+    vkCmdBindDescriptorSets(primaryCommandBuffers[currentFrame].vk(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline->getPipelineLayout(),
+                            0, 1, &cameraDescriptor, 0, nullptr);
 
 }
 
 void VulkanRenderer2D::endScene() {
-
+    vkCmdEndRenderPass(primaryCommandBuffers[currentFrame].vk());
+    primaryCommandBuffers[currentFrame].end();
 }
 
 void VulkanRenderer2D::recreateSwapChain() {
-    context.getDevice().waitIdle();
+    std::cout << "Recreating SwapChain" << std::endl;
+    context->getDevice().waitIdle();
     // TODO: Recreate swap chain associated resources
-    context.recreateSwapChain();
+    context->recreateSwapChain();
 
-    depthBuffer = createDepthResources(context.getDevice(), context.getMemory(), context.getSwapChain().getExtent());
+    depthBuffer = createDepthResources(context->getDevice(), context->getMemory(), context->getSwapChain().getExtent());
     // Recreate the frame buffers pointing to the swap chain images
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(),
+    swapChainFrameBuffers = createSwapChainFrameBuffers(context->getDevice(), context->getSwapChain(),
                                                         mainRenderPass, depthBuffer.getImageView(), maxFramesInFlight);
 
     // Update framebuffer bindings as textures in post processing
@@ -178,18 +258,19 @@ void VulkanRenderer2D::flush() {
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
 }
 
-void
-VulkanRenderer2D::renderObject(RendererAPI::MeshRef meshRef, RendererAPI::MaterialRef materialRef, glm::mat4 modelMat) {
+void VulkanRenderer2D::renderQuad(glm::mat4 modelMat, glm::vec4 color) {
+    // Set model matrix via push constant
+    vkCmdPushConstants(primaryCommandBuffers[currentFrame].vk(), pipeline->getPipelineLayout(),
+                       VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
+    // Set model matrix via push constant
+    vkCmdPushConstants(primaryCommandBuffers[currentFrame].vk(), pipeline->getPipelineLayout(),
+                       VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(color), &color);
 
+    VkBuffer vertexBuffers[]{quadMesh.vertexBuffer.buffer};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(primaryCommandBuffers[currentFrame].vk(), 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(primaryCommandBuffers[currentFrame].vk(), quadMesh.indexBuffer.buffer, 0,
+                         VK_INDEX_TYPE_UINT32);
+    // Draw a fullscreen quad and composite the final image
+    vkCmdDrawIndexed(primaryCommandBuffers[currentFrame].vk(), quadMesh.indexCount, 1, 0, 0, 0);
 }
-
-// ------------------------------------ Data management methods --------------------------------------------------------
-
-RendererAPI::MeshRef VulkanRenderer2D::loadMesh() {
-    return RendererAPI::MeshRef();
-}
-
-RendererAPI::MaterialRef VulkanRenderer2D::loadMaterial() {
-    return RendererAPI::MaterialRef();
-}
-

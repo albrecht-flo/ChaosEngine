@@ -24,7 +24,7 @@ public:
 
     void destroy(VulkanBuffer buffer) const;
 
-    const VulkanBuffer createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags);
+    const VulkanBuffer createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags) const;
 
     [[nodiscard]] const VulkanUniformBuffer
     createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flags, uint32_t count = 1, bool aligned = false) const;

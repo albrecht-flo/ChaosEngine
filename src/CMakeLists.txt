@@ -1,6 +1,6 @@
 set(RENDER_ENGINE_SOURCES
         renderer/window/Window.cpp
-        renderer/RendererAPI.cpp
+        renderer/RenderAPI.cpp
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
@@ -21,8 +21,9 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/image/VulkanFramebuffer.cpp
         renderer/vulkan/image/VulkanImageView.cpp
         renderer/vulkan/image/VulkanTexture.cpp
-        renderer/vulkan/pipeline/VulkanDescriptorSetLayout.cpp
         renderer/vulkan/pipeline/VulkanVertexInput.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorSetLayout.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorSet.cpp
         renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
         renderer/vulkan/pipeline/VulkanPipeline.cpp
         renderer/vulkan/test/VulkanRendererOld.cpp
@@ -38,7 +39,8 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_draw.cpp
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
-        renderer/vulkan/pipeline/VulkanDescriptorSet.cpp renderer/vulkan/pipeline/VulkanDescriptorSet.h)
+
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/
@@ -88,6 +90,8 @@ set(GLSL_SOURCE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/base.vert"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.frag"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.vert"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DStaticSprite.frag"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DSprite.vert"
         )
 
 find_program(GLSLC glslc)
