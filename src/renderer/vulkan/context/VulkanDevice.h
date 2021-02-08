@@ -28,7 +28,7 @@ struct SwapChainSupportDetails {
 	*/
 class VulkanDevice {
 private:
-    VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
+    VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
                  VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
                  VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties);
 
@@ -47,7 +47,7 @@ public:
 
     VulkanDevice &operator=(VulkanDevice &&o) = delete;
 
-    static VulkanDevice Create(VulkanInstance &p_Instance, VkSurfaceKHR p_Surface);
+    static VulkanDevice Create(const VulkanInstance &instance, VkSurfaceKHR surface);
 
     void waitIdle() const;
 
@@ -74,11 +74,10 @@ public:
     [[nodiscard]] SwapChainSupportDetails querySwapChainSupport() const;
 
     [[nodiscard]] VkFormat
-    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                        VkFormatFeatureFlags features) const;
 
 private:
-    VulkanInstance &instance;
-
     VkSurfaceKHR surface;
 
     VkPhysicalDevice physicalDevice;

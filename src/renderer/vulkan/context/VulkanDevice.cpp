@@ -239,7 +239,7 @@ const std::vector<const char *> VulkanDevice::deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
-VulkanDevice VulkanDevice::Create(VulkanInstance &instance, VkSurfaceKHR surface) {
+VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR surface) {
     // Select a graphics card that supports our features
     auto[physicalDevice, deviceProperties] = ::pickPhysicalDevice(instance, surface);
 
@@ -251,19 +251,19 @@ VulkanDevice VulkanDevice::Create(VulkanInstance &instance, VkSurfaceKHR surface
     auto[graphicsQueue, graphicsQueueFamily] = ::getGraphicsQueue(device, indices);
     auto[presentQueue, presentQueueFamily] = ::getPresentQueue(device, indices);
 
-    return VulkanDevice{instance, surface, physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
+    return VulkanDevice{surface, physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
                         graphicsQueue, presentQueue, deviceProperties};
 }
 
-VulkanDevice::VulkanDevice(VulkanInstance &instance, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
+VulkanDevice::VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
                            VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
                            VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties)
-        : instance(instance), surface(surface), physicalDevice(physicalDevice), device(device), graphicsQueueFamily(
+        : surface(surface), physicalDevice(physicalDevice), device(device), graphicsQueueFamily(
         graphicsQueueFamily), presentQueueFamily(presentQueueFamily), graphicsQueue(graphicsQueue), presentQueue(
         presentQueue), properties(properties) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
-        : instance(o.instance), surface(o.surface),
+        : surface(std::exchange(o.surface, nullptr)),
           physicalDevice(std::exchange(o.physicalDevice, nullptr)),
           device(std::exchange(o.device, nullptr)),
           graphicsQueueFamily(o.graphicsQueueFamily), presentQueueFamily(o.presentQueueFamily),
