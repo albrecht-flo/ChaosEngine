@@ -18,7 +18,7 @@ private:
         alignas(16) glm::mat4 proj;
     };
 
-    static constexpr uint32_t maxFramesInFlight = 3;
+    static constexpr uint32_t maxFramesInFlight = 2;
 private:
     VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanFrame &&frame,
                      std::vector<VulkanCommandBuffer> &&primaryCommandBuffers, VulkanRenderPass &&mainRenderPass,
@@ -77,6 +77,7 @@ private:
     VulkanDataManager pipelineManager;
 
     uint32_t currentFrame = 0;
+    uint32_t currentSwapChainImage = 0;
 
     // Dynamic resources -----------------------------------------------------
     std::unique_ptr<VulkanVertexInput> vertex_3P_3C_3N_2U;

@@ -1,5 +1,6 @@
 
-cmake-build-*
+/cmake-build-*
+/out/
 
 /dep/vulkan/
 /dep/glfw/
@@ -12,5 +13,6 @@ cmake-build-*
 /cmake/thirdparty/
 
 .idea/
+.vs/
 
 *.spv

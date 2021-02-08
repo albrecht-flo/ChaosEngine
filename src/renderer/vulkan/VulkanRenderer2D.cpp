@@ -69,7 +69,7 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
 
     auto swapChainFrameBuffers = createSwapChainFrameBuffers(context->getDevice(), context->getSwapChain(),
                                                              mainRenderPass, depthBuffer.getImageView(),
-                                                             maxFramesInFlight);
+                                                             context->getSwapChain().size());
 
 
     return VulkanRenderer2D(std::move(context), std::move(frame), std::move(primaryCommandBuffers),
@@ -191,7 +191,7 @@ void VulkanRenderer2D::beginScene(const glm::mat4 &cameraTransform) {
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = mainRenderPass.vk(); // the renderpass to use
-    renderPassInfo.framebuffer = swapChainFrameBuffers[currentFrame].vk(); // the attatchment
+    renderPassInfo.framebuffer = swapChainFrameBuffers[currentSwapChainImage].vk(); // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = context->getSwapChain().getExtent(); // based on swap chain
 
@@ -246,7 +246,8 @@ void VulkanRenderer2D::recreateSwapChain() {
     depthBuffer = createDepthResources(context->getDevice(), context->getMemory(), context->getSwapChain().getExtent());
     // Recreate the frame buffers pointing to the swap chain images
     swapChainFrameBuffers = createSwapChainFrameBuffers(context->getDevice(), context->getSwapChain(),
-                                                        mainRenderPass, depthBuffer.getImageView(), maxFramesInFlight);
+                                                        mainRenderPass, depthBuffer.getImageView(),
+                                                        context->getSwapChain().size());
 
     // Update framebuffer bindings as textures in post processing
 }
@@ -256,6 +257,8 @@ void VulkanRenderer2D::flush() {
         recreateSwapChain();
     }
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
+    currentSwapChainImage = (currentSwapChainImage < context->getSwapChain().size() - 1) ? currentSwapChainImage + 1
+                                                                                         : 0;
 }
 
 void VulkanRenderer2D::renderQuad(glm::mat4 modelMat, glm::vec4 color) {
