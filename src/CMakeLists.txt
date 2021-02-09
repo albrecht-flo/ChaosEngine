@@ -1,6 +1,5 @@
 set(RENDER_ENGINE_SOURCES
         renderer/window/Window.cpp
-        renderer/RenderAPI.cpp
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
@@ -39,6 +38,8 @@ set(RENDER_ENGINE_SOURCES
         vendor/imgui/imgui_widgets.cpp
         vendor/imgui/imgui_tables.cpp
 
+        renderer/DevRenderer.cpp
+        renderer/api/GraphicsContext.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

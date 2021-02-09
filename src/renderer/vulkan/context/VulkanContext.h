@@ -1,20 +1,20 @@
 #pragma once
 
-
-#include <src/renderer/vulkan/memory/VulkanMemory.h>
-#include "src/renderer/vulkan/command/VulkanCommandPool.h"
-#include <src/renderer/vulkan/command/VulkanCommandBuffer.h>
+#include "src/renderer/api/GraphicsContext.h"
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
+#include "src/renderer/vulkan/memory/VulkanMemory.h"
+#include "src/renderer/vulkan/command/VulkanCommandPool.h"
+#include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
 
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
  * Because this is referenced throughout the application it **must** not be moved,
  * otherwise the references and pointers to these objects will break.
  */
-class VulkanContext {
-public: // Methods
+class VulkanContext : public Renderer::GraphicsContext {
+public:
     explicit VulkanContext(const Window &window);
 
     ~VulkanContext() = default;
