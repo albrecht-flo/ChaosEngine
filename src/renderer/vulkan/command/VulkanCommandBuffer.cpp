@@ -50,7 +50,7 @@ VulkanCommandBuffer::~VulkanCommandBuffer() {
 /* Begin recording the command buffer.
 	If allocated from a command pool with reset flag implicitly resets the buffer.
 */
-void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags) {
+void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags) const {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = flags; // can be resubmited while beeing executed
@@ -62,7 +62,7 @@ void VulkanCommandBuffer::begin(VkCommandBufferUsageFlags flags) {
 }
 
 // Finish recording the command buffer
-void VulkanCommandBuffer::end() {
+void VulkanCommandBuffer::end() const {
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
         throw std::runtime_error("[Vulkan] Failed to record command buffer!");
     }

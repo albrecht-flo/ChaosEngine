@@ -28,9 +28,9 @@ public:
     static VulkanCommandBuffer
     Create(const VulkanDevice &device, const VulkanCommandPool &commandPool, VkCommandBufferLevel level);
 
-    void begin(VkCommandBufferUsageFlags flags);
+    void begin(VkCommandBufferUsageFlags flags) const;
 
-    void end();
+    void end() const;
 
     void destroy();
 

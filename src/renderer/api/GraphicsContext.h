@@ -11,7 +11,13 @@ namespace Renderer {
     };
 
     /** This is a wrapper class for different graphics context objects that can be used to be passed down for further
-     *  Object creation.
+     *  Object creation. <br/>
+     *
+     *  Their task is to create a graphics context in which further objects such as VertexArrays, Textures, Shaders etc.
+     *  can be created and used. <br/>
+     *
+     *  As part of this it also has to handle showing the next image on the presentation surface and ensuring that
+     *  surfaces validity. (eg. SwapChain recreation)
      */
     class GraphicsContext {
     public:
@@ -23,7 +29,11 @@ namespace Renderer {
          */
         static std::unique_ptr<GraphicsContext> Create(Window &window, GraphicsAPI api);
 
-        //TODO: Swap buffers here or in Renderer?
+        /**
+         * This method submits all recorded draw commands to the GPU and starts rendering the next Frame.
+         * @return <i>false</i> if the presenting surface has changed and was recreated.
+         */
+        virtual bool flushCommands() = 0;
     };
 
 }

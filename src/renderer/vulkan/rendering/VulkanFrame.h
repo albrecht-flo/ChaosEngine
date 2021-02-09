@@ -4,10 +4,10 @@
 
 #include "src/renderer/window/Window.h"
 #include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
-#include "src/renderer/vulkan/context/VulkanContext.h"
 
 #include <vector>
 
+class VulkanContext;
 
 class VulkanFrame {
 private:
@@ -15,6 +15,7 @@ private:
                 std::vector<VkSemaphore> &&renderFinishedSemaphores, std::vector<VkFence> &&inFlightFences);
 
     void destroy();
+
 public:
     ~VulkanFrame();
 
@@ -28,7 +29,7 @@ public:
 
     static VulkanFrame Create(Window &window, const VulkanContext &context, uint32_t maxFramesInFlight);
 
-    [[nodiscard]] bool render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer);
+    [[nodiscard]] bool render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) const;
 
 private:
     Window &window;

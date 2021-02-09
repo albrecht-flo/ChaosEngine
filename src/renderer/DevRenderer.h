@@ -19,6 +19,9 @@ namespace Renderer {
 
         static DevRenderer Create(Window &window, GraphicsAPI api);
 
+        /// Loads all resources to put this renderer into working mode
+        void init();
+
     private:
         std::unique_ptr<GraphicsContext> context;
 

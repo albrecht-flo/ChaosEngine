@@ -1,9 +1,10 @@
 #include "VulkanFrame.h"
 
+#include "src/renderer/vulkan/context/VulkanContext.h"
+
 #include <array>
 #include <vector>
 #include <stdexcept>
-
 
 static std::vector<VkFence> createFence(VkDevice device, uint32_t amount) {
     std::vector<VkFence> fences;
@@ -75,7 +76,7 @@ void VulkanFrame::destroy() {
 }
 
 
-bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) {
+bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) const {
     // Wait for the old frame to finish rendering
     vkWaitForFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 

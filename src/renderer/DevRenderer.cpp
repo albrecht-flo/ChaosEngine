@@ -10,4 +10,8 @@ namespace Renderer {
 
         return DevRenderer(std::move(context));
     }
+
+    void DevRenderer::init() {
+
+    }
 }

@@ -7,15 +7,20 @@
 #include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/vulkan/command/VulkanCommandPool.h"
 #include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
+#include "src/renderer/vulkan/rendering/VulkanFrame.h"
 
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
  * Because this is referenced throughout the application it **must** not be moved,
  * otherwise the references and pointers to these objects will break.
+ *
+ * It also wraps the swap buffer functionality with recreation of the swap chain.
  */
 class VulkanContext : public Renderer::GraphicsContext {
 public:
-    explicit VulkanContext(const Window &window);
+    static constexpr uint32_t maxFramesInFlight = 2;
+public:
+    explicit VulkanContext(Window &window);
 
     ~VulkanContext() = default;
 
@@ -29,6 +34,8 @@ public:
 
     void recreateSwapChain();
 
+    bool flushCommands() override;
+
     [[nodiscard]] inline const VulkanDevice &getDevice() const { return device; }
 
     [[nodiscard]] inline const VulkanInstance &getInstance() const { return instance; }
@@ -41,6 +48,13 @@ public:
 
     [[nodiscard]] inline const VulkanSwapChain &getSwapChain() const { return swapChain; }
 
+    [[nodiscard]] inline uint32_t getCurrentFrame() const { return currentFrame; }
+
+    [[nodiscard]] inline uint32_t getCurrentSwapChainFrame() const { return currentSwapChainImage; }
+
+    [[nodiscard]] inline const VulkanCommandBuffer &
+    getCurrentPrimaryCommandBuffer() const { return primaryCommandBuffers[currentFrame]; }
+
 private:
     const Window &window;
     const VulkanInstance instance;
@@ -49,6 +63,10 @@ private:
     const VulkanCommandPool commandPool;
     VulkanSwapChain swapChain;
     const VulkanMemory memory;
+    const std::vector<VulkanCommandBuffer> primaryCommandBuffers;
+    const VulkanFrame frame;
 
+    uint32_t currentFrame = 0;
+    uint32_t currentSwapChainImage = 0;
 };
 

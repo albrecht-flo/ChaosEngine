@@ -3,6 +3,7 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
+
 #include <glm/glm.hpp>
 
 #include <src/renderer/vulkan/image/VulkanImage.h>
@@ -22,12 +23,10 @@ private:
         alignas(16) glm::mat4 view;
         alignas(16) glm::mat4 proj;
     };
-
-    static constexpr uint32_t maxFramesInFlight = 2;
 private:
-    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanFrame &&frame,
-                     std::vector<VulkanCommandBuffer> &&primaryCommandBuffers, VulkanRenderPass &&mainRenderPass,
-                     VulkanImageBuffer &&depthBuffer, std::vector<VulkanFramebuffer> &&swapChainFrameBuffers);
+    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanRenderPass &&mainRenderPass,
+                     VulkanImageBuffer &&depthBuffer,
+                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -72,15 +71,10 @@ private:
 
 private:
     std::unique_ptr<VulkanContext> context;
-    VulkanFrame frame;
-    std::vector<VulkanCommandBuffer> primaryCommandBuffers;
     std::vector<VulkanFramebuffer> swapChainFrameBuffers;
     VulkanRenderPass mainRenderPass;
 
     VulkanImageBuffer depthBuffer;
-
-    uint32_t currentFrame = 0;
-    uint32_t currentSwapChainImage = 0;
 
     // Dynamic resources -----------------------------------------------------
     std::unique_ptr<VulkanVertexInput> vertex_3P_3C_3N_2U;
@@ -93,7 +87,6 @@ private:
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
     UniformBufferContent<CameraUbo> uboContent;
-
 
     // TEMP
     RenderMesh quadMesh;
