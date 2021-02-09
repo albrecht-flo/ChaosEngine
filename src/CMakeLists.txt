@@ -4,8 +4,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
-        renderer/vulkan/VulkanRenderer2D.cpp
-        renderer/vulkan/VulkanDataManager.cpp
+        renderer/vulkan/test/VulkanRenderer2D.cpp
         renderer/vulkan/rendering/VulkanFrame.cpp
         renderer/vulkan/rendering/VulkanRenderPass.cpp
         renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp
@@ -86,12 +85,12 @@ add_custom_command(
 # ------------------------------------- Shaders ---------------------------------------------------
 
 set(GLSL_SOURCE_FILES
-        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/base.frag"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/base.vert"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.frag"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/base.frag"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.vert"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DStaticSprite.frag"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.frag"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DSprite.vert"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DStaticSprite.frag"
         )
 
 find_program(GLSLC glslc)

@@ -17,7 +17,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
 } cameraUbo;
 
 layout(push_constant) uniform ModelData {
-    mat4 model;
+    layout(offset = 0) mat4 model;
 } modelData;
 
 void main() {

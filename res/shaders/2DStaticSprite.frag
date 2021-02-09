@@ -12,7 +12,7 @@ layout(location = 0) out vec4 out_Color;
 // Material Parameters
 //layout(set = 1, binding = 0) uniform sampler2D diffuseTexture;// Model texture
 layout(push_constant) uniform FramentData {
-    vec4 color;
+    layout(offset = 64) vec4 color;
 } framentData;
 
 void main() {

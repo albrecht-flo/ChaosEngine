@@ -279,10 +279,14 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
 
 Mesh ModelLoader::getQuad() {
     const std::vector<Vertex> vertices = {
-            {{-1.0f, -1.0f, +0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-            {{+1.0f, -1.0f, +0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
-            {{+1.0f, +1.0f, +0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},
-            {{-1.0f, +1.0f, +0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},
+            Vertex{.pos = {-1.0f, -1.0f, +0.0f}, .color = {1.0f, 0.0f, 0.0f},
+                    .normal{0.0f, 0.0f, 1.0f}, .uv= {0.0f, 1.0f}},
+            Vertex{.pos={+1.0f, -1.0f, +0.0f}, .color= {0.0f, 1.0f, 0.0f},
+                    .normal {0.0f, 0.0f, 1.0f}, .uv {1.0f, 1.0f}},
+            Vertex{.pos={+1.0f, +1.0f, +0.0f}, .color= {0.0f, 0.0f, 1.0f},
+                    .normal {0.0f, 0.0f, 1.0f}, .uv {1.0f, 0.0f}},
+            Vertex{.pos={-1.0f, +1.0f, +0.0f}, .color= {1.0f, 1.0f, 1.0f},
+                    .normal {0.0f, 0.0f, 1.0f}, .uv {0.0f, 0.0f}},
     };
 
     const std::vector<uint32_t> indices = {

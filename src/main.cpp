@@ -13,7 +13,7 @@
 #include <iostream>
 #include <chrono>
 #include <src/renderer/RenderAPI.h>
-#include <src/renderer/vulkan/VulkanRenderer2D.h>
+#include <src/renderer/vulkan/test/VulkanRenderer2D.h>
 
 
 #include "renderer/window/Window.h"
@@ -229,7 +229,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
     auto delatTimer = startTime;
     float fpsDelta = 0;
     // Camera points
-    glm::vec3 origin = glm::vec3(0, 0, +0.0f);
+    glm::vec3 origin = glm::vec3(0, 0, -2.0f);
     glm::vec3 target = glm::vec3(0, 0, -1.0f);
     glm::vec3 cameraUp = glm::vec3(0, 1.0f, 0);
 
@@ -261,14 +261,28 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         if (window.isKeyDown(GLFW_KEY_ESCAPE) ||
             (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL)))
             window.close();
+        if (window.isKeyDown(GLFW_KEY_W)) {
+            origin.z += 0.05f;
+            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
+        }
+        if (window.isKeyDown(GLFW_KEY_S)) {
+            origin.z -= 0.05f;
+            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
+        }
+        if (window.isKeyDown(GLFW_KEY_A)) {
+            origin.x += 0.05f;
+            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
+        }
+        if (window.isKeyDown(GLFW_KEY_D)) {
+            origin.x -= 0.05f;
+            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
+        }
 
-        renderer.beginScene(glm::lookAt(origin, origin + target, cameraUp));
-        auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3.0f));
-        modelMat1 = glm::scale(modelMat1, glm::vec3(0.5, 0.5, 0.5));
-        renderer.renderQuad(modelMat1, glm::vec4(1, 0, 0.5f, 1));
-        auto modelMat2 = glm::translate(glm::mat4(1.0f), glm::vec3(1, 0, -3.1f));
-        modelMat2 = glm::scale(modelMat2, glm::vec3(0.5, 0.5, 0.5));
-        renderer.renderQuad(modelMat2, glm::vec4(1, 1, 0.5f, 1));
+        renderer.beginScene(glm::translate(glm::mat4(1.0f), origin));
+        auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.0f));
+        renderer.renderQuad(modelMat1, glm::vec4(1.0f, 0.5f, 0.0f, 1));
+        auto modelMat2 = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0.0f));
+        renderer.renderQuad(modelMat2, glm::vec4(0.0f, 1.0f, 0.0f, 1));
         renderer.endScene();
         renderer.flush();
     }
