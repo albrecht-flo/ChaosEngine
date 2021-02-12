@@ -12,6 +12,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp
         renderer/vulkan/memory/VulkanMemory.cpp
+        renderer/vulkan/memory/VulkanVertexArray.cpp
         renderer/vulkan/command/VulkanCommandBuffer.cpp
         renderer/vulkan/command/VulkanCommandPool.cpp
         renderer/vulkan/image/VulkanImage.cpp
@@ -31,12 +32,6 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/test/PostRenderPass.cpp
         renderer/vulkan/test/ImGuiRenderPass.cpp
         vendor/imgui/imgui.cpp
-        vendor/imgui/imgui_impl_glfw.cpp
-        vendor/imgui/imgui_impl_vulkan.cpp
-        vendor/imgui/imgui_demo.cpp
-        vendor/imgui/imgui_draw.cpp
-        vendor/imgui/imgui_widgets.cpp
-        vendor/imgui/imgui_tables.cpp
 
         renderer/DevRenderer.cpp
         renderer/api/GraphicsContext.cpp
