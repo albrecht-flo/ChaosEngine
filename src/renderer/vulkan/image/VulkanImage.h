@@ -10,8 +10,9 @@
 // TODO: massive refactor to be a RAII Wrapper + Builder
 class VulkanImage {
 public:
-    static VkImage createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
-                                  VkDeviceMemory &imageMemory/*TEMP*/);
+    static VkImage
+    createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
+                   VkDeviceMemory &imageMemory/*TEMP*/);
 
     static VkImage
     createRawImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
@@ -45,10 +46,13 @@ private:
 class VulkanImageBuffer {
 public:
     [[deprecated]] explicit VulkanImageBuffer(const VulkanDevice &device)
-            : device(device), image(VK_NULL_HANDLE), memory(VK_NULL_HANDLE), imageView(device) {}// TODO: Remove
+            : device(device), image(VK_NULL_HANDLE), memory(VK_NULL_HANDLE), imageView(device), width(0),
+              height(0) {}// TODO: Remove
 
-    VulkanImageBuffer(const VulkanDevice &device, VkImage &&image, VkDeviceMemory &&memory, VulkanImageView &&imageView)
-            : device(device), image(image), memory(memory), imageView(std::move(imageView)) {}
+    VulkanImageBuffer(const VulkanDevice &device, VkImage &&image, VkDeviceMemory &&memory, VulkanImageView &&imageView,
+                      uint32_t width, uint32_t height)
+            : device(device), image(image), memory(memory), imageView(std::move(imageView)), width(width),
+              height(height) {}
 
     ~VulkanImageBuffer() { destroy(); }
 
@@ -58,7 +62,8 @@ public:
 
     VulkanImageBuffer(VulkanImageBuffer &&o) noexcept: device(o.device), image(std::exchange(o.image, nullptr)),
                                                        memory(std::exchange(o.memory, nullptr)),
-                                                       imageView(std::move(o.imageView)) {}
+                                                       imageView(std::move(o.imageView)), width(o.width),
+                                                       height(o.height) {}
 
     VulkanImageBuffer &operator=(VulkanImageBuffer &&o) noexcept {
         if (this == &o)
@@ -67,12 +72,18 @@ public:
         image = std::exchange(o.image, nullptr);
         memory = std::exchange(o.memory, nullptr);
         imageView = std::move(o.imageView);
+        width = o.width;
+        height = o.height;
         return *this;
     };
 
     [[nodiscard]] inline VkImage getImage() const { return image; }
 
     [[nodiscard]] inline const VulkanImageView &getImageView() const { return imageView; }
+
+    [[nodiscard]] inline uint32_t getWidth() const { return width; }
+
+    [[nodiscard]] inline uint32_t getHeight() const { return height; }
 
 private:
     void destroy() { VulkanImage::destroy(device, image, memory); }
@@ -82,4 +93,6 @@ private:
     VkImage image;
     VkDeviceMemory memory;
     VulkanImageView imageView;
+    uint32_t width;
+    uint32_t height;
 };

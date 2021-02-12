@@ -96,7 +96,7 @@ void TestRenderer::createDepthResources() {
     auto depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
     depthBuffer = VulkanImageBuffer(device, std::move(depthImage), std::move(depthImageMemory),
-                                    std::move(depthImageView));
+                                    std::move(depthImageView), swapChain.getWidth(), swapChain.getHeight());
 }
 
 /* Creates images and image views for offscreen buffers. */

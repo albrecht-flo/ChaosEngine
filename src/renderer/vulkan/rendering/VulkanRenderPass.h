@@ -37,7 +37,7 @@ public:
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
 
     [[nodiscard]] VulkanFramebuffer
-    createFrameBuffer(const std::vector<VkImageView> &attachmentImages, VkExtent2D extent) const;
+    createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages, VkExtent2D extent) const;
 
 private:
     const VulkanDevice &device;

@@ -12,7 +12,7 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
-#include <src/renderer/vulkan/test/VulkanRenderer2D.h>
+#include <src/renderer/VulkanRenderer2D.h>
 
 
 #include "renderer/window/Window.h"

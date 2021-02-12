@@ -88,7 +88,7 @@ void VulkanRenderPass::destroy() {
 }
 
 VulkanFramebuffer
-VulkanRenderPass::createFrameBuffer(const std::vector<VkImageView> &attachmentImages, VkExtent2D extent) const {
+VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages, VkExtent2D extent) const {
     assert(attachmentImages.size() == attachmentCount);
     return VulkanFramebuffer::createFramebuffer(device, attachmentImages, renderPass, extent.width, extent.height);
 }

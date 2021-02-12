@@ -9,6 +9,7 @@
 #include <src/renderer/vulkan/image/VulkanImage.h>
 #include <src/renderer/data/RenderObject.h>
 #include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
+#include <src/renderer/passes/SpriteRenderingPass.h>
 #include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
@@ -18,15 +19,8 @@
 
 class VulkanRenderer2D {
 private:
-    /// Camera uniform object. Alignas 16 to ensure proper alignment with the GPU storage
-    struct CameraUbo {
-        alignas(16) glm::mat4 view;
-        alignas(16) glm::mat4 proj;
-    };
 private:
-    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, VulkanRenderPass &&mainRenderPass,
-                     VulkanImageBuffer &&depthBuffer,
-                     std::vector<VulkanFramebuffer> &&swapChainFrameBuffers);
+    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -67,26 +61,12 @@ public:
 private:
     void recreateSwapChain();
 
-    void updateUniformBuffer(glm::mat4 viewMat, glm::vec2 viewportDimensions);
-
 private:
     std::unique_ptr<VulkanContext> context;
-    std::vector<VulkanFramebuffer> swapChainFrameBuffers;
-    VulkanRenderPass mainRenderPass;
 
-    VulkanImageBuffer depthBuffer;
-
-    // Dynamic resources -----------------------------------------------------
-    std::unique_ptr<VulkanVertexInput> vertex_3P_3C_3N_2U;
-    std::unique_ptr<VulkanDescriptorSetLayout> cameraDescriptorLayout;
-    std::unique_ptr<VulkanDescriptorSetLayout> materialDescriptorLayout;
-    std::unique_ptr<VulkanPipeline> pipeline;
-    std::unique_ptr<VulkanDescriptorPool> descriptorPool;
-
-    // ----- Per Frame resources
-    std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
-    std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
-    UniformBufferContent<CameraUbo> uboContent;
+    SpriteRenderingPass spriteRenderingPass;
+//    PostProcessingPass postProcessingPass;
+//    ImGuiRenderingPass imGuiPass;
 
     // TEMP
     RenderMesh quadMesh;

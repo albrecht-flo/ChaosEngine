@@ -3,7 +3,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/data/Mesh.cpp
         renderer/data/ModelLoader.cpp
         renderer/data/RenderObject.cpp
-        renderer/vulkan/test/VulkanRenderer2D.cpp
+        renderer/VulkanRenderer2D.cpp
         renderer/vulkan/rendering/VulkanFrame.cpp
         renderer/vulkan/rendering/VulkanRenderPass.cpp
         renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp
@@ -35,7 +35,7 @@ set(RENDER_ENGINE_SOURCES
 
         renderer/DevRenderer.cpp
         renderer/api/GraphicsContext.cpp
-        )
+        renderer/passes/SpriteRenderingPass.cpp renderer/passes/SpriteRenderingPass.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm/
