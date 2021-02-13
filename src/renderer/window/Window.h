@@ -20,8 +20,10 @@ class Window {
 private:
     explicit Window(GLFWwindow *window);
 
+    void destroy();
+
 public:
-    ~Window() = default;
+    ~Window() { destroy();};
 
     Window(const Window &o) = delete;
 
@@ -36,13 +38,11 @@ public:
 
     void poolEvents();
 
-    bool shouldClose() { return glfwWindowShouldClose(window); }
+    inline bool shouldClose() { return glfwWindowShouldClose(window); }
 
-    GLFWwindow *getWindow() { return window; }
+    [[nodiscard]] inline GLFWwindow *getWindow() const { return window; }
 
-    void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
-
-    void cleanup();
+    inline void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 
     bool isKeyDown(int key) { return glfwGetKey(window, key) == GLFW_PRESS; }
 
@@ -59,7 +59,6 @@ public:
     bool isMouseButtonUp(int button) { return glfwGetMouseButton(window, button) == GLFW_RELEASE; }
 
     // Rendering specific code
-
     void setFrameBufferResized(bool b);
 
     [[nodiscard]] bool getFrameBufferResize() const { return framebufferResized; }

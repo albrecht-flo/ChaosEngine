@@ -15,7 +15,7 @@ class RenderObject;
 class ImGuiRenderPass : public VulkanRenderPassOld {
 public:
     ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window,
-                    const VulkanInstance &instance);
+                       const VulkanInstance &instance);
 
     ~ImGuiRenderPass() = default;
 

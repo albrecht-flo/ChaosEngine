@@ -1,3 +1,5 @@
+#include <imgui.h>
+#include <src/renderer/passes/ImGuiRenderingPass.h>
 #include "VulkanRenderer2D.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "src/renderer/data/Mesh.h"
@@ -13,11 +15,22 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
     auto spriteRenderingPass = SpriteRenderingPass::Create(*context, context->getSwapChain().getWidth(),
                                                            context->getSwapChain().getHeight());
 
-    return VulkanRenderer2D(std::move(context), std::move(spriteRenderingPass));
+    IMGUI_CHECKVERSION();
+    ImGuiContext *imGuiContext = ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImGui::StyleColorsDark();
+    auto imGuiRenderingPass = ImGuiRenderingPass::Create(*context, window, context->getSwapChain().getWidth(),
+                                                         context->getSwapChain().getHeight(), imGuiContext);
+
+    return VulkanRenderer2D(std::move(context), std::move(spriteRenderingPass), std::move(imGuiRenderingPass));
 }
 
-VulkanRenderer2D::VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass)
-        : context(std::move(context)), spriteRenderingPass(std::move(spriteRenderingPass)) {}
+VulkanRenderer2D::VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
+                                   ImGuiRenderingPass &&imGuiRenderingPass)
+        : context(std::move(context)), spriteRenderingPass(std::move(spriteRenderingPass)),
+          imGuiRenderingPass(std::move(imGuiRenderingPass)) {}
 
 
 // ------------------------------------ Lifecycle methods --------------------------------------------------------------
@@ -43,12 +56,12 @@ void VulkanRenderer2D::join() {
 
 void VulkanRenderer2D::beginScene(const glm::mat4 &cameraTransform) {
     spriteRenderingPass.begin(cameraTransform);
-
 }
 
 void VulkanRenderer2D::endScene() {
     spriteRenderingPass.end();
     //TODO render ImGui
+    imGuiRenderingPass.draw();
     context->getCurrentPrimaryCommandBuffer().end();
 }
 
@@ -58,6 +71,7 @@ void VulkanRenderer2D::recreateSwapChain() {
 
     // Update framebuffer attachments
     spriteRenderingPass.resizeAttachments(context->getSwapChain().getWidth(), context->getSwapChain().getHeight());
+    imGuiRenderingPass.resizeAttachments(context->getSwapChain().getWidth(), context->getSwapChain().getHeight());
 }
 
 void VulkanRenderer2D::flush() {

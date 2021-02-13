@@ -56,7 +56,7 @@ void Window::poolEvents() {
     Window::mousePos.y = static_cast<int>(y);
 }
 
-void Window::cleanup() {
+void Window::destroy() {
     glfwDestroyWindow(window);
 
     glfwTerminate();

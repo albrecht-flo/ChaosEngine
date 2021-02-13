@@ -42,12 +42,10 @@
         - Consider PIMPL pattern https://oliora.github.io/2015/12/29/pimpl-and-rule-of-zero.html
 
 	Refactor:
-		- Migrate to C++ headers
+		- Migrate to Vulkan C++ headers
+        - use precompiled header
 		- Memory management
 			- https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-		- command buffers
-			x Own class
-			- Manager
 		- Rendering
 			- Render Objects (created from mesh)
 				- Object manager within renderer
@@ -227,19 +225,25 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
     uint32_t frameCounter = 0;
     auto delatTimer = startTime;
     float fpsDelta = 0;
-    // Camera points
+    // Camera
     glm::vec3 origin = glm::vec3(0, 0, -2.0f);
-    glm::vec3 target = glm::vec3(0, 0, -1.0f);
-    glm::vec3 cameraUp = glm::vec3(0, 1.0f, 0);
+    float cameraSpeed = 2.0f;
+    bool cameraControllerActive = false;
 
     std::cout << "Start rendering" << std::endl;
     while (!window.shouldClose()) {
         // ImGui stuff
-//        ImGui_ImplVulkan_NewFrame();
-//        ImGui_ImplGlfw_NewFrame();
-//        ImGui::NewFrame();
-//        ImGui::ShowDemoWindow();
-//        ImGui::Render();
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        if (cameraControllerActive) {
+            if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
+                ImGui::Text("Camera Controller");
+                ImGui::SliderFloat("float", &cameraSpeed, 0.0f, 25.0f);
+            }
+            ImGui::End();
+        }
+        ImGui::Render();
 
         // FPS counter + delta time calculation
         frameCounter++;
@@ -256,26 +260,17 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         // Update
         // Get window events
         window.poolEvents();
-        // Close window with ESC and Ctrl+Q
+        // Close window controls
         if (window.isKeyDown(GLFW_KEY_ESCAPE) ||
-            (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL)))
-            window.close();
-        if (window.isKeyDown(GLFW_KEY_W)) {
-            origin.z += 0.05f;
-            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
-        }
-        if (window.isKeyDown(GLFW_KEY_S)) {
-            origin.z -= 0.05f;
-            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
-        }
-        if (window.isKeyDown(GLFW_KEY_A)) {
-            origin.x += 0.05f;
-            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
-        }
-        if (window.isKeyDown(GLFW_KEY_D)) {
-            origin.x -= 0.05f;
-            std::cout << "(" << origin.x << ", " << origin.y << ", " << origin.z << ")" << std::endl;
-        }
+            (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window.close(); }
+        if (window.isKeyDown(GLFW_KEY_LEFT_ALT) && window.isKeyDown(GLFW_KEY_LEFT_SHIFT) &&
+            window.isKeyDown(GLFW_KEY_C)) { cameraControllerActive = true; }
+
+        // Camera controls
+        if (window.isKeyDown(GLFW_KEY_W)) { origin.y -= cameraSpeed * deltaTime; }
+        if (window.isKeyDown(GLFW_KEY_S)) { origin.y += cameraSpeed * deltaTime; }
+        if (window.isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
+        if (window.isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
 
         renderer.beginScene(glm::translate(glm::mat4(1.0f), origin));
         auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.0f));
@@ -306,7 +301,6 @@ int main() {
 
     modelLoader.cleanup();
 //    renderer.cleanup();
-    window.cleanup();
 
     return EXIT_SUCCESS;
 }

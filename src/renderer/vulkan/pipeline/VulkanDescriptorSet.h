@@ -23,12 +23,6 @@ public:
         }
     }
 
-    void
-    writeBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VkBuffer buffer, uint64_t bufferOffset = 0,
-                uint64_t bufferRange = VK_WHOLE_SIZE,
-                uint32_t arrayElement = 0, uint32_t descriptorCount = 1);
-
-
     VulkanDescriptorSetOperation &
     writeBuffer(uint32_t binding, VkBuffer buffer, uint64_t bufferOffset = 0, uint64_t bufferRange = VK_WHOLE_SIZE,
                 uint32_t arrayElement = 0, uint32_t descriptorCount = 1);

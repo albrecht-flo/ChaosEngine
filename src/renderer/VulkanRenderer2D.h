@@ -10,6 +10,7 @@
 #include <src/renderer/data/RenderObject.h>
 #include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
 #include <src/renderer/passes/SpriteRenderingPass.h>
+#include <src/renderer/passes/ImGuiRenderingPass.h>
 #include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
@@ -20,7 +21,9 @@
 class VulkanRenderer2D {
 private:
 private:
-    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass);
+    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context,
+                     SpriteRenderingPass &&spriteRenderingPass,
+                     ImGuiRenderingPass &&imGuiRenderingPass);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -66,7 +69,7 @@ private:
 
     SpriteRenderingPass spriteRenderingPass;
 //    PostProcessingPass postProcessingPass;
-//    ImGuiRenderingPass imGuiPass;
+    ImGuiRenderingPass imGuiRenderingPass;
 
     // TEMP
     RenderMesh quadMesh;

@@ -45,34 +45,6 @@ VulkanDescriptorSet VulkanDescriptorPool::allocate(const VulkanDescriptorSetLayo
 }
 
 // --------------------------- VulkanDescriptorSet Class Members -------------------------------------------------------
-void
-VulkanDescriptorSetOperation::writeBuffer(VkDescriptorSet descriptorSet, uint32_t binding, VkBuffer buffer,
-                                          uint64_t bufferOffset,
-                                          uint64_t bufferRange, uint32_t arrayElement,
-                                          uint32_t descriptorCount) {
-    VkDescriptorBufferInfo info{
-            .buffer = buffer,
-            .offset = bufferOffset,
-            .range = bufferRange,
-    };
-
-    VkWriteDescriptorSet writeInfo = {};
-    writeInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeInfo.dstSet = descriptorSet;
-    writeInfo.dstBinding = binding;
-    writeInfo.dstArrayElement = arrayElement;
-    writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeInfo.descriptorCount = descriptorCount;
-    writeInfo.pBufferInfo = &info;
-    writeInfo.pImageInfo = nullptr;
-    writeInfo.pTexelBufferView = nullptr;
-
-    std::vector<VkWriteDescriptorSet> descriptorWrites;
-    descriptorWrites.push_back(writeInfo);
-    vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(),
-                           0, nullptr);
-}
-
 VulkanDescriptorSetOperation &
 VulkanDescriptorSetOperation::writeBuffer(uint32_t binding, VkBuffer buffer, uint64_t bufferOffset,
                                           uint64_t bufferRange, uint32_t arrayElement,

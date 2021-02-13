@@ -141,7 +141,9 @@ void SpriteRenderingPass::createStandardPipeline() {
 
 void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color).build());
+    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+    .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+    .build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
     opaquePass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
 
