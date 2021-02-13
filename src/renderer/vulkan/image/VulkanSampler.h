@@ -1,12 +1,37 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 
 class VulkanSampler {
-public:
-    static VkSampler create(const VulkanDevice &device, VkFilter filter = VK_FILTER_LINEAR);
+private:
+    VulkanSampler(const VulkanDevice &device, VkSampler sampler) : device(device), sampler(sampler) {}
 
-    static void destroy(const VulkanDevice &device, VkSampler sampler);
+    void destroy();
+
+public:
+    [[deprecated]] VulkanSampler(const VulkanDevice &device) : device(device), sampler(nullptr) {}
+
+    ~VulkanSampler() { destroy(); }
+
+    VulkanSampler(const VulkanSampler &o) = delete;
+
+    VulkanSampler &operator=(const VulkanSampler &o) = delete;
+
+    VulkanSampler(VulkanSampler &&o) noexcept: device(o.device), sampler(std::exchange(o.sampler, nullptr)) {}
+
+    VulkanSampler &operator=(VulkanSampler &&o) noexcept {
+        if (this == &o)
+            return *this;
+        sampler = std::exchange(o.sampler, nullptr);
+        return *this;
+    }
+
+    static VulkanSampler create(const VulkanDevice &device, VkFilter filter = VK_FILTER_LINEAR);
+
+    [[nodiscard]] inline VkSampler vk() const { return sampler; }
+
+private:
+    const VulkanDevice &device;
+    VkSampler sampler;
 };
 

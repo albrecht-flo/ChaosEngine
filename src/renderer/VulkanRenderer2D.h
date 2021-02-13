@@ -6,24 +6,24 @@
 
 #include <glm/glm.hpp>
 
-#include <src/renderer/vulkan/image/VulkanImage.h>
-#include <src/renderer/data/RenderObject.h>
-#include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
-#include <src/renderer/passes/SpriteRenderingPass.h>
-#include <src/renderer/passes/ImGuiRenderingPass.h>
-#include "src/renderer/vulkan/rendering/VulkanFrame.h"
-#include "src/renderer/vulkan/image/VulkanFramebuffer.h"
+#include "src/renderer/passes/SpriteRenderingPass.h"
+#include "src/renderer/passes/ImGuiRenderingPass.h"
+#include "src/renderer/passes/PostProcessingPass.h"
+#include "src/renderer/data/RenderObject.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
+#include "src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
+#include "src/renderer/vulkan/image/VulkanImage.h"
+#include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 
 class VulkanRenderer2D {
 private:
 private:
-    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context,
-                     SpriteRenderingPass &&spriteRenderingPass,
-                     ImGuiRenderingPass &&imGuiRenderingPass);
+    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
+                     PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -68,7 +68,7 @@ private:
     std::unique_ptr<VulkanContext> context;
 
     SpriteRenderingPass spriteRenderingPass;
-//    PostProcessingPass postProcessingPass;
+    PostProcessingPass postProcessingPass;
     ImGuiRenderingPass imGuiRenderingPass;
 
     // TEMP

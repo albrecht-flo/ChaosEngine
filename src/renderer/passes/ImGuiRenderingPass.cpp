@@ -14,7 +14,6 @@ static void check_imgui_vk_result(VkResult result) {
 
 }
 
-
 static std::vector<VulkanFramebuffer>
 createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
                             const VulkanRenderPass &renderPass) {
@@ -29,6 +28,7 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
     }
     return std::move(swapChainFramebuffers);
 }
+
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 ImGuiRenderingPass
@@ -113,12 +113,7 @@ void ImGuiRenderingPass::draw() {
     renderPassInfo.framebuffer = framebuffer.vk(); // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = context.getSwapChain().getExtent(); // based on swap chain
-
-    // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
-//    std::array<VkClearValue, 1> clearValues{};
-//    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-    renderPassInfo.clearValueCount = 0;//static_cast<uint32_t>(clearValues.size());
-//    renderPassInfo.pClearValues = clearValues.data();
+    renderPassInfo.clearValueCount = 0;
 
     vkCmdBeginRenderPass(cmdBuf.vk(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
 

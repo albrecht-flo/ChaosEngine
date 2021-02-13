@@ -6,17 +6,20 @@
 
 #include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
+#include "src/renderer/vulkan/image/VulkanSampler.h"
 
 class VulkanDevice;
+
 class VulkanTexture {
 private:
     VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VulkanImageView &&imageView,
-                  VkSampler sampler);
+                  VulkanSampler &&sampler);
 
     void destroy();
 
 public:
-    explicit VulkanTexture(const VulkanDevice &device);
+    [[nodiscard]]explicit VulkanTexture(const VulkanDevice &device)
+            : device(device), image(nullptr), imageMemory(nullptr), imageView(device), sampler(device) {}
 
     ~VulkanTexture();
 
@@ -35,12 +38,12 @@ public:
 
     inline const VulkanImageView &getImageView() const { return imageView; }
 
-    inline VkSampler getSampler() const { return sampler; }
+    inline VkSampler getSampler() const { return sampler.vk(); }
 
 private:
     const VulkanDevice &device;
     VkImage image;
     VkDeviceMemory imageMemory;
     VulkanImageView imageView;
-    VkSampler sampler;
+    VulkanSampler sampler;
 };

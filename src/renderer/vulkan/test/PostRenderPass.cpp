@@ -16,7 +16,11 @@
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
                                VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
-        VulkanRenderPassOld(device, vulkanMemory, swapChain), backgroundTexture(device) {
+        VulkanRenderPassOld(device, vulkanMemory, swapChain), backgroundTexture(device),
+        // Create the samplers for the attachments of previous passes
+        framebufferSampler(std::move(VulkanSampler::create(device))),
+        depthBufferSampler(std::move(VulkanSampler::create(device))),
+        imGuiImageSampler(std::move(VulkanSampler::create(device))) {
     vertex_3P_3C_3N_2U = VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
             .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
             .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
@@ -78,10 +82,6 @@ void PostRenderPass::init() {
 
     descriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
 
-    // Create the samplers for the attachments of previous passes
-    framebufferSampler = VulkanSampler::create(device);
-    depthBufferSampler = VulkanSampler::create(device);
-    imGuiImageSampler = VulkanSampler::create(device);
 
     backgroundTexture = VulkanTexture::createTexture(device, vulkanMemory, "textures/sky.jpg");
 }
@@ -97,11 +97,12 @@ void PostRenderPass::setImageBufferViews(VkImageView newFramebufferView,
 void PostRenderPass::createPipelineAndDescriptors() {
     // Fill the descriptor set
     descriptorSet->startWriting()
-            .writeImageSampler(0, framebufferSampler, framebufferView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-            .writeImageSampler(1, depthBufferSampler, depthBufferView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+            .writeImageSampler(0, framebufferSampler.vk(), framebufferView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            .writeImageSampler(1, depthBufferSampler.vk(), depthBufferView,
+                               VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
             .writeImageSampler(2, backgroundTexture.getSampler(), backgroundTexture.getImageView().vk(),
                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-            .writeImageSampler(3, imGuiImageSampler, imGuiImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            .writeImageSampler(3, imGuiImageSampler.vk(), imGuiImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             .commit();
 }
 
@@ -175,10 +176,4 @@ void PostRenderPass::recreate() {
 }
 
 void PostRenderPass::destroy() {
-
-    // These uniform buffers are per frame and therefore depend on the number of swapchain images
-    VulkanSampler::destroy(device, framebufferSampler);
-    VulkanSampler::destroy(device, depthBufferSampler);
-    VulkanSampler::destroy(device, imGuiImageSampler);
-
 }

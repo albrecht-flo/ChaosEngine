@@ -221,9 +221,8 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
 void run2(Window &window, VulkanRenderer2D &renderer) {
 
     // FPS counter
-    auto startTime = std::chrono::high_resolution_clock::now();
+    auto deltaTimer = std::chrono::high_resolution_clock::now();
     uint32_t frameCounter = 0;
-    auto delatTimer = startTime;
     float fpsDelta = 0;
     // Camera
     glm::vec3 origin = glm::vec3(0, 0, -2.0f);
@@ -248,9 +247,9 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         // FPS counter + delta time calculation
         frameCounter++;
         auto currentTime = std::chrono::high_resolution_clock::now();
-        float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - delatTimer).count();
+        float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - deltaTimer).count();
         fpsDelta += deltaTime;
-        delatTimer = currentTime;
+        deltaTimer = currentTime;
         if (fpsDelta >= 1.0f) {
             fpsDelta -= 1.0f;
             std::cout << "FPS: " << frameCounter << std::endl;

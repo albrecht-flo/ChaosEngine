@@ -11,6 +11,7 @@
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
+#include "src/renderer/vulkan/image/VulkanSampler.h"
 
 class PostRenderPass : public VulkanRenderPassOld {
 public:
@@ -51,11 +52,11 @@ private:
     VulkanVertexInput vertex_3P_3C_3N_2U;
 
     VkImageView framebufferView{};
-    VkSampler framebufferSampler{};
+    VulkanSampler framebufferSampler;
     VkImageView depthBufferView{};
-    VkSampler depthBufferSampler{};
+    VulkanSampler depthBufferSampler;
     VkImageView imGuiImageView{};
-    VkSampler imGuiImageSampler{};
+    VulkanSampler imGuiImageSampler;
     // The objects for uniform buffer linking
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;
     std::unique_ptr<VulkanDescriptorSet> descriptorSet;

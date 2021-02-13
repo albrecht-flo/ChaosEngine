@@ -6,6 +6,7 @@ public:
 };
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
+
 #include <glm/glm.hpp>
 #include "src/renderer/vulkan/context/VulkanContext.h"
 #include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
@@ -31,7 +32,8 @@ private:
         alignas(16) glm::mat4 proj;
     };
 private:
-    explicit SpriteRenderingPass(const VulkanContext &context) : context(context) {}
+    explicit SpriteRenderingPass(const VulkanContext &context, bool renderToSwapChain = false)
+            : context(context), renderToSwapChain(renderToSwapChain) {}
 
     void init(uint32_t width, uint32_t height);
 
@@ -46,7 +48,8 @@ public:
 
     SpriteRenderingPass &operator=(SpriteRenderingPass &&o) = delete;
 
-    static SpriteRenderingPass Create(const VulkanContext &context, uint32_t width, uint32_t height);
+    static SpriteRenderingPass
+    Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain = false);
 
     void begin(const glm::mat4 &cameraTransform);
 
@@ -65,26 +68,27 @@ private:
 
     void updateUniformBuffer(const glm::mat4 &viewMat, const glm::vec2 &viewportDimensions);
 
+    void createStandardPipeline();
+
 private:
     const VulkanContext &context;
     std::unique_ptr<VulkanRenderPass> opaquePass;
+    bool renderToSwapChain;
 
     std::unique_ptr<VulkanImageBuffer> colorBuffer;
     std::unique_ptr<VulkanImageBuffer> depthBuffer;
     std::unique_ptr<VulkanFramebuffer> framebuffer;
     std::vector<VulkanFramebuffer> swapChainFrameBuffers;
 
-    // Dynamic resources -----------------------------------------------------
+    // Dynamic resources ------------------------------------------------------
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;
     std::unique_ptr<VulkanDescriptorSetLayout> cameraDescriptorLayout;
     std::unique_ptr<VulkanDescriptorSetLayout> materialDescriptorLayout;
     std::unique_ptr<VulkanPipeline> pipeline;
 
-    // ----- Per Frame resources
+    // Per Frame resources ----------------------------------------------------
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
     UniformBufferContent<CameraUbo> uboContent;
-
-    void createStandardPipeline();
 };
 

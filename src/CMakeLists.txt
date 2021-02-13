@@ -5,6 +5,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/DevRenderer.cpp
         renderer/api/GraphicsContext.cpp
         renderer/passes/SpriteRenderingPass.cpp
+        renderer/passes/PostProcessingPass.cpp
         renderer/passes/ImGuiRenderingPass.cpp
         #       Vulkan Rendering files
         renderer/window/Window.cpp
@@ -20,7 +21,6 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/context/VulkanInstance.cpp
         renderer/vulkan/context/VulkanSwapChain.cpp
         renderer/vulkan/memory/VulkanMemory.cpp
-        renderer/vulkan/memory/VulkanVertexArray.cpp
         renderer/vulkan/command/VulkanCommandBuffer.cpp
         renderer/vulkan/command/VulkanCommandPool.cpp
         renderer/vulkan/image/VulkanImage.cpp
@@ -33,6 +33,7 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/pipeline/VulkanDescriptorSet.cpp
         renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
         renderer/vulkan/pipeline/VulkanPipeline.cpp
+        # Test classes
         renderer/vulkan/test/VulkanRendererOld.cpp
         renderer/vulkan/test/VulkanRenderPassOld.cpp
         renderer/vulkan/test/TestRenderer.cpp
@@ -91,6 +92,8 @@ set(GLSL_SOURCE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/post.frag"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DSprite.vert"
         "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DStaticSprite.frag"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DPostProcessing.vert"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../res/shaders/2DPostProcessing.frag"
         )
 
 find_program(GLSLC glslc)

@@ -32,15 +32,6 @@ public:
     VulkanPipeline &operator=(VulkanPipeline &&o) noexcept;
 
 
-    static VulkanPipeline Create(const VulkanDevice &device,
-                                 VkVertexInputBindingDescription bindingDescription,
-                                 const VkVertexInputAttributeDescription *attributeDesciption, uint32_t attributeCount,
-                                 VkExtent2D swapChainExtent,
-                                 VulkanPipelineLayout descriptorLayout,
-                                 VkRenderPass renderPass,
-                                 const std::string &shaderName,
-                                 bool depthTestEnabled = true);
-
     [[nodiscard]] inline VkPipeline getPipeline() const { return pipeline; }
 
     [[nodiscard]] inline VkPipelineLayout getPipelineLayout() const { return pipelineLayout.vk(); }

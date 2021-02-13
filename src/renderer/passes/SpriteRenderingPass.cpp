@@ -31,7 +31,7 @@ createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemor
 
 static std::vector<VulkanFramebuffer>
 createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
-                            const VulkanRenderPass &renderPass, const VulkanImageBuffer& depthBuffer) {
+                            const VulkanRenderPass &renderPass, const VulkanImageBuffer &depthBuffer) {
     std::vector<VulkanFramebuffer> swapChainFramebuffers;
     swapChainFramebuffers.reserve(swapChain.size());
     for (uint32_t i = 0; i < swapChain.size(); i++) {
@@ -46,14 +46,15 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-SpriteRenderingPass SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height) {
-    auto ret = SpriteRenderingPass(context);
+SpriteRenderingPass
+SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain) {
+    auto ret = SpriteRenderingPass(context, renderToSwapChain);
     ret.init(width, height);
     return std::move(ret);
 }
 
 SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
-        context(o.context), opaquePass(std::move(o.opaquePass)),
+        context(o.context), opaquePass(std::move(o.opaquePass)), renderToSwapChain(o.renderToSwapChain),
         colorBuffer(std::move(o.colorBuffer)), depthBuffer(std::move(o.depthBuffer)),
         framebuffer(std::move(o.framebuffer)),
         swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
@@ -70,11 +71,14 @@ void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
             createImageBuffer(context.getDevice(), context.getMemory(), width, height));
     depthBuffer = std::make_unique<VulkanImageBuffer>(
             createDepthResources(context.getDevice(), context.getMemory(), width, height));
-//    framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
-//            {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
-//            {colorBuffer->getWidth(), colorBuffer->getHeight()}));
-
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *opaquePass, *depthBuffer);
+    if (!renderToSwapChain) {
+        framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
+                {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
+                {colorBuffer->getWidth(), colorBuffer->getHeight()}));
+    } else {
+        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *opaquePass,
+                                                            *depthBuffer);
+    }
 }
 
 void SpriteRenderingPass::createStandardPipeline() {
@@ -142,8 +146,9 @@ void SpriteRenderingPass::createStandardPipeline() {
 void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
-    .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-    .build());
+                                     .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
+                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                                     .build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
     opaquePass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
 
@@ -153,17 +158,22 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
 }
 
 void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const glm::vec2 &viewportDimensions) {
-    float aspect = static_cast<float>(viewportDimensions.x) / viewportDimensions.y;
 
     CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
     ubo->view = viewMat;
-    ubo->proj = glm::ortho(-3.0f * aspect, 3.0f * aspect, -3.0f, 3.0f, 0.1f, 100.0f);
+    if (viewportDimensions.x > viewportDimensions.y) {
+        float aspect = static_cast<float>(viewportDimensions.x) / viewportDimensions.y;
+        ubo->proj = glm::ortho(-3.0f * aspect, 3.0f * aspect, -3.0f, 3.0f, 0.1f, 100.0f);
+    } else {
+        float aspect = static_cast<float>(viewportDimensions.y) / viewportDimensions.x;
+        ubo->proj = glm::ortho(-3.0f, 3.0f, -3.0f * aspect, 3.0f * aspect, 0.1f, 100.0f);
+    }
     ubo->proj[1][1] *= -1;
 
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
-                                          perFrameUniformBuffers[context.getCurrentFrame()].memory,
-                                          uboContent.data(), uboContent.size());
+                                         perFrameUniformBuffers[context.getCurrentFrame()].memory,
+                                         uboContent.data(), uboContent.size());
 }
 
 void SpriteRenderingPass::begin(const glm::mat4 &cameraTransform) {
@@ -176,7 +186,10 @@ void SpriteRenderingPass::begin(const glm::mat4 &cameraTransform) {
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = opaquePass->vk(); // the renderpass to use
-    renderPassInfo.framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()].vk(); // the attatchment
+    if (!renderToSwapChain)
+        renderPassInfo.framebuffer = framebuffer->vk();
+    else
+        renderPassInfo.framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()].vk(); // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = VkExtent2D{viewportDimensions.x, viewportDimensions.y}; // based on swap chain
 
