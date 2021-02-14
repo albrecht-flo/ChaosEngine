@@ -157,18 +157,19 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     createStandardPipeline();
 }
 
-void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const glm::vec2 &viewportDimensions) {
+void SpriteRenderingPass::updateUniformBuffer(const Camera &camera, const glm::vec2 &viewportDimensions) {
 
     CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
-    ubo->view = viewMat;
+    ubo->view = camera.view;
     if (viewportDimensions.x > viewportDimensions.y) {
         float aspect = static_cast<float>(viewportDimensions.x) / viewportDimensions.y;
-        ubo->proj = glm::ortho(-3.0f * aspect, 3.0f * aspect, -3.0f, 3.0f, 0.1f, 100.0f);
+        ubo->proj = glm::ortho(-camera.fieldOfView * aspect, camera.fieldOfView * aspect, -camera.fieldOfView,
+                               camera.fieldOfView, camera.near, camera.far);
     } else {
         float aspect = static_cast<float>(viewportDimensions.y) / viewportDimensions.x;
         ubo->proj = glm::ortho(-3.0f, 3.0f, -3.0f * aspect, 3.0f * aspect, 0.1f, 100.0f);
     }
-    ubo->proj[1][1] *= -1;
+    ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be fliped
 
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
@@ -176,9 +177,9 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const gl
                                          uboContent.data(), uboContent.size());
 }
 
-void SpriteRenderingPass::begin(const glm::mat4 &cameraTransform) {
+void SpriteRenderingPass::begin(const Camera &camera) {
     glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-    updateUniformBuffer(cameraTransform, viewportDimensions);
+    updateUniformBuffer(camera, viewportDimensions);
 
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
     commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);

@@ -421,5 +421,5 @@ void TestRenderer::setViewMatrix(const glm::mat4 &view) {
 }
 
 void TestRenderer::setCameraAngle(float angle) {
-    camera.angle = angle;
+    camera.fieldOfView = angle;
 }

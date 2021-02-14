@@ -48,13 +48,16 @@ public:
 
     // Context commands
     /// Start recording commands with this renderer
-    void beginScene(const glm::mat4 &cameraTransform);
+    void beginScene(const Camera &camera);
 
     /// Stop recording commands with this renderer
-    void endScene(/*Post Processing config*/);
+    void endScene();
 
     /// Submit recorded commands to gpu
     void flush();
+
+    /// Update the post processing configuration
+    void updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration);
 
     // Rendering commands
     /// Render an object with its material and model matrix
@@ -73,5 +76,6 @@ private:
 
     // TEMP
     RenderMesh quadMesh;
+
 };
 

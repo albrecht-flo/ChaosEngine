@@ -7,15 +7,26 @@
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"
+#include "src/renderer/data/RenderObject.h"
 
 #include <array>
 
 class PostProcessingPass {
 public:
-    struct RenderPassConfiguration {
-        float cameraNear;
-        float cameraFar;
+    struct PostProcessingConfiguration {
+        Camera camera;
     };
+private:
+    struct ShaderConfig {
+        float cameraNear = 0; // initialize to invalid default to ensure shader gets configured
+        float cameraFar = 0; // initialize to invalid default to ensure shader gets configured
+
+        bool operator==(const ShaderConfig &o) const {
+            return cameraNear == o.cameraNear &&
+                   cameraFar == o.cameraFar;
+        }
+    };
+
 private:
     explicit PostProcessingPass(const VulkanContext &context) : context(context) {}
 
@@ -33,17 +44,17 @@ public:
     PostProcessingPass &operator=(PostProcessingPass &&o) = delete;
 
     static PostProcessingPass
-    Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer,
-           const RenderPassConfiguration &configuration);
+    Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer);
 
     void draw();
 
     void resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer);
 
-    void updateConfiguration(const RenderPassConfiguration &configuration);
+    void updateConfiguration(const PostProcessingConfiguration &configuration);
 
 private:
     void writeDescriptorSet(const VulkanImageView &colorView, const VulkanImageView &depthView);
+
 
 private:
     const VulkanContext &context;
@@ -59,7 +70,7 @@ private:
 
     std::unique_ptr<VulkanDescriptorSet> perFrameDescriptorSet;
     std::unique_ptr<VulkanUniformBuffer> perFrameUniformBuffer;
-    UniformBufferContent<RenderPassConfiguration> uboContent;
+    UniformBufferContent<ShaderConfig> uboContent;
 
 };
 

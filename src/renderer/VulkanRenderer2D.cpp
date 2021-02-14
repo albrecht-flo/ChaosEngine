@@ -17,7 +17,7 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
 
 
     auto postProcessingPass = PostProcessingPass::Create(*context, spriteRenderingPass.getColorBuffer(),
-                                                         spriteRenderingPass.getDepthBuffer(), {0.1f, 100.0f});
+                                                         spriteRenderingPass.getDepthBuffer());
 
     IMGUI_CHECKVERSION();
     ImGuiContext *imGuiContext = ImGui::CreateContext();
@@ -59,8 +59,8 @@ void VulkanRenderer2D::join() {
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
-void VulkanRenderer2D::beginScene(const glm::mat4 &cameraTransform) {
-    spriteRenderingPass.begin(cameraTransform);
+void VulkanRenderer2D::beginScene(const Camera &camera) {
+    spriteRenderingPass.begin(camera);
 }
 
 void VulkanRenderer2D::endScene() {
@@ -85,6 +85,11 @@ void VulkanRenderer2D::flush() {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
     }
+}
+
+void
+VulkanRenderer2D::updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration) {
+    postProcessingPass.updateConfiguration(configuration);
 }
 
 void VulkanRenderer2D::renderQuad(glm::mat4 modelMat, glm::vec4 color) {

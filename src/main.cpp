@@ -225,9 +225,18 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
     uint32_t frameCounter = 0;
     float fpsDelta = 0;
     // Camera
+    Camera camera{
+            .view = glm::mat4(1),
+            .fieldOfView = 10.0f,
+            .near = 0.1f,
+            .far = 100.0f,
+    };
     glm::vec3 origin = glm::vec3(0, 0, -2.0f);
-    float cameraSpeed = 2.0f;
+    float cameraSpeed = 10.0f;
     bool cameraControllerActive = false;
+
+    // Renderer configuration
+    renderer.updatePostProcessingConfiguration({camera});
 
     std::cout << "Start rendering" << std::endl;
     while (!window.shouldClose()) {
@@ -238,7 +247,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         if (cameraControllerActive) {
             if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
                 ImGui::Text("Camera Controller");
-                ImGui::SliderFloat("float", &cameraSpeed, 0.0f, 25.0f);
+                ImGui::SliderFloat("float", &cameraSpeed, 0.0f, 50.0f);
             }
             ImGui::End();
         }
@@ -259,6 +268,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         // Update
         // Get window events
         window.poolEvents();
+        // TODO: Refactor Input event handling
         // Close window controls
         if (window.isKeyDown(GLFW_KEY_ESCAPE) ||
             (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window.close(); }
@@ -270,12 +280,21 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         if (window.isKeyDown(GLFW_KEY_S)) { origin.y += cameraSpeed * deltaTime; }
         if (window.isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
         if (window.isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
+        if (window.isKeyDown(GLFW_KEY_KP_ADD)) {
+            camera.fieldOfView -= 5 * deltaTime;
+        } // TODO: Remove delta time after input refactor
+        if (window.isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
+            camera.fieldOfView += 5 * deltaTime;
+        } // TODO: Remove delta time after input refactor
 
-        renderer.beginScene(glm::translate(glm::mat4(1.0f), origin));
+        camera.view = glm::translate(glm::mat4(1), origin);
+        renderer.beginScene(camera);
+
         auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.0f));
         renderer.renderQuad(modelMat1, glm::vec4(1.0f, 0.5f, 0.0f, 1));
         auto modelMat2 = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0.0f));
         renderer.renderQuad(modelMat2, glm::vec4(0.0f, 1.0f, 0.0f, 1));
+
         renderer.endScene();
         renderer.flush();
     }

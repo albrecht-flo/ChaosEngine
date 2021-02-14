@@ -74,7 +74,7 @@ private: // RenderObject data
 
     Camera camera{
             .view = glm::mat4(),
-            .angle = 45.0f,
+            .fieldOfView = 45.0f,
             .near = 0.1f,
             .far = 100.0f
     };

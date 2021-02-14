@@ -27,16 +27,6 @@ float LinearizeDepth(float depth) {
 */
 void main() {
     vec4 color;
-    if (fragUVs.x < 0.5)
     color = texture(mainSceneTex, fragUVs);
-    else {
-        if (fragUVs.y < 0.5){
-            float depth = texture(depthBufferTex, fragUVs).r;
-            color = vec4(depth, depth, depth, 1.0);
-        } else {
-            float depth = LinearizeDepth(texture(depthBufferTex, fragUVs).r);
-            color = vec4(depth, depth, depth, 1.0);
-        }
-    }
     outColor = color;
 }

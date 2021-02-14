@@ -25,11 +25,9 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer,
-                                              const VulkanImageBuffer &depthBuffer,
-                                              const RenderPassConfiguration &configuration) {
+                                              const VulkanImageBuffer &depthBuffer) {
     PostProcessingPass postProcessingPass(context);
     postProcessingPass.init(colorBuffer, depthBuffer);
-    postProcessingPass.updateConfiguration(configuration);
     return std::move(postProcessingPass);
 }
 
@@ -107,10 +105,12 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
                     .build());
 
     perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(context.getMemory().createUniformBuffer(
-            sizeof(RenderPassConfiguration),
+            sizeof(ShaderConfig),
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             1, false));
-    uboContent = UniformBufferContent<RenderPassConfiguration>(1);
+    uboContent = UniformBufferContent<ShaderConfig>(1);
+    uboContent.at(0)->cameraNear = ShaderConfig{}.cameraNear;
+    uboContent.at(0)->cameraFar = ShaderConfig{}.cameraFar;
 
     colorBufferSampler = std::make_unique<VulkanSampler>(VulkanSampler::create(context.getDevice(), VK_FILTER_LINEAR));
     depthBufferSampler = std::make_unique<VulkanSampler>(VulkanSampler::create(context.getDevice(), VK_FILTER_LINEAR));
@@ -130,9 +130,14 @@ void PostProcessingPass::writeDescriptorSet(const VulkanImageView &colorView, co
 }
 
 void PostProcessingPass::draw() {
+    assert(("No postprocessing configured",
+            !(static_cast<ShaderConfig *>(uboContent.at(0))->cameraNear == 0.0f &&
+              static_cast<ShaderConfig *>(uboContent.at(0))->cameraFar == 0.0f)));
+
     auto cmdBuf = context.getCurrentPrimaryCommandBuffer().vk();
     auto viewportWidth = context.getSwapChain().getWidth();
     auto viewportHeight = context.getSwapChain().getHeight();
+
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -188,10 +193,11 @@ void PostProcessingPass::resizeAttachments(const VulkanImageBuffer &colorBuffer,
     writeDescriptorSet(colorBuffer.getImageView(), depthBuffer.getImageView());
 }
 
-void PostProcessingPass::updateConfiguration(const PostProcessingPass::RenderPassConfiguration &configuration) {
-    RenderPassConfiguration *ubo = uboContent.at(context.getCurrentFrame());
-    ubo->cameraNear = configuration.cameraNear;
-    ubo->cameraFar = configuration.cameraFar;
+void PostProcessingPass::updateConfiguration(const PostProcessingPass::PostProcessingConfiguration &configuration) {
+    ShaderConfig *ubo = uboContent.at(0);
+
+    ubo->cameraNear = configuration.camera.near;
+    ubo->cameraFar = configuration.camera.far;
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffer->buffer, perFrameUniformBuffer->memory,
                                          uboContent.data(), uboContent.size());
