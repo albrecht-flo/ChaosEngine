@@ -303,22 +303,29 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
 
 }
 
+//#define TESTING
+#define RENDER_2D
+
 int main() {
     std::cout << "Renderer starting..." << std::endl;
 
     ModelLoader modelLoader;
     Window window = Window::Create("Test Engine");
 
-//    TestRenderer renderer(window);
-//    renderer.init();
-//    run(window, renderer, modelLoader);
-
+#ifdef TESTING
+    TestRenderer renderer(window);
+    renderer.init();
+    run(window, renderer, modelLoader);
+#endif
+#ifdef RENDER_2D
     VulkanRenderer2D renderer2D = VulkanRenderer2D::Create(window);
     renderer2D.setup();
     run2(window, renderer2D);
-
+#endif
     modelLoader.cleanup();
-//    renderer.cleanup();
 
+#ifdef TESTING
+    renderer.cleanup();
+#endif
     return EXIT_SUCCESS;
 }

@@ -1,7 +1,6 @@
 #include "VulkanAttachmentBuilder.h"
 
 #include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 
 VulkanAttachmentBuilder::VulkanAttachmentBuilder(const VulkanDevice &device, AttachmentType attachmentType)
         : attachmentType(attachmentType) {

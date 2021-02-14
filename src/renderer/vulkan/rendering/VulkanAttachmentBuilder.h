@@ -24,6 +24,11 @@ struct VulkanAttachmentDescription {
     VkImageLayout attachmentLayout;
 };
 
+/**
+ * This class handle the configuration of the attachments of a render pass.
+ *
+ * @see VulkanRenderPass
+ */
 class VulkanAttachmentBuilder {
 
 public:

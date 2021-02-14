@@ -1,18 +1,18 @@
 #pragma once
 
+#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/image/VulkanFramebuffer.h"
 
-#include <vulkan/vulkan.h>
 #include <vector>
 
 class VulkanDevice;
 
 struct VulkanAttachmentDescription;
 
-/** This class wraps the vulkan render pass and its creation.
- *  Note: Currently only one main graphics sub pass is supported.
- *
+/** This class wraps a vulkan render pass and its creation.
  *  This render pass will wait for previous stages to finish writing to its attachments through sub pass dependencies.
+ *
+ *  Note: Currently only one main graphics sub pass is supported.
  */
 class VulkanRenderPass {
 private:
@@ -21,6 +21,7 @@ private:
 
 public:
     VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
+
     ~VulkanRenderPass();
 
     VulkanRenderPass(const VulkanRenderPass &o) = delete;

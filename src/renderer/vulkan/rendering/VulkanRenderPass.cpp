@@ -1,6 +1,5 @@
 #include "VulkanRenderPass.h"
 
-#include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanAttachmentBuilder.h"
 
 #include <stdexcept>

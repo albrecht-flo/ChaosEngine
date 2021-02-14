@@ -3,8 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include <optional>
-
-#include "VulkanInstance.h"
+#include <vector>
 
 /* Stores the required queues. */
 struct QueueFamilyIndices {
@@ -23,9 +22,11 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-/* Wrapper for the logical device and handles the creation of it for a physical device.
-	Contains physical device selection.
-	*/
+class VulkanInstance;
+
+/**
+ * This class is a wrapper for the vulkan logical device and also handles the creation of it for a physical device.
+ */
 class VulkanDevice {
 private:
     VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,

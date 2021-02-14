@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include "src/renderer/window/Window.h"
 #include "src/renderer/vulkan/command/VulkanCommandBuffer.h"
 
@@ -9,6 +7,9 @@
 
 class VulkanContext;
 
+/**
+ * This class handles the synchronization between frames and queue submission.
+ */
 class VulkanFrame {
 private:
     VulkanFrame(Window &window, const VulkanContext &context, std::vector<VkSemaphore> &&imageAvailableSemaphores,
@@ -29,6 +30,10 @@ public:
 
     static VulkanFrame Create(Window &window, const VulkanContext &context, uint32_t maxFramesInFlight);
 
+    /**
+     * Submit the current command buffer to the GPU for rendering on the graphics queue.
+     * @returns <b>false</b> if the submission failed and the swapchain resources need to be recreated <b>true</b> otherwise
+     */
     [[nodiscard]] bool render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) const;
 
 private:

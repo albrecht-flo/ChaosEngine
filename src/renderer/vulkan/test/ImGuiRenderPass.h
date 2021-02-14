@@ -6,13 +6,14 @@
 #include <array>
 
 #include "VulkanRenderPassOld.h"
+#include "src/renderer/vulkan/context/VulkanInstance.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 
 // Base on ImGui Vulkan examples and https://frguthmann.github.io/posts/vulkan_imgui/
 
-class RenderObject;
+struct RenderObject;
 class ImGuiRenderPass : public VulkanRenderPassOld {
 public:
     ImGuiRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain, Window &window,

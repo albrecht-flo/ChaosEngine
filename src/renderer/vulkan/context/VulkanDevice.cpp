@@ -1,8 +1,7 @@
 #include "VulkanDevice.h"
 
-#include <vulkan/vulkan.h>
+#include "VulkanInstance.h"
 
-#include <vector>
 #include <set>
 #include <stdexcept>
 #include <tuple>
