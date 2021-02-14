@@ -7,7 +7,7 @@
 #include "src/renderer/vulkan/memory/VulkanMemory.h"
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 
-// TODO: massive refactor to be a RAII Wrapper + Builder
+// TODO: massive refactor to be a RAII Wrapper + Builder [Part of VulkanMemory refactoring]
 class VulkanImage {
 public:
     static VkImage

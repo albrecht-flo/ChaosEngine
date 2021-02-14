@@ -10,6 +10,7 @@
 
 class VulkanDevice;
 
+// TODO: [Part of VulkanMemory refactoring]
 class VulkanTexture {
 private:
     VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VulkanImageView &&imageView,

@@ -1,6 +1,9 @@
 #include "SpriteRenderingPass.h"
 #include "src/renderer/data/Mesh.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 
 static VulkanImageBuffer

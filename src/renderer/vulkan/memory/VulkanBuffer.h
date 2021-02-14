@@ -12,7 +12,7 @@ struct VulkanUniformBuffer : public VulkanBuffer {
     VkDeviceSize alignment;
 };
 
-/* Not nearly done, TODO: refactor, INSECURE! */
+/* TODO: refactor, [Part of VulkanMemory refactoring] */
 template<typename T>
 class UniformBufferContent {
 public:

@@ -56,7 +56,7 @@ void TestRenderer::createCommandBuffers() {
     primaryCommandBuffers.reserve(swapChain.size());
 
     for (size_t i = 0; i < swapChain.size(); i++) {
-        primaryCommandBuffers.emplace_back(VulkanCommandBuffer(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+        primaryCommandBuffers.emplace_back(VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
     }
 }
 

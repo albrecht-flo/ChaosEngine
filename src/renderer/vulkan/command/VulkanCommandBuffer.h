@@ -12,9 +12,6 @@ private:
     VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool, VkCommandBuffer buffer);
 
 public:
-    VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
-                        VkCommandBufferLevel level); // TODO: Remove
-
     ~VulkanCommandBuffer();
 
     VulkanCommandBuffer(const VulkanCommandBuffer &o) = delete;

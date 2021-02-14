@@ -1,11 +1,10 @@
 #include "PostProcessingPass.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
-#include "src/renderer/vulkan/image/VulkanImageView.h"
-#include "src/renderer/vulkan/image/VulkanSampler.h"
-
-#include <glm/glm.hpp>
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 
 static std::vector<VulkanFramebuffer>
 createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,

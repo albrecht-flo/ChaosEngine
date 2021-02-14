@@ -32,10 +32,6 @@ VulkanCommandBuffer::Create(const VulkanDevice &device, const VulkanCommandPool 
 }
 
 VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
-                                         VkCommandBufferLevel level) :
-        device(device), commandPool(commandPool), buffer(createCommandBuffer(device, commandPool.vk(), level)) {}
-
-VulkanCommandBuffer::VulkanCommandBuffer(const VulkanDevice &device, const VulkanCommandPool &commandPool,
                                          VkCommandBuffer buffer)
         : device(device), commandPool(commandPool), buffer(buffer) {}
 

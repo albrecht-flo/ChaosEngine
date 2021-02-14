@@ -8,8 +8,9 @@
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/vulkan/image/VulkanSampler.h"
 

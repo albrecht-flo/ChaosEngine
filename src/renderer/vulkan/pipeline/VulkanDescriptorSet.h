@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <iostream>
@@ -10,8 +9,10 @@ class VulkanImageView;
 
 class VulkanDescriptorSetLayout;
 
-class VulkanDescriptorPool;
-
+/**
+ * This class manages writing to a descriptor set in a command like fashion.
+ * @note Must be committed before it gets destroyed
+ */
 class VulkanDescriptorSetOperation {
 public:
     VulkanDescriptorSetOperation(const VulkanDevice &device, VkDescriptorSet descriptorSet)
@@ -53,9 +54,15 @@ private:
 
 };
 
-
+/**
+ * Descriptor-Sets represent a collection of GPU resources that can be bound to a pipeline.
+ * They are allocated from a VulkanDescriptorPool.
+ *
+ * @ref VulkanDescriptorPool::allocate
+ */
 class VulkanDescriptorSet {
-    friend VulkanDescriptorPool;
+    friend class VulkanDescriptorPool;
+
 private:
     VulkanDescriptorSet(const VulkanDevice &device, VkDescriptorSet descriptorSet)
             : device(device), descriptorSet(descriptorSet) {}
@@ -72,70 +79,5 @@ public:
 private:
     const VulkanDevice &device;
     VkDescriptorSet descriptorSet;
-};
-
-class VulkanDescriptorPoolBuilder {
-public:
-    explicit VulkanDescriptorPoolBuilder(const VulkanDevice &device)
-            : device(device), maxSets(0) {}
-
-    VulkanDescriptorPoolBuilder &addDescriptor(VkDescriptorType type, uint32_t count) {
-        descriptorSizes.emplace_back(VkDescriptorPoolSize{
-                .type= type,
-                .descriptorCount = count,
-        });
-        return *this;
-    }
-
-    VulkanDescriptorPoolBuilder &setMaxSets(uint32_t pMaxSets) {
-        maxSets = pMaxSets;
-        return *this;
-    }
-
-    [[nodiscard]] VulkanDescriptorPool build() const;
-
-private:
-    const VulkanDevice &device;
-    uint32_t maxSets;
-    std::vector<VkDescriptorPoolSize> descriptorSizes;
-};
-
-class VulkanDescriptorPool {
-    friend VulkanDescriptorPoolBuilder;
-private:
-    VulkanDescriptorPool(const VulkanDevice &device, VkDescriptorPool descriptorPool)
-            : device(device), descriptorPool(descriptorPool) {}
-
-    /// Destroys this descriptor pool and all allocated sets from this pool
-    void destroy() {
-        if (descriptorPool != nullptr)
-            vkDestroyDescriptorPool(device.vk(), descriptorPool, nullptr);
-    }
-
-public:
-    ~VulkanDescriptorPool() { destroy(); }
-
-    VulkanDescriptorPool(const VulkanDescriptorPool &o) = delete;
-
-    VulkanDescriptorPool &operator=(const VulkanDescriptorPool &o) = delete;
-
-    VulkanDescriptorPool(VulkanDescriptorPool &&o) noexcept
-            : device(o.device), descriptorPool(std::exchange(o.descriptorPool, nullptr)) {}
-
-    VulkanDescriptorPool &operator=(VulkanDescriptorPool &&o) noexcept {
-        if (this == &o)
-            return *this;
-        destroy();
-        descriptorPool = std::exchange(o.descriptorPool, nullptr);
-        return *this;
-    }
-
-    [[nodiscard]] VulkanDescriptorSet allocate(const VulkanDescriptorSetLayout &layout) const;
-
-    [[nodiscard]] inline VkDescriptorPool vk() const { return descriptorPool; }
-
-private:
-    const VulkanDevice &device;
-    VkDescriptorPool descriptorPool;
 };
 

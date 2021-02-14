@@ -4,6 +4,7 @@
 #include "src/renderer/vulkan/context/VulkanContext.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 
 #include <imgui.h>
 

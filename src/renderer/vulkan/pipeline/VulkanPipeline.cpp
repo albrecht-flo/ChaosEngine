@@ -1,6 +1,7 @@
 #include "VulkanPipeline.h"
 
 #include "src/renderer/vulkan/context/VulkanDevice.h"
+#include "VulkanPipelineLayout.h"
 
 #include <stdexcept>
 #include <fstream>

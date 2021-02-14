@@ -8,14 +8,15 @@
 #include <src/renderer/vulkan/pipeline/VulkanDescriptorSet.h>
 
 #include "VulkanRenderPassOld.h"
+#include "src/renderer/data/Mesh.h"
+#include "src/renderer/data/RenderObject.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
-#include "src/renderer/data/Mesh.h"
+#include "src/renderer/vulkan/image/VulkanImage.h"
 #include "src/renderer/vulkan/image/VulkanTexture.h"
-#include "src/renderer/data/RenderObject.h"
 
 /* The uniform object past to the shaders.
 	alignas(16) ensures proper alignment with the shaders

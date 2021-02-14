@@ -28,11 +28,16 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/image/VulkanFramebuffer.cpp
         renderer/vulkan/image/VulkanImageView.cpp
         renderer/vulkan/image/VulkanTexture.cpp
-        renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        renderer/vulkan/pipeline/VulkanDescriptorSetLayout.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorPool.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.cpp
         renderer/vulkan/pipeline/VulkanDescriptorSet.cpp
-        renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorSetLayout.cpp
+        renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.cpp
         renderer/vulkan/pipeline/VulkanPipeline.cpp
+        renderer/vulkan/pipeline/VulkanPipelineBuilder.cpp
+        renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
+        renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
+        renderer/vulkan/pipeline/VulkanVertexInput.cpp
         # Test classes
         renderer/vulkan/test/VulkanRendererOld.cpp
         renderer/vulkan/test/VulkanRenderPassOld.cpp

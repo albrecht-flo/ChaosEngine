@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
+#include "src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <cassert>
 #include <utility>
@@ -23,8 +23,6 @@ struct VulkanAttachmentDescription {
     VkAttachmentDescription attachment;
     VkImageLayout attachmentLayout;
 };
-
-class VulkanDevice;
 
 class VulkanAttachmentBuilder {
 

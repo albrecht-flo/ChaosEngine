@@ -5,6 +5,7 @@
 #include <string>
 
 #include "VulkanDescriptorSetLayout.h"
+#include "VulkanPipelineLayout.h"
 
 /* TODO:
  *  // Later

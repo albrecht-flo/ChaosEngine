@@ -1,17 +1,13 @@
 #include "PostRenderPass.h"
 
-#include "src/renderer/vulkan/context/VulkanSwapChain.h"
-#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
-#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
-#include "src/renderer/vulkan/image/VulkanImage.h"
-#include "src/renderer/vulkan/image/VulkanSampler.h"
-#include "src/renderer/vulkan/image/VulkanTexture.h"
 #include "src/renderer/data/Mesh.h"
+#include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 
-#include <iostream>
 #include <stdexcept>
-#include <string>
 
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,

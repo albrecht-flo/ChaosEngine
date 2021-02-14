@@ -2,6 +2,7 @@
 
 #include "src/renderer/vulkan/image/VulkanImageView.h"
 #include "src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>

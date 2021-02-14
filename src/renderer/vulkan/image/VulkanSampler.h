@@ -22,6 +22,7 @@ public:
     VulkanSampler &operator=(VulkanSampler &&o) noexcept {
         if (this == &o)
             return *this;
+        destroy();
         sampler = std::exchange(o.sampler, nullptr);
         return *this;
     }
