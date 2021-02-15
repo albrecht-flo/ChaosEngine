@@ -45,6 +45,9 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/test/MainSceneRenderPass.cpp
         renderer/vulkan/test/PostRenderPass.cpp
         renderer/vulkan/test/ImGuiRenderPass.cpp
+        # Core classes
+        core/Ecs.cpp
+        core/Entity.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
@@ -52,6 +55,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glfw/include
         ../dep/vulkan
         ../dep/imgui
+        ../dep/entt/src/
         ../dep/tinyply/source
         ../dep/tinyobjloader
         ../dep/stb

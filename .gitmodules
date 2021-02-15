@@ -22,3 +22,6 @@
 [submodule "dep/stb"]
 	path = dep/stb
 	url = https://github.com/nothings/stb.git
+[submodule "dep/entt"]
+	path = dep/entt
+	url = https://github.com/skypjack/entt.git
