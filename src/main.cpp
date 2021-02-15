@@ -5,6 +5,12 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <glm/gtx/quaternion.hpp>
+
+#include <entt/entity/registry.hpp>
+
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -12,8 +18,8 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
-#include <src/renderer/VulkanRenderer2D.h>
 
+#include "src/renderer/VulkanRenderer2D.h"
 
 #include "renderer/window/Window.h"
 #include "renderer/vulkan/test/TestRenderer.h"
@@ -207,8 +213,6 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
         // Update camera
         renderer.setViewMatrix(glm::lookAt(origin, origin + target, cameraUp));
 
-        // TODO: Render Entities using the RenderAPI
-
         // Render the frame
         renderer.drawFrame();
     }
@@ -217,8 +221,46 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
 
 }
 
+struct Transform {
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 scale;
+
+    inline glm::mat4 getModelMatrix() const {
+        glm::mat4 ret = glm::translate(glm::mat4(1), position);
+        ret *= glm::toMat4(glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)}));
+        return glm::scale(ret, scale);;
+    }
+};
+
+struct RenderComponent {
+    glm::vec4 color;
+};
+
+static void renderEntities(entt::registry &registry, VulkanRenderer2D &renderer) {
+    auto view = registry.view<const Transform, const RenderComponent>();
+
+    for (const auto&[entity, transform, renderComp]: view.each()) {
+        renderer.renderQuad(transform.getModelMatrix(), renderComp.color);
+    }
+}
 
 void run2(Window &window, VulkanRenderer2D &renderer) {
+
+    // ECS
+    entt::registry registry;
+
+    entt::entity whiteQuad = registry.create();
+    registry.emplace<Transform>(whiteQuad, Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
+    registry.emplace<RenderComponent>(whiteQuad, glm::vec4(1));
+
+    entt::entity redQuad = registry.create();
+    registry.emplace<Transform>(redQuad, Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    registry.emplace<RenderComponent>(redQuad, glm::vec4(1, 0, 0, 1));
+
+    entt::entity greenQuad = registry.create();
+    registry.emplace<Transform>(greenQuad, Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
+    registry.emplace<RenderComponent>(greenQuad, glm::vec4(0, 1, 0, 1));
 
     // FPS counter
     auto deltaTimer = std::chrono::high_resolution_clock::now();
@@ -233,7 +275,11 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
     };
     glm::vec3 origin = glm::vec3(0, 0, -2.0f);
     float cameraSpeed = 10.0f;
+
+    // ImGui
     bool cameraControllerActive = false;
+    bool itemEditActive = true;
+    float dragSpeed = 1.0f;
 
     // Renderer configuration
     renderer.updatePostProcessingConfiguration({camera});
@@ -248,6 +294,19 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
             if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
                 ImGui::Text("Camera Controller");
                 ImGui::SliderFloat("float", &cameraSpeed, 0.0f, 50.0f);
+            }
+            ImGui::End();
+        }
+        if (itemEditActive) {
+            if (ImGui::Begin("ItemEdit", &itemEditActive)) {
+                ImGui::Text("Edit Entity %x", greenQuad);
+                auto &tc = registry.get<Transform>(greenQuad);
+                ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
+                ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
+                ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+                ImGui::Separator();
+                auto &rc = registry.get<RenderComponent>(greenQuad);
+                ImGui::ColorEdit4("Color", &(rc.color.r));
             }
             ImGui::End();
         }
@@ -272,8 +331,12 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         // Close window controls
         if (window.isKeyDown(GLFW_KEY_ESCAPE) ||
             (window.isKeyDown(GLFW_KEY_Q) && window.isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window.close(); }
+        // ImGui Controls
         if (window.isKeyDown(GLFW_KEY_LEFT_ALT) && window.isKeyDown(GLFW_KEY_LEFT_SHIFT) &&
             window.isKeyDown(GLFW_KEY_C)) { cameraControllerActive = true; }
+        if (window.isKeyDown(GLFW_KEY_LEFT_ALT) && window.isKeyDown(GLFW_KEY_LEFT_SHIFT) &&
+            window.isKeyDown(GLFW_KEY_E)) { itemEditActive = true; }
+        if (window.isKeyDown(GLFW_KEY_LEFT_CONTROL)) { dragSpeed = 0.125f; } else { dragSpeed = 1.0f; }
 
         // Camera controls
         if (window.isKeyDown(GLFW_KEY_W)) { origin.y -= cameraSpeed * deltaTime; }
@@ -290,10 +353,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         camera.view = glm::translate(glm::mat4(1), origin);
         renderer.beginScene(camera);
 
-        auto modelMat1 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0.0f));
-        renderer.renderQuad(modelMat1, glm::vec4(1.0f, 0.5f, 0.0f, 1));
-        auto modelMat2 = glm::translate(glm::mat4(1.0f), glm::vec3(2, 0, 0.0f));
-        renderer.renderQuad(modelMat2, glm::vec4(0.0f, 1.0f, 0.0f, 1));
+        renderEntities(registry, renderer);
 
         renderer.endScene();
         renderer.flush();

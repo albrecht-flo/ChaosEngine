@@ -52,6 +52,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glfw/include
         ../dep/vulkan
         ../dep/imgui
+        ../dep/entt/src/
         ../dep/tinyply/source
         ../dep/tinyobjloader
         ../dep/stb
