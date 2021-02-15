@@ -45,6 +45,9 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/test/MainSceneRenderPass.cpp
         renderer/vulkan/test/PostRenderPass.cpp
         renderer/vulkan/test/ImGuiRenderPass.cpp
+        # Core classes
+        core/Ecs.cpp
+        core/Entity.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

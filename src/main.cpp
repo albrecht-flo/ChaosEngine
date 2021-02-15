@@ -9,8 +9,6 @@
 
 #include <glm/gtx/quaternion.hpp>
 
-#include <entt/entity/registry.hpp>
-
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -19,6 +17,7 @@
 #include <iostream>
 #include <chrono>
 
+#include "src/core/Ecs.h"
 #include "src/renderer/VulkanRenderer2D.h"
 
 #include "renderer/window/Window.h"
@@ -248,19 +247,19 @@ static void renderEntities(entt::registry &registry, VulkanRenderer2D &renderer)
 void run2(Window &window, VulkanRenderer2D &renderer) {
 
     // ECS
-    entt::registry registry;
+    ECS ecs;
 
-    entt::entity whiteQuad = registry.create();
-    registry.emplace<Transform>(whiteQuad, Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
-    registry.emplace<RenderComponent>(whiteQuad, glm::vec4(1));
+    Entity whiteQuad = ecs.createEntity();
+    whiteQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
+    whiteQuad.setComponent<RenderComponent>(glm::vec4(1));
 
-    entt::entity redQuad = registry.create();
-    registry.emplace<Transform>(redQuad, Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
-    registry.emplace<RenderComponent>(redQuad, glm::vec4(1, 0, 0, 1));
+    Entity redQuad = ecs.createEntity();
+    redQuad.setComponent<Transform>(Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    redQuad.setComponent<RenderComponent>(glm::vec4(1, 0, 0, 1));
 
-    entt::entity greenQuad = registry.create();
-    registry.emplace<Transform>(greenQuad, Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
-    registry.emplace<RenderComponent>(greenQuad, glm::vec4(0, 1, 0, 1));
+    Entity greenQuad = ecs.createEntity();
+    greenQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
+    greenQuad.setComponent<RenderComponent>(glm::vec4(0, 1, 0, 1));
 
     // FPS counter
     auto deltaTimer = std::chrono::high_resolution_clock::now();
@@ -300,12 +299,12 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         if (itemEditActive) {
             if (ImGui::Begin("ItemEdit", &itemEditActive)) {
                 ImGui::Text("Edit Entity %x", greenQuad);
-                auto &tc = registry.get<Transform>(greenQuad);
+                auto &tc = greenQuad.get<Transform>();
                 ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
                 ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
                 ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
                 ImGui::Separator();
-                auto &rc = registry.get<RenderComponent>(greenQuad);
+                auto &rc = greenQuad.get<RenderComponent>();
                 ImGui::ColorEdit4("Color", &(rc.color.r));
             }
             ImGui::End();
@@ -353,7 +352,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
         camera.view = glm::translate(glm::mat4(1), origin);
         renderer.beginScene(camera);
 
-        renderEntities(registry, renderer);
+        renderEntities(ecs.getRegistry(), renderer);
 
         renderer.endScene();
         renderer.flush();
