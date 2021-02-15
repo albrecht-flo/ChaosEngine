@@ -10,6 +10,7 @@
 /dep/stb/
 /dep/tinyobjloader/
 /dep/tinyply/
+/dep/entt
 /cmake/thirdparty/
 
 .idea/
