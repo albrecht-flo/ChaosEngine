@@ -39,13 +39,6 @@ struct TexturePhongMaterial {
     float shininess;
 };
 
-struct Camera {
-    glm::mat4 view;
-    float fieldOfView = 45.0f;
-    float near = 0.1f;
-    float far = 100.0f;
-};
-
 struct LightObject {
     glm::vec4 lightPos; // w = lightRadius
     glm::vec4 lightColor; // w = ambient ammount

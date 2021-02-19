@@ -160,7 +160,7 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     createStandardPipeline();
 }
 
-void SpriteRenderingPass::updateUniformBuffer(const Camera &camera, const glm::vec2 &viewportDimensions) {
+void SpriteRenderingPass::updateUniformBuffer(const CameraComponent &camera, const glm::vec2 &viewportDimensions) {
 
     CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
     ubo->view = camera.view;
@@ -180,7 +180,7 @@ void SpriteRenderingPass::updateUniformBuffer(const Camera &camera, const glm::v
                                          uboContent.data(), uboContent.size());
 }
 
-void SpriteRenderingPass::begin(const Camera &camera) {
+void SpriteRenderingPass::begin(const CameraComponent &camera) {
     glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     updateUniformBuffer(camera, viewportDimensions);
 

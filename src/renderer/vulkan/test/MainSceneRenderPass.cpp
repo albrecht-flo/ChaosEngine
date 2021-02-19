@@ -173,7 +173,7 @@ void MainSceneRenderPass::createLightStructures() {
 
 /* Updates the uniform buffers. */
 void MainSceneRenderPass::updateUniformBuffer(uint32_t currentImage,
-                                              Camera &camera, LightObject &worldLight) {
+                                              CameraComponent &camera, LightObject &worldLight) {
     UniformBufferObject *ubo = uboContent.at(0);
     //ubo->model = glm::translate(glm::mat4(1.0f), glm::vec3(0, +0.0f, -0.5f)) * glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo->view = camera.view;

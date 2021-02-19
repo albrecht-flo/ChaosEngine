@@ -15,6 +15,8 @@
 #include <memory>
 #include <unordered_map>
 
+#include "src/core/Components.h"
+
 #include "MainSceneRenderPass.h"
 #include "PostRenderPass.h"
 #include "ImGuiRenderPass.h"
@@ -33,7 +35,6 @@
 #include "src/renderer/vulkan/image/VulkanTexture.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2
-
 
 class TestRenderer : public VulkanRendererOld {
 public:
@@ -72,7 +73,7 @@ private: // RenderObject data
     RenderMesh quadMesh{};
     RenderObject quadRobj{nullptr, glm::mat4(), 0};
 
-    Camera camera{
+    CameraComponent camera{
             .view = glm::mat4(),
             .fieldOfView = 45.0f,
             .near = 0.1f,

@@ -4,15 +4,16 @@
 
 #include <stdexcept>
 #include <array>
-#include <src/renderer/vulkan/pipeline/VulkanVertexInput.h>
-#include <src/renderer/vulkan/pipeline/VulkanDescriptorSet.h>
 
+#include "src/core/Components.h"
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/data/Mesh.h"
 #include "src/renderer/data/RenderObject.h"
 #include "src/renderer/vulkan/context/VulkanDevice.h"
 #include "src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
+#include "src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 #include "src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "src/renderer/vulkan/image/VulkanImage.h"
@@ -45,7 +46,7 @@ public:
 
     void init() override;
 
-    void updateUniformBuffer(uint32_t currentImage, Camera &camera, LightObject &worldLight);
+    void updateUniformBuffer(uint32_t currentImage, CameraComponent &camera, LightObject &worldLight);
 
     void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth,
                   uint32_t viewportHeight) override;

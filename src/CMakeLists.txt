@@ -1,6 +1,11 @@
 set(RENDER_ENGINE_SOURCES
         #       External vendor files
         vendor/imgui/imgui.cpp
+        #       Core classes
+        core/Engine.cpp
+        core/Scene.cpp
+        core/Ecs.cpp
+        core/Entity.cpp
         #       General Rendering files
         renderer/DevRenderer.cpp
         renderer/api/GraphicsContext.cpp
@@ -38,16 +43,14 @@ set(RENDER_ENGINE_SOURCES
         renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        # Test classes
+        #     Test classes
         renderer/vulkan/test/VulkanRendererOld.cpp
         renderer/vulkan/test/VulkanRenderPassOld.cpp
         renderer/vulkan/test/TestRenderer.cpp
         renderer/vulkan/test/MainSceneRenderPass.cpp
         renderer/vulkan/test/PostRenderPass.cpp
         renderer/vulkan/test/ImGuiRenderPass.cpp
-        # Core classes
-        core/Ecs.cpp
-        core/Entity.cpp
+        test/TestScene.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

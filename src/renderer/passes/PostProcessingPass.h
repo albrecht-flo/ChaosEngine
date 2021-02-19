@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/core/Components.h"
 #include "src/renderer/data/RenderObject.h"
 #include "src/renderer/vulkan/context/VulkanContext.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
@@ -15,7 +16,7 @@
 class PostProcessingPass {
 public:
     struct PostProcessingConfiguration {
-        Camera camera;
+        CameraComponent camera;
     };
 private:
     struct ShaderConfig {

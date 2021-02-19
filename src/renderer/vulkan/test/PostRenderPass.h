@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <array>
 
+#include "src/core/Components.h"
 #include "VulkanRenderPassOld.h"
 #include "src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "src/renderer/vulkan/rendering/VulkanRenderPass.h"
@@ -23,7 +24,7 @@ public:
     void
     setImageBufferViews(VkImageView newFramebufferView, VkImageView newDepthBufferView, VkImageView imGuiImageView);
 
-    void updateCamera(const Camera &newCamera) { camera = newCamera; }
+    void updateCamera(const CameraComponent &newCamera) { camera = newCamera; }
 
     void init() override;
 
@@ -62,7 +63,7 @@ private:
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;
     std::unique_ptr<VulkanDescriptorSet> descriptorSet;
 
-    Camera camera{};
+    CameraComponent camera{};
     VulkanTexture backgroundTexture;
 };
 

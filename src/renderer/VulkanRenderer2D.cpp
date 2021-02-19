@@ -9,7 +9,7 @@
 
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
-VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
+std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Window &window) {
     auto context = std::make_unique<VulkanContext>(window);
 
     auto spriteRenderingPass = SpriteRenderingPass::Create(*context, context->getSwapChain().getWidth(),
@@ -28,8 +28,9 @@ VulkanRenderer2D VulkanRenderer2D::Create(Window &window) {
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(*context, window, context->getSwapChain().getWidth(),
                                                          context->getSwapChain().getHeight(), imGuiContext);
 
-    return VulkanRenderer2D(std::move(context), std::move(spriteRenderingPass), std::move(postProcessingPass),
-                            std::move(imGuiRenderingPass));
+    return std::unique_ptr<VulkanRenderer2D>(
+            new VulkanRenderer2D(std::move(context), std::move(spriteRenderingPass), std::move(postProcessingPass),
+                                 std::move(imGuiRenderingPass)));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
@@ -59,7 +60,7 @@ void VulkanRenderer2D::join() {
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
-void VulkanRenderer2D::beginScene(const Camera &camera) {
+void VulkanRenderer2D::beginScene(const CameraComponent &camera) {
     spriteRenderingPass.begin(camera);
 }
 

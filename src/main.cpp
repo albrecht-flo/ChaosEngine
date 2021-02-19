@@ -1,14 +1,4 @@
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan is using 0 to 1
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include <glm/gtx/quaternion.hpp>
-
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -16,8 +6,9 @@
 #include <exception>
 #include <iostream>
 #include <chrono>
+#include <src/test/TestScene.h>
 
-#include "src/core/Ecs.h"
+#include "src/core/Engine.h"
 #include "src/renderer/VulkanRenderer2D.h"
 
 #include "renderer/window/Window.h"
@@ -220,22 +211,6 @@ void run(Window &window, TestRenderer &renderer, ModelLoader &modelLoader) {
 
 }
 
-struct Transform {
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 scale;
-
-    inline glm::mat4 getModelMatrix() const {
-        glm::mat4 ret = glm::translate(glm::mat4(1), position);
-        ret *= glm::toMat4(glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)}));
-        return glm::scale(ret, scale);;
-    }
-};
-
-struct RenderComponent {
-    glm::vec4 color;
-};
-
 static void renderEntities(entt::registry &registry, VulkanRenderer2D &renderer) {
     auto view = registry.view<const Transform, const RenderComponent>();
 
@@ -266,7 +241,7 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
     uint32_t frameCounter = 0;
     float fpsDelta = 0;
     // Camera
-    Camera camera{
+    CameraComponent camera{
             .view = glm::mat4(1),
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -368,23 +343,28 @@ void run2(Window &window, VulkanRenderer2D &renderer) {
 int main() {
     std::cout << "Renderer starting..." << std::endl;
 
-    ModelLoader modelLoader;
-    Window window = Window::Create("Test Engine");
+    auto testScene = std::make_unique<TestScene>();
+    Engine engine(std::move(testScene));
+    engine.run();
 
-#ifdef TESTING
-    TestRenderer renderer(window);
-    renderer.init();
-    run(window, renderer, modelLoader);
-#endif
-#ifdef RENDER_2D
-    VulkanRenderer2D renderer2D = VulkanRenderer2D::Create(window);
-    renderer2D.setup();
-    run2(window, renderer2D);
-#endif
-    modelLoader.cleanup();
 
-#ifdef TESTING
-    renderer.cleanup();
-#endif
+//    ModelLoader modelLoader;
+//    Window window = Window::Create("Test Engine");
+//
+//#ifdef TESTING
+//    TestRenderer renderer(window);
+//    renderer.init();
+//    run(window, renderer, modelLoader);
+//#endif
+//#ifdef RENDER_2D
+//    auto renderer2D = VulkanRenderer2D::Create(window);
+//    renderer2D->setup();
+//    run2(window, *renderer2D);
+//#endif
+//    modelLoader.cleanup();
+
+//#ifdef TESTING
+//    renderer.cleanup();
+//#endif
     return EXIT_SUCCESS;
 }

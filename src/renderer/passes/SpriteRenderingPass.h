@@ -21,6 +21,7 @@ public:
 #include "src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
 
 #include <string>
+#include <src/core/Components.h>
 
 // ------------------------------------ Pipeline Description -----------------------------------------------------------
 
@@ -51,7 +52,7 @@ public:
     static SpriteRenderingPass
     Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain = false);
 
-    void begin(const Camera &camera);
+    void begin(const CameraComponent &camera);
 
     void end();
 
@@ -66,7 +67,7 @@ public:
 private:
     void createAttachments(uint32_t width, uint32_t height);
 
-    void updateUniformBuffer(const Camera &camera, const glm::vec2 &viewportDimensions);
+    void updateUniformBuffer(const CameraComponent &camera, const glm::vec2 &viewportDimensions);
 
     void createStandardPipeline();
 

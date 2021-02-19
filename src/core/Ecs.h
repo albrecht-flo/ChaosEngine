@@ -22,7 +22,7 @@ public:
         return *this;
     }
 
-    inline Entity createEntity() { return Entity(registry, registry.create()); };
+    inline Entity createEntity() { return Entity(&registry, registry.create()); };
 
     inline entt::registry &getRegistry() { return registry; }
 

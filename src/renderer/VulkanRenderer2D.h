@@ -6,6 +6,7 @@
 
 #include <glm/glm.hpp>
 
+#include "src/core/Components.h"
 #include "src/renderer/passes/SpriteRenderingPass.h"
 #include "src/renderer/passes/ImGuiRenderingPass.h"
 #include "src/renderer/passes/PostProcessingPass.h"
@@ -37,7 +38,7 @@ public:
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
-    static VulkanRenderer2D Create(Window &window);
+    static std::unique_ptr<VulkanRenderer2D> Create(Window &window);
 
     // Lifecycle
     /// Setup for all dynamic resources
@@ -48,7 +49,7 @@ public:
 
     // Context commands
     /// Start recording commands with this renderer
-    void beginScene(const Camera &camera);
+    void beginScene(const CameraComponent &camera);
 
     /// Stop recording commands with this renderer
     void endScene();

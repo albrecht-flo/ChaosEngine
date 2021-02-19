@@ -57,5 +57,6 @@ namespace VulkanPipelineUtility {
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         }
         assert(false);
+        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     }
 }
