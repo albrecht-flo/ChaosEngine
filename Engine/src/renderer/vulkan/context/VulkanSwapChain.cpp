@@ -28,7 +28,7 @@ static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFor
 /* Helper to select an appropriate present mode. */
 static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
     auto it = std::find_if(availablePresentModes.begin(), availablePresentModes.end(),
-                           [](auto mode) { return mode == VK_PRESENT_MODE_MAILBOX_KHR; });
+                           [](auto mode) { return mode == VK_PRESENT_MODE_FIFO_KHR; });
 
     if (it != availablePresentModes.end())
         return *it;

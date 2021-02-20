@@ -50,7 +50,8 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/test/MainSceneRenderPass.cpp
         src/renderer/vulkan/test/PostRenderPass.cpp
         src/renderer/vulkan/test/ImGuiRenderPass.cpp
-        src/core/RenderingSystem.cpp src/core/RenderingSystem.h)
+        src/core/RenderingSystem.cpp
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm

@@ -1,6 +1,8 @@
 #include "Engine.h"
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
+#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/VulkanRenderer2D.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Test Engine")),
@@ -13,7 +15,13 @@ Engine::Engine(std::unique_ptr<Scene> &&scene)
 void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(window);
-    renderingSys.setRenderer(std::move(config.renderer));
+    switch (config.rendererType) {
+        case Renderer::RendererType::RENDERER2D :
+            renderingSys.setRenderer(VulkanRenderer2D::Create(window));
+            break;
+        default:
+            assert("Unknown renderer" && false);
+    }
 
     scene->load();
 }

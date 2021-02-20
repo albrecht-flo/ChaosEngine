@@ -1,11 +1,6 @@
 #pragma once
 
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
-
-#include <glm/glm.hpp>
-#include "Engine/src/core/RenderingSystem.h"
+#include "Engine/src/renderer/RendererAPI.h"
 
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
@@ -21,7 +16,7 @@
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
 
-class VulkanRenderer2D : public Renderer::Renderer {
+class VulkanRenderer2D : public Renderer::RendererAPI {
 private:
 private:
     VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
@@ -57,9 +52,6 @@ public:
 
     /// Submit recorded commands to gpu
     void flush() override;
-
-    /// Update the post processing configuration
-    void updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration);
 
     // Rendering commands
     /// Render an object with its material and model matrix

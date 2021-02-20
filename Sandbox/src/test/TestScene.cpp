@@ -1,11 +1,10 @@
 #include "TestScene.h"
+#include <imgui.h>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
-    auto configRenderer = VulkanRenderer2D::Create(pWindow);
-    renderer = configRenderer.get();
     return SceneConfiguration{
-            std::move(configRenderer)
+            .rendererType = Renderer::RendererType::RENDERER2D
     };
 }
 
@@ -29,17 +28,13 @@ void TestScene::load() {
     greenQuad = registry.createEntity();
     greenQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     greenQuad.setComponent<RenderComponent>(glm::vec4(0, 1, 0, 1));
-
-    renderer->updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration{
-            .camera = cameraEnt.get<CameraComponent>()
-    });
 }
 
 // Test data
 static bool cameraControllerActive = false;
 static bool itemEditActive = true;
 static float dragSpeed = 1.0f;
-static glm::vec3 origin = glm::vec3(0, 0, -2.0f);
+static glm::vec3 origin(0, 0, -2.0f);
 static float cameraSpeed = 10.0f;
 
 void TestScene::update(float deltaTime) {

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Ecs.h"
-
-#include "Engine/src/renderer/VulkanRenderer2D.h"
+#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/window/Window.h"
 
 /// Via this struct the scene is able to configure the engine runtime.
 struct SceneConfiguration {
-    std::unique_ptr<VulkanRenderer2D> renderer; // TODO: Abstraction layer
+    Renderer::RendererType rendererType; // TODO: Abstraction layer
 };
 
 /**

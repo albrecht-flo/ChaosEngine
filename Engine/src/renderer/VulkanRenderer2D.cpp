@@ -62,6 +62,7 @@ void VulkanRenderer2D::join() {
 
 void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) {
     spriteRenderingPass.begin(viewMat, camera);
+    postProcessingPass.updateConfiguration({camera});
 }
 
 void VulkanRenderer2D::endScene() {
@@ -86,11 +87,6 @@ void VulkanRenderer2D::flush() {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
     }
-}
-
-void
-VulkanRenderer2D::updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration) {
-    postProcessingPass.updateConfiguration(configuration);
 }
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {

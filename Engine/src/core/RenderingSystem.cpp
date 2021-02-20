@@ -1,13 +1,13 @@
-#include <iostream>
 #include "RenderingSystem.h"
 
+#include <iostream>
 
 RenderingSystem::~RenderingSystem() {
     // Wait for renderer to finish
     renderer->join();
 }
 
-void RenderingSystem::setRenderer(std::unique_ptr<Renderer::Renderer> &&pRenderer) {
+void RenderingSystem::setRenderer(std::unique_ptr<Renderer::RendererAPI> &&pRenderer) {
     renderer = std::move(pRenderer);
     renderer->setup();
 }

@@ -4,7 +4,7 @@
 
 class TestScene : public Scene {
 public:
-    TestScene() : Scene(), window(nullptr), renderer(nullptr) {}
+    TestScene() : Scene(), window(nullptr) {}
 
     ~TestScene() = default;
 
@@ -18,7 +18,6 @@ public:
 
 private:
     Window *window;
-    VulkanRenderer2D *renderer;
     Entity cameraEnt;
     Entity whiteQuad;
     Entity redQuad;
