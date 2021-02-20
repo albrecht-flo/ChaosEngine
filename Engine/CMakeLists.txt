@@ -6,6 +6,7 @@ set(ENGINE_SOURCES
         src/core/Scene.cpp
         src/core/Ecs.cpp
         src/core/Entity.cpp
+        src/core/RenderingSystem.cpp
         #       General Rendering files
         src/renderer/DevRenderer.cpp
         src/renderer/api/GraphicsContext.cpp
@@ -50,7 +51,6 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/test/MainSceneRenderPass.cpp
         src/renderer/vulkan/test/PostRenderPass.cpp
         src/renderer/vulkan/test/ImGuiRenderPass.cpp
-        src/core/RenderingSystem.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

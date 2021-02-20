@@ -75,7 +75,7 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            ImGui::Text("Edit Entity %x", greenQuad);
+            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(greenQuad));
             auto &tc = greenQuad.get<Transform>();
             ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
             ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);

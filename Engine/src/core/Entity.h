@@ -40,6 +40,12 @@ public:
         return registry->get<Component...>(entity);
     }
 
+    explicit  operator uint32_t() const {
+        static_assert(std::is_same<entt::id_type, std::uint32_t>::value,
+                      "Entity is not of type uint32_t so it can't be casted to it");
+        return static_cast<uint32_t>(entity);
+    }
+
 private:
     entt::entity entity;
     entt::registry *registry;
