@@ -1,7 +1,8 @@
 #include "Engine.h"
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
-#include "Components.h"
+#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/VulkanRenderer2D.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Test Engine")),
@@ -14,22 +15,15 @@ Engine::Engine(std::unique_ptr<Scene> &&scene)
 void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(window);
-    renderer = std::move(config.renderer);
-    renderer->setup();
+    switch (config.rendererType) {
+        case Renderer::RendererType::RENDERER2D :
+            renderingSys.setRenderer(VulkanRenderer2D::Create(window));
+            break;
+        default:
+            assert("Unknown renderer" && false);
+    }
 
     scene->load();
-}
-
-static void renderEntities(entt::registry &registry, VulkanRenderer2D &renderer) {
-    auto view = registry.view<const Transform, const RenderComponent>();
-    auto camera = registry.view<const CameraComponent>();
-    assert("There must be one active camera" && !camera.empty());
-
-    renderer.beginScene(registry.get<CameraComponent>(camera.front()));
-    for (const auto&[entity, transform, renderComp]: view.each()) {
-        renderer.renderQuad(transform.getModelMatrix(), renderComp.color);
-    }
-    renderer.endScene();
 }
 
 void Engine::run() {
@@ -61,18 +55,12 @@ void Engine::run() {
         ImGui::Render();
 
         // Update render system
-        renderEntities(scene->registry.getRegistry(), *renderer);
+        renderingSys.renderEntities(scene->registry);
 
-        // Push render commands to GPU
-        renderer->flush();
 
         // Update Scene // TODO: Process scrpits instead ----------------------
         scene->update(deltaTime);
 
     }
-
-    // Wait for renderer to finish
-    renderer->join();
-
 }
 

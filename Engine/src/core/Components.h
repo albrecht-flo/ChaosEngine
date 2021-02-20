@@ -2,12 +2,14 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan is using 0 to 1
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include <glm/gtx/quaternion.hpp>
 #include <GLFW/glfw3.h>
-#include <string>
 
 struct Transform {
     glm::vec3 position;
@@ -26,7 +28,6 @@ struct RenderComponent {
 };
 
 struct CameraComponent {
-    glm::mat4 view;
     float fieldOfView = 45.0f;
     float near = 0.1f;
     float far = 100.0f;

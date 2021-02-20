@@ -46,7 +46,8 @@ public:
 
     void init() override;
 
-    void updateUniformBuffer(uint32_t currentImage, CameraComponent &camera, LightObject &worldLight);
+    void updateUniformBuffer(uint32_t currentImage, const glm::mat4 &viewMat, CameraComponent &camera,
+                             LightObject &worldLight);
 
     void cmdBegin(VkCommandBuffer &cmdBuf, uint32_t currentImage, VkFramebuffer framebuffer, uint32_t viewportWidth,
                   uint32_t viewportHeight) override;

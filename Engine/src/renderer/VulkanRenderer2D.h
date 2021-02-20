@@ -1,10 +1,6 @@
 #pragma once
 
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
-
-#include <glm/glm.hpp>
+#include "Engine/src/renderer/RendererAPI.h"
 
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
@@ -20,7 +16,7 @@
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
 
-class VulkanRenderer2D {
+class VulkanRenderer2D : public Renderer::RendererAPI {
 private:
 private:
     VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
@@ -42,27 +38,24 @@ public:
 
     // Lifecycle
     /// Setup for all dynamic resources
-    void setup();
+    void setup() override;
 
     /// Wait for GPU tasks to finish
-    void join();
+    void join() override;
 
     // Context commands
     /// Start recording commands with this renderer
-    void beginScene(const CameraComponent &camera);
+    void beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) override;
 
     /// Stop recording commands with this renderer
-    void endScene();
+    void endScene() override;
 
     /// Submit recorded commands to gpu
-    void flush();
-
-    /// Update the post processing configuration
-    void updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration);
+    void flush() override;
 
     // Rendering commands
     /// Render an object with its material and model matrix
-    void renderQuad(glm::mat4 modelMat, glm::vec4 color);
+    void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent);
 
 
 private:

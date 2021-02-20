@@ -3,6 +3,9 @@
 #include <entt/entity/registry.hpp>
 #include "Entity.h"
 
+/**
+ * Thin handle to the entity registry.
+ */
 class ECS {
 public:
     ECS() : registry() {}
@@ -22,8 +25,10 @@ public:
         return *this;
     }
 
+    /// Create a new entity handle from this registry
     inline Entity createEntity() { return Entity(&registry, registry.create()); };
 
+    /// Access the internal registry
     inline entt::registry &getRegistry() { return registry; }
 
 private:

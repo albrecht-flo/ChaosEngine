@@ -1,18 +1,17 @@
 #include "TestScene.h"
+#include <imgui.h>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
-    auto configRenderer = VulkanRenderer2D::Create(pWindow);
-    renderer = configRenderer.get();
     return SceneConfiguration{
-            std::move(configRenderer)
+            .rendererType = Renderer::RendererType::RENDERER2D
     };
 }
 
 void TestScene::load() {
     cameraEnt = registry.createEntity();
+    cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     cameraEnt.setComponent<CameraComponent>(CameraComponent{
-            .view = glm::mat4(1),
             .fieldOfView = 10.0f,
             .near = 0.1f,
             .far = 100.0f,
@@ -29,17 +28,13 @@ void TestScene::load() {
     greenQuad = registry.createEntity();
     greenQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     greenQuad.setComponent<RenderComponent>(glm::vec4(0, 1, 0, 1));
-
-    renderer->updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration{
-            .camera = cameraEnt.get<CameraComponent>()
-    });
 }
 
 // Test data
 static bool cameraControllerActive = false;
 static bool itemEditActive = true;
 static float dragSpeed = 1.0f;
-static glm::vec3 origin = glm::vec3(0, 0, -2.0f);
+static glm::vec3 origin(0, 0, -2.0f);
 static float cameraSpeed = 10.0f;
 
 void TestScene::update(float deltaTime) {
@@ -65,7 +60,7 @@ void TestScene::update(float deltaTime) {
         cameraEnt.get<CameraComponent>().fieldOfView += 5 * deltaTime;
     } // TODO: Remove delta time after input refactor
 
-    cameraEnt.get<CameraComponent>().view = glm::translate(glm::mat4(1), origin);
+    cameraEnt.get<Transform>().position = origin;
 
 }
 
@@ -80,7 +75,7 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            ImGui::Text("Edit Entity %x", greenQuad);
+            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(greenQuad));
             auto &tc = greenQuad.get<Transform>();
             ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
             ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);

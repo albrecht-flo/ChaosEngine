@@ -22,8 +22,10 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Window &window) {
     IMGUI_CHECKVERSION();
     ImGuiContext *imGuiContext = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
     ImGui::StyleColorsDark();
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(*context, window, context->getSwapChain().getWidth(),
                                                          context->getSwapChain().getHeight(), imGuiContext);
@@ -60,8 +62,9 @@ void VulkanRenderer2D::join() {
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
-void VulkanRenderer2D::beginScene(const CameraComponent &camera) {
-    spriteRenderingPass.begin(camera);
+void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) {
+    spriteRenderingPass.begin(viewMat, camera);
+    postProcessingPass.updateConfiguration({camera});
 }
 
 void VulkanRenderer2D::endScene() {
@@ -88,11 +91,6 @@ void VulkanRenderer2D::flush() {
     }
 }
 
-void
-VulkanRenderer2D::updatePostProcessingConfiguration(PostProcessingPass::PostProcessingConfiguration configuration) {
-    postProcessingPass.updateConfiguration(configuration);
-}
-
-void VulkanRenderer2D::renderQuad(glm::mat4 modelMat, glm::vec4 color) {
-    spriteRenderingPass.drawSprite(quadMesh, modelMat, color);
+void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
+    spriteRenderingPass.drawSprite(quadMesh, modelMat, renderComponent.color);
 }

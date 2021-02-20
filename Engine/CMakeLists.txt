@@ -6,6 +6,7 @@ set(ENGINE_SOURCES
         src/core/Scene.cpp
         src/core/Ecs.cpp
         src/core/Entity.cpp
+        src/core/RenderingSystem.cpp
         #       General Rendering files
         src/renderer/DevRenderer.cpp
         src/renderer/api/GraphicsContext.cpp
