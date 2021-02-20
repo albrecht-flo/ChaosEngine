@@ -105,6 +105,11 @@ ImGuiRenderingPass::ImGuiRenderingPass(ImGuiRenderingPass &&o) noexcept
           imGuiContext(std::exchange(o.imGuiContext, nullptr)) {}
 
 void ImGuiRenderingPass::draw() {
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+
     auto &cmdBuf = context.getCurrentPrimaryCommandBuffer();
     auto &framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()];
 // Define render rendering to draw with
@@ -120,6 +125,7 @@ void ImGuiRenderingPass::draw() {
 
     // Record ImGui commands to command buffer
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf.vk());
+
 
     vkCmdEndRenderPass(cmdBuf.vk());
 }

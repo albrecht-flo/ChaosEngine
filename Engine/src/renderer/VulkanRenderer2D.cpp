@@ -22,8 +22,10 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Window &window) {
     IMGUI_CHECKVERSION();
     ImGuiContext *imGuiContext = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
     ImGui::StyleColorsDark();
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(*context, window, context->getSwapChain().getWidth(),
                                                          context->getSwapChain().getHeight(), imGuiContext);
