@@ -79,6 +79,7 @@ void PostRenderPass::init() {
     descriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
 
 
+    // TODO: Remove when reimplementation of 3D is finished
     backgroundTexture = VulkanTexture::createTexture(device, vulkanMemory, "textures/sky.jpg");
 }
 

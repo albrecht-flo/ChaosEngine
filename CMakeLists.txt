@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(RenderEngine)
+project(ChaosEngine)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,4 +19,5 @@ include(EnableUndefinedSanitizer)
 include(clang-tidy)
 include(BundledGTest)
 
-add_subdirectory(src)
+add_subdirectory(Engine)
+add_subdirectory(Sandbox)

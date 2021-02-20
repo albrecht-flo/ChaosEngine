@@ -1,4 +1,4 @@
-set(RENDER_ENGINE_SOURCES
+set(ENGINE_SOURCES
         #       External vendor files
         src/vendor/imgui/imgui.cpp
         #       Core classes
@@ -50,7 +50,6 @@ set(RENDER_ENGINE_SOURCES
         src/renderer/vulkan/test/MainSceneRenderPass.cpp
         src/renderer/vulkan/test/PostRenderPass.cpp
         src/renderer/vulkan/test/ImGuiRenderPass.cpp
-        src/test/TestScene.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
@@ -64,74 +63,20 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/stb
         )
 
-add_library(render_engine ${RENDER_ENGINE_SOURCES})
-target_include_directories(render_engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
+add_library(Engine ${ENGINE_SOURCES})
+target_include_directories(Engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
 
 if (WIN32)
-    target_link_directories(render_engine PUBLIC ../dep/lib/win)
-    target_link_libraries(render_engine vulkan-1 glfw3)
+    target_link_directories(Engine PUBLIC ../dep/lib/win)
+    target_link_libraries(Engine vulkan-1 glfw3)
 elseif (UNIX AND NOT APPLE)
-    target_link_directories(render_engine PUBLIC ../dep/lib/linux)
-    target_link_libraries(render_engine X11 dl pthread ../dep/vulkan glfw3)
+    target_link_directories(Engine PUBLIC ../dep/lib/linux)
+    target_link_libraries(Engine X11 dl pthread ../dep/vulkan glfw3)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()
 add_compile_definitions(GLFW_INCLUDE_NONE)
 
-# ------------------------------------- application -----------------------------------------------
 
-add_executable(application src/main.cpp)
-target_link_libraries(application PUBLIC render_engine)
-
-
-add_custom_command(
-        TARGET application POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/models
-        ${CMAKE_CURRENT_BINARY_DIR}/models
-
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/res/textures
-        ${CMAKE_CURRENT_BINARY_DIR}/textures
-)
-
-# ------------------------------------- Shaders ---------------------------------------------------
-
-set(GLSL_SOURCE_FILES
-        "res/shaders/base.vert"
-        "res/shaders/base.frag"
-        "res/shaders/post.vert"
-        "res/shaders/post.frag"
-        "res/shaders/2DSprite.vert"
-        "res/shaders/2DStaticSprite.frag"
-        "res/shaders/2DPostProcessing.vert"
-        "res/shaders/2DPostProcessing.frag"
-        )
-
-find_program(GLSLC glslc)
-foreach (GLSL ${GLSL_SOURCE_FILES})
-    get_filename_component(FILE_NAME ${GLSL} NAME)
-    set(SPIRV "${CMAKE_CURRENT_BINARY_DIR}/shaders/${FILE_NAME}.spv")
-    add_custom_command(
-            OUTPUT ${SPIRV}
-            COMMAND ${GLSLC} -o ${SPIRV} "${CMAKE_CURRENT_SOURCE_DIR}/${GLSL}"
-            DEPENDS ${GLSL})
-    list(APPEND SPIRV_BINARY_FILES ${SPIRV})
-endforeach (GLSL)
-
-
-add_custom_target(
-        Shaders
-        DEPENDS ${SPIRV_BINARY_FILES}
-)
-add_dependencies(render_engine Shaders)
-
-# ------------------------------------- Setup -----------------------------------------------------
-add_custom_target(
-        runBeforeAll
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/shaders/"
-)
-add_dependencies(Shaders runBeforeAll)
-
-message(STATUS "Configured application build")
+message(STATUS "Configured Engine build")
 message(STATUS "Source dir: ${CMAKE_CURRENT_SOURCE_DIR}")

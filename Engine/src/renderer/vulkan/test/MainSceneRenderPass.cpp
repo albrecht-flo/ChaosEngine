@@ -297,7 +297,7 @@ void MainSceneRenderPass::destroy() {
 
 ////////////////////////////////////////////////////////////////////
 MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &material) {
-    // Load texture
+    // Load texture // TODO: Remove when reimplementation of 3D is finished
     const VulkanTexture &texture = textures.emplace(material.textureFile, VulkanTexture::createTexture(
             device, vulkanMemory, "textures/" + material.textureFile)).first->second;
 
