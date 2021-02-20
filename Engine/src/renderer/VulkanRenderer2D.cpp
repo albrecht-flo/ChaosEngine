@@ -70,6 +70,11 @@ void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponen
 void VulkanRenderer2D::endScene() {
     spriteRenderingPass.end();
     postProcessingPass.draw();
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
     imGuiRenderingPass.draw();
     context->getCurrentPrimaryCommandBuffer().end();
 }

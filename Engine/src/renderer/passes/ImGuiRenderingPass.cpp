@@ -105,14 +105,9 @@ ImGuiRenderingPass::ImGuiRenderingPass(ImGuiRenderingPass &&o) noexcept
           imGuiContext(std::exchange(o.imGuiContext, nullptr)) {}
 
 void ImGuiRenderingPass::draw() {
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-    }
-
     auto &cmdBuf = context.getCurrentPrimaryCommandBuffer();
     auto &framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()];
-// Define render rendering to draw with
+    // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass->vk(); // the renderpass to use
