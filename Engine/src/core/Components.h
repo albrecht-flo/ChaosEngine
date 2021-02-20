@@ -7,7 +7,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <GLFW/glfw3.h>
-#include <string>
 
 struct Transform {
     glm::vec3 position;

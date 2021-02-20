@@ -160,10 +160,11 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     createStandardPipeline();
 }
 
-void SpriteRenderingPass::updateUniformBuffer(const CameraComponent &camera, const glm::vec2 &viewportDimensions) {
+void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const CameraComponent &camera,
+                                              const glm::vec2 &viewportDimensions) {
 
     CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
-    ubo->view = camera.view;
+    ubo->view = viewMat;
     if (viewportDimensions.x > viewportDimensions.y) {
         float aspect = static_cast<float>(viewportDimensions.x) / viewportDimensions.y;
         ubo->proj = glm::ortho(-camera.fieldOfView * aspect, camera.fieldOfView * aspect, -camera.fieldOfView,
@@ -180,9 +181,9 @@ void SpriteRenderingPass::updateUniformBuffer(const CameraComponent &camera, con
                                          uboContent.data(), uboContent.size());
 }
 
-void SpriteRenderingPass::begin(const CameraComponent &camera) {
+void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
     glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-    updateUniformBuffer(camera, viewportDimensions);
+    updateUniformBuffer(viewMat, camera, viewportDimensions);
 
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
     commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);

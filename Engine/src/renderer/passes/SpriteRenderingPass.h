@@ -6,6 +6,7 @@ public:
 };
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
+
 #include <glm/glm.hpp>
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include <Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h>
@@ -52,7 +53,7 @@ public:
     static SpriteRenderingPass
     Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain = false);
 
-    void begin(const CameraComponent &camera);
+    void begin(const glm::mat4 &viewMat, const CameraComponent &camera);
 
     void end();
 
@@ -67,7 +68,8 @@ public:
 private:
     void createAttachments(uint32_t width, uint32_t height);
 
-    void updateUniformBuffer(const CameraComponent &camera, const glm::vec2 &viewportDimensions);
+    void updateUniformBuffer(const glm::mat4 &viewMat, const CameraComponent &camera,
+                             const glm::vec2 &viewportDimensions);
 
     void createStandardPipeline();
 

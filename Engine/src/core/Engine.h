@@ -3,6 +3,7 @@
 #include <chrono>
 #include "Engine/src/renderer/window/Window.h"
 #include "Scene.h"
+#include "RenderingSystem.h"
 
 /**
  * This class is responsible for the orchestration of engine systems for processing entities and scenes.
@@ -39,7 +40,7 @@ private:
     float fpsDelta;
 
     // Per Scene configured objects
-    std::unique_ptr<VulkanRenderer2D> renderer; // TODO: Abstraction layer
+    RenderingSystem renderingSys{};
 };
 
 

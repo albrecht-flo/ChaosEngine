@@ -60,8 +60,8 @@ void VulkanRenderer2D::join() {
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
-void VulkanRenderer2D::beginScene(const CameraComponent &camera) {
-    spriteRenderingPass.begin(camera);
+void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) {
+    spriteRenderingPass.begin(viewMat, camera);
 }
 
 void VulkanRenderer2D::endScene() {
@@ -93,6 +93,6 @@ VulkanRenderer2D::updatePostProcessingConfiguration(PostProcessingPass::PostProc
     postProcessingPass.updateConfiguration(configuration);
 }
 
-void VulkanRenderer2D::renderQuad(glm::mat4 modelMat, glm::vec4 color) {
-    spriteRenderingPass.drawSprite(quadMesh, modelMat, color);
+void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
+    spriteRenderingPass.drawSprite(quadMesh, modelMat, renderComponent.color);
 }
