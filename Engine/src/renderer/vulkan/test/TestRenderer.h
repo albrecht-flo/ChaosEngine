@@ -65,7 +65,7 @@ public: // RenderObject handling
 
     void setCameraAngle(float angle);
 
-    glm::mat4 getViewMatrix() const { return camera.view; }
+    glm::mat4 getViewMatrix() const { return cameraView; }
 
 private: // RenderObject data
     std::vector<RenderMesh> meshes;
@@ -73,8 +73,8 @@ private: // RenderObject data
     RenderMesh quadMesh{};
     RenderObject quadRobj{nullptr, glm::mat4(), 0};
 
+    glm::mat4 cameraView;
     CameraComponent camera{
-            .view = glm::mat4(),
             .fieldOfView = 45.0f,
             .near = 0.1f,
             .far = 100.0f

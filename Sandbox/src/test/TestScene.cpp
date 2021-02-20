@@ -13,7 +13,6 @@ void TestScene::load() {
     cameraEnt = registry.createEntity();
     cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     cameraEnt.setComponent<CameraComponent>(CameraComponent{
-            .view = glm::mat4(1),
             .fieldOfView = 10.0f,
             .near = 0.1f,
             .far = 100.0f,

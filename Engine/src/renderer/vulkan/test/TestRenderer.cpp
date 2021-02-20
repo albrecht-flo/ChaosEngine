@@ -161,7 +161,7 @@ void TestRenderer::updateUniformBuffer(uint32_t currentImage) {
             .lightPos = glm::vec4(+100.0f, 100.0f, 0.0f, 500.0f),
             .lightColor = glm::vec4(1.0f, 1.0f, 0.9f, 0.5f)
     };
-    mainGraphicsPass.updateUniformBuffer(currentImage, camera, worldLight);
+    mainGraphicsPass.updateUniformBuffer(currentImage, cameraView, camera, worldLight);
     postRenderPass.updateCamera(camera);
 }
 
@@ -417,7 +417,7 @@ MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial &material) {
 
 
 void TestRenderer::setViewMatrix(const glm::mat4 &view) {
-    camera.view = view;
+    cameraView = view;
 }
 
 void TestRenderer::setCameraAngle(float angle) {
