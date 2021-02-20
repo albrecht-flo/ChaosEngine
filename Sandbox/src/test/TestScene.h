@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/src/core/Scene.h"
+#include "Engine/src/ChaosEngine.h"
 
 class TestScene : public Scene {
 public:
