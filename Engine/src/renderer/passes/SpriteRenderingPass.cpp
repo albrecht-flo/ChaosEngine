@@ -5,6 +5,7 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/RendererAPI.h"
 
 static VulkanImageBuffer
 createImageBuffer(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
@@ -112,11 +113,11 @@ void SpriteRenderingPass::createStandardPipeline() {
                                                                       std::move(pipelineLayout), *vertex_3P_3C_3N_2U,
                                                                       "2DSprite")
                                                         .setFragmentShader("2DStaticSprite")
-                                                        .setTopology(Topology::TriangleList)
-                                                        .setPolygonMode(PolygonMode::Fill)
-                                                        .setCullFace(CullFace::CCLW)
+                                                        .setTopology(Renderer::Topology::TriangleList)
+                                                        .setPolygonMode(Renderer::PolygonMode::Fill)
+                                                        .setCullFace(Renderer::CullFace::CCLW)
                                                         .setDepthTestEnabled(true)
-                                                        .setDepthCompare(CompareOp::Less)
+                                                        .setDepthCompare(Renderer::CompareOp::Less)
                                                         .build());
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())

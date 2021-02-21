@@ -5,6 +5,7 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/RendererAPI.h"
 
 static std::vector<VulkanFramebuffer>
 createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
@@ -89,9 +90,9 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
     postprocessingPipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(context.getDevice(), *renderPass, std::move(pipelineLayout), *vertex_3P_2U,
                                   "2DPostProcessing")
-                    .setTopology(Topology::TriangleList)
-                    .setPolygonMode(PolygonMode::Fill)
-                    .setCullFace(CullFace::CCLW)
+                    .setTopology(Renderer::Topology::TriangleList)
+                    .setPolygonMode(Renderer::PolygonMode::Fill)
+                    .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(false)
                     .build());
 

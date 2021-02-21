@@ -8,6 +8,8 @@
 #include <fstream>
 #include <cassert>
 
+using namespace Renderer;
+
 /* Create shader module form byte code */
 static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
     VkShaderModuleCreateInfo createInfo = {};

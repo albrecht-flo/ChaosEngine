@@ -5,6 +5,7 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/RendererAPI.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -57,11 +58,11 @@ void MainSceneRenderPass::init() {
     // Pipeline creation
     graphicsPipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(device, *renderPass, std::move(graphicsPipelineLayout), vertex_3P_3C_3N_2U, "base")
-                    .setTopology(Topology::TriangleList)
-                    .setPolygonMode(PolygonMode::Fill)
-                    .setCullFace(CullFace::CCLW)
+                    .setTopology(Renderer::Topology::TriangleList)
+                    .setPolygonMode(Renderer::PolygonMode::Fill)
+                    .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(true)
-                    .setDepthCompare(CompareOp::Less)
+                    .setDepthCompare(Renderer::CompareOp::Less)
                     .build()
     );
 
