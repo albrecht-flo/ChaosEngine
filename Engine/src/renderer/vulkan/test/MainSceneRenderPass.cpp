@@ -5,11 +5,14 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <stdexcept>
 #include <iostream>
 #include <cstring>
+
+using namespace Renderer;
 
 /* Configures the render rendering with the attachments and subpasses */
 MainSceneRenderPass::MainSceneRenderPass(VulkanDevice &device, VulkanMemory &vulkanMemory, VulkanSwapChain &swapChain) :
@@ -36,14 +39,14 @@ void MainSceneRenderPass::init() {
 
     descriptorSetLayoutMaterials = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(device)
-                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
-                    .addBinding(1, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+                    .addBinding(0, ShaderBindingType::TextureSampler, ShaderStage::Fragment)
+                    .addBinding(1, ShaderBindingType::UniformBuffer, ShaderStage::Fragment)
                     .build()
     );
 
     descriptorSetLayoutLights = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(device)
-                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Fragment)
+                    .addBinding(0, ShaderBindingType::UniformBuffer, ShaderStage::Fragment)
                     .build()
     );
 
@@ -89,7 +92,7 @@ void MainSceneRenderPass::createBufferedDescriptorSetLayout() {
 
     descriptorSetLayoutCameraBuf = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(device)
-                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::VertexFragment)
+                    .addBinding(0, ShaderBindingType::UniformBuffer, ShaderStage::VertexFragment)
                     .build()
     );
 }
@@ -157,12 +160,12 @@ void MainSceneRenderPass::createLightStructures() {
     // lights1->sources[0].lightPos = glm::vec4(-0.0f, +5.0f, 0.0f, 200.0f);
     // lights1->sources[0].lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
     vulkanMemory.copyDataToBuffer(lightUniformBuffers[0].buffer, lightUniformBuffers[0].memory, lights1,
-                                  sizeof(UniformLightsObject));
+                                  sizeof(UniformLightsObject), 0);
     // Fill Lights buffer
     UniformLightsObject *lights2 = lightsUBContent[1].at();
     std::memcpy(lights2, lights1, sizeof(UniformLightsObject));
     vulkanMemory.copyDataToBuffer(lightUniformBuffers[1].buffer, lightUniformBuffers[1].memory, lights2,
-                                  sizeof(UniformLightsObject));
+                                  sizeof(UniformLightsObject), 0);
 
     // Write the descriptor sets
     descriptorSetsLights.reserve(swapChain.size());
@@ -188,7 +191,7 @@ void MainSceneRenderPass::updateUniformBuffer(uint32_t currentImage, const glm::
     // Copy that data to the uniform buffer
     vulkanMemory.copyDataToBuffer(uniformBuffers[currentImage].buffer,
                                   uniformBuffers[currentImage].memory,
-                                  uboContent.data(), uboContent.size());
+                                  uboContent.data(), uboContent.size(), 0);
 }
 
 // Rendering stuff
@@ -314,8 +317,8 @@ MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &mate
     );
     UniformMaterialObject *matBufferPointer = materialUBContent[materialUBContent.size() - 1].at();
     matBufferPointer->shininess = material.shininess;
-    vulkanMemory.copyDataToBuffer(materialBuffer.buffer, materialBuffer.memory,
-                                  matBufferPointer, sizeof(UniformMaterialObject));
+    vulkanMemory.copyDataToBuffer(materialBuffer.buffer, materialBuffer.memory, matBufferPointer,
+                                  sizeof(UniformMaterialObject), 0);
 
     // Create and write descriptor set for this material
     descriptorSetsMaterials.emplace_back(descriptorPoolMaterials->allocate(*descriptorSetLayoutMaterials));

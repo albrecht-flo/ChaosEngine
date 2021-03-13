@@ -4,7 +4,8 @@
 #include "VulkanPipeline.h"
 #include "VulkanDescriptorSetLayout.h"
 #include "VulkanPipelineLayout.h"
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <string>
 #include <utility>

@@ -1,28 +1,29 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
-#include <string>
-
+#include "Engine/src/renderer/api/Texture.h"
+#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanMemory.h"
 #include "VulkanImageView.h"
 #include "VulkanSampler.h"
 
+#include <string>
+
 class VulkanDevice;
 
 // TODO: [Part of VulkanMemory refactoring]
-class VulkanTexture {
+class VulkanTexture : public Renderer::Texture {
 private:
-    VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VulkanImageView &&imageView,
-                  VulkanSampler &&sampler);
+    VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, VkImageLayout imageLayout,
+                  VulkanImageView &&imageView, VulkanSampler &&sampler);
 
     void destroy();
 
 public:
-    [[nodiscard]]explicit VulkanTexture(const VulkanDevice &device)
-            : device(device), image(nullptr), imageMemory(nullptr), imageView(device), sampler(device) {}
+    [[deprecated]] explicit VulkanTexture(const VulkanDevice &device)
+            : device(device), image(nullptr), imageMemory(nullptr),
+              imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL), imageView(device), sampler(device) {}
 
-    ~VulkanTexture();
+    ~VulkanTexture() override;
 
     VulkanTexture(const VulkanTexture &o) = delete;
 
@@ -35,16 +36,23 @@ public:
     static VulkanTexture
     createTexture(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename);
 
+    static VulkanTexture Create(const VulkanContext& context, const std::string &filename) {
+        return createTexture(context.getDevice(), context.getMemory(), filename);
+    }
+
     inline VkImage getImage() const { return image; }
 
     inline const VulkanImageView &getImageView() const { return imageView; }
 
     inline VkSampler getSampler() const { return sampler.vk(); }
 
+    inline VkImageLayout getImageLayout() const { return imageLayout; }
+
 private:
     const VulkanDevice &device;
     VkImage image;
     VkDeviceMemory imageMemory;
+    VkImageLayout imageLayout;
     VulkanImageView imageView;
     VulkanSampler sampler;
 };

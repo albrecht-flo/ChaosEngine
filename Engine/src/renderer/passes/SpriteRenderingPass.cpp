@@ -1,3 +1,4 @@
+#include <Engine/src/renderer/vulkan/api/VulkanMaterial.h>
 #include "SpriteRenderingPass.h"
 #include "Engine/src/renderer/data/Mesh.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
@@ -5,7 +6,10 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
+
+using namespace Renderer;
 
 static VulkanImageBuffer
 createImageBuffer(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
@@ -86,33 +90,21 @@ void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
 }
 
 void SpriteRenderingPass::createStandardPipeline() {
-    auto vertex_3P_3C_3N_2U = std::make_unique<VulkanVertexInput>(
-            VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
-                    .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
-                    .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
-                    .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
-                    .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build());
-
     cameraDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(context.getDevice())
-                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+                    .addBinding(0, Renderer::ShaderBindingType::UniformBuffer, Renderer::ShaderStage::Vertex)
                     .build());
-//    materialDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
-//            VulkanDescriptorSetLayoutBuilder(context.getDevice())
-//                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
-//                    .build());
 
     VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
-            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
-            .addPushConstant(sizeof(glm::vec4), sizeof(glm::mat4), ShaderStage::Fragment)
+            .addPushConstant(sizeof(glm::mat4), 0, Renderer::ShaderStage::Vertex)
             .addDescriptorSet(*cameraDescriptorLayout) // set = 0
-//            .addDescriptorSet(*materialDescriptorLayout) // set = 1
             .build();
 
     pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), *opaquePass,
-                                                                      std::move(pipelineLayout), *vertex_3P_3C_3N_2U,
+                                                                      std::move(pipelineLayout),
+                                                                      VulkanMaterial::vertex_3P_3C_3N_2U,
                                                                       "2DSprite")
-                                                        .setFragmentShader("2DStaticSprite")
+                                                        .setFragmentShader("2DStaticColoredSprite")
                                                         .setTopology(Renderer::Topology::TriangleList)
                                                         .setPolygonMode(Renderer::PolygonMode::Fill)
                                                         .setCullFace(Renderer::CullFace::CCLW)
@@ -124,9 +116,7 @@ void SpriteRenderingPass::createStandardPipeline() {
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
                                                                             0).descriptorType,
                                                                                    VulkanContext::maxFramesInFlight)
-//                                                                    .addDescriptor(materialDescriptorLayout->getBinding(
-//                                                                            0).descriptorType, 1024)
-                                                                    .setMaxSets(VulkanContext::maxFramesInFlight + 1024)
+                                                                    .setMaxSets(VulkanContext::maxFramesInFlight)
                                                                     .build());
 
 
@@ -179,7 +169,7 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Ca
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
                                          perFrameUniformBuffers[context.getCurrentFrame()].memory,
-                                         uboContent.data(), uboContent.size());
+                                         uboContent.data(), uboContent.size(), 0);
 }
 
 void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
@@ -201,7 +191,7 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearValues[0].color = {1.0f, 0.0f, 1.0f, 1.0f};
     clearValues[1].depthStencil = {1.0f, 0};
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -246,14 +236,35 @@ void SpriteRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 }
 
 void
-SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat, const glm::vec4 &color) {
+SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
+                                const Renderer::VulkanMaterialInstance &material) {
+    glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
+
+    // Bind Material TODO: The pipeline should be bound for a group of objects
+    vkCmdBindPipeline(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS, material.getPipeline());
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(viewportDimensions.x);
+    viewport.height = static_cast<float>(viewportDimensions.y);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer.vk(), 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = {0, 0};
+    scissor.extent = {context.getSwapChain().getWidth(), context.getSwapChain().getHeight()};
+    vkCmdSetScissor(commandBuffer.vk(), 0, 1, &scissor);
+
+    // Bind Material
+    auto materialDescriptorSet = material.getDescriptorSet().vk();
+    vkCmdBindDescriptorSets(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS, material.getPipelineLayout(), 1, 1,
+                            &materialDescriptorSet, 0, nullptr);
+
     // Set model matrix via push constant
     vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
-    // Set model matrix via push constant
-    vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
-                       VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(modelMat), sizeof(color), &color);
 
     VkBuffer vertexBuffers[]{renderObject.vertexBuffer.buffer};
     VkDeviceSize offsets[] = {0};

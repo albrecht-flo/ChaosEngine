@@ -18,10 +18,15 @@ public:
 
 private:
     Window *window;
+    std::unique_ptr<Renderer::Material> coloredMaterial = nullptr;
+    std::unique_ptr<Renderer::Material> texturedMaterial = nullptr;
+    std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
     Entity cameraEnt;
-    Entity whiteQuad;
+    Entity yellowQuad;
     Entity redQuad;
-    Entity greenQuad;
+    Entity texturedQuad;
+
+    void loadEntities();
 };
 
 

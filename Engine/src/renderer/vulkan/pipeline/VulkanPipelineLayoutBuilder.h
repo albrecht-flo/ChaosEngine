@@ -16,7 +16,7 @@ public:
 
     ~VulkanPipelineLayoutBuilder() = default;
 
-    VulkanPipelineLayoutBuilder &addPushConstant(unsigned int size, unsigned int offset, ShaderStage stage);
+    VulkanPipelineLayoutBuilder &addPushConstant(unsigned int size, unsigned int offset, Renderer::ShaderStage stage);
 
     VulkanPipelineLayout build();
 

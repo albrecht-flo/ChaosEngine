@@ -8,7 +8,7 @@
 #include "Engine/src/renderer/vulkan/command/VulkanCommandPool.h"
 #include "Engine/src/renderer/vulkan/command/VulkanCommandBuffer.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanFrame.h"
-
+#include <iostream>
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
  * Because this is referenced throughout the application it **must** not be moved,
@@ -35,6 +35,8 @@ public:
     void recreateSwapChain();
 
     bool flushCommands() override;
+
+    [[nodiscard]] inline const Window &getWindow() const { return window; }
 
     [[nodiscard]] inline const VulkanDevice &getDevice() const { return device; }
 

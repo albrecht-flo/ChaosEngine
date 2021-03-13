@@ -24,7 +24,7 @@ public:
 
     void destroy(VulkanBuffer buffer) const;
 
-    const VulkanBuffer createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags) const;
+    VulkanBuffer createInputBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const;
 
     [[nodiscard]] const VulkanUniformBuffer
     createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flags, uint32_t count = 1, bool aligned = false) const;
@@ -34,7 +34,7 @@ public:
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
 
-    void copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size) const;
+    void copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size, size_t offset = 0) const;
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const;
 

@@ -1,13 +1,15 @@
 #include "Engine.h"
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
-#include "Engine/src/renderer/RendererAPI.h"
+
+#include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/VulkanRenderer2D.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Test Engine")),
           deltaTimer(std::chrono::high_resolution_clock::now()),
-          frameCounter(0), fpsDelta(0) {
+          frameCounter(0), fpsDelta(0),
+          renderingSys(window) {
     assert("A Scene is required" && scene != nullptr);
     loadScene(std::move(scene));
 }
@@ -15,13 +17,7 @@ Engine::Engine(std::unique_ptr<Scene> &&scene)
 void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(window);
-    switch (config.rendererType) {
-        case Renderer::RendererType::RENDERER2D :
-            renderingSys.setRenderer(VulkanRenderer2D::Create(window));
-            break;
-        default:
-            assert("Unknown renderer" && false);
-    }
+    renderingSys.createRenderer(config.rendererType);
 
     scene->load();
 }

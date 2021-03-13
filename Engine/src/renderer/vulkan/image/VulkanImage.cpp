@@ -30,7 +30,7 @@ VkImage VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemo
                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
                               stagingBufferMemory);
     // Copy the image to the staging buffer
-    vulkanMemory.copyDataToBuffer(stagingBuffer, stagingBufferMemory, pixels, imageSize);
+    vulkanMemory.copyDataToBuffer(stagingBuffer, stagingBufferMemory, pixels, imageSize, 0);
     stbi_image_free(pixels); // no longer needed
 
     // Create the image and its memory

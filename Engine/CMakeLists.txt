@@ -51,6 +51,10 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/test/MainSceneRenderPass.cpp
         src/renderer/vulkan/test/PostRenderPass.cpp
         src/renderer/vulkan/test/ImGuiRenderPass.cpp
+        src/renderer/api/Material.cpp
+        src/renderer/vulkan/api/VulkanMaterial.cpp
+        src/renderer/api/RenderPass.cpp
+        src/renderer/api/Texture.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
@@ -72,7 +76,7 @@ if (WIN32)
     target_link_libraries(Engine vulkan-1 glfw3)
 elseif (UNIX AND NOT APPLE)
     target_link_directories(Engine PUBLIC ../dep/lib/linux)
-    target_link_libraries(Engine X11 dl pthread ../dep/vulkan glfw3)
+    target_link_libraries(Engine X11 dl pthread vulkan glfw3)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()

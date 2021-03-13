@@ -7,7 +7,7 @@ namespace Renderer {
 
     /// Through this enum the used Graphics API can be defined.
     enum class GraphicsAPI {
-        Vulkan, OpenGl
+        None, Vulkan
     };
 
     /** This is a wrapper class for different graphics context objects that can be used to be passed down for further
@@ -21,6 +21,8 @@ namespace Renderer {
      */
     class GraphicsContext {
     public:
+        virtual ~GraphicsContext() = default;
+
         /** Creates and <b>initializes</b> the context corresponding to the passed <i>api<i/>.
          *
          * @param window The window object the created graphics context is bound to
@@ -34,6 +36,8 @@ namespace Renderer {
          * @return <i>false</i> if the presenting surface has changed and was recreated.
          */
         virtual bool flushCommands() = 0;
+
+        static GraphicsAPI currentAPI;
     };
 
 }

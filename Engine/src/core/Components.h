@@ -9,7 +9,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/quaternion.hpp>
-#include <GLFW/glfw3.h>
+
+#include "Engine/src/renderer/api/Material.h"
 
 struct Transform {
     glm::vec3 position;
@@ -24,7 +25,7 @@ struct Transform {
 };
 
 struct RenderComponent {
-    glm::vec4 color;
+    std::unique_ptr<Renderer::MaterialInstance> materialInstance;
 };
 
 struct CameraComponent {

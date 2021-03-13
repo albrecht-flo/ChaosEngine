@@ -2,6 +2,7 @@
 
 #include "VulkanInstance.h"
 
+#include <iostream>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -146,6 +147,14 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, devices.data());
+
+    std::cout << deviceCount << " Available GPUs:" << std::endl;
+    for (const auto &device : devices) {
+      VkPhysicalDeviceProperties props;
+      vkGetPhysicalDeviceProperties(device, &props);
+      std::cout << "    GPU: " << props.deviceName << std::endl;
+    }
+
     VkPhysicalDevice physicalDevice{};
     for (const auto &device : devices) {
         // Take the first one that fits

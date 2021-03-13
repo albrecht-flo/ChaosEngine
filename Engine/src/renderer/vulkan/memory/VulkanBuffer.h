@@ -4,6 +4,11 @@
 
 #include <memory>
 
+/*
+ * TODO: refactor, [Part of VulkanMemory refactoring]
+ * Known: Memory Leak
+ */
+
 struct VulkanBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
@@ -14,7 +19,6 @@ struct VulkanUniformBuffer : public VulkanBuffer {
     VkDeviceSize alignment;
 };
 
-/* TODO: refactor, [Part of VulkanMemory refactoring] */
 template<typename T>
 class UniformBufferContent {
 public:
@@ -27,11 +31,13 @@ public:
 #ifdef _MSC_VER // MS Visual studio does not include aligned_alloc
                 m_data = _aligned_malloc((uint32_t) m_size, (uint32_t) m_alignment);
 #else
-                m_data = std::aligned_alloc((uint32_t)m_size, (uint32_t)m_alignment);
+                m_data = std::aligned_alloc((uint32_t) m_size, (uint32_t) m_alignment);
 #endif
             }
         }
     }
+
+    ~UniformBufferContent() { destroy(); }
 
     UniformBufferContent(const UniformBufferContent &o) = delete;
 

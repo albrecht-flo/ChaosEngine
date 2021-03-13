@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <utility>
 
 static void glfwErrorCallback(int error_code, const char *description) {
     std::cerr << "[GLFW] Error: [" << error_code << "] :" << description << std::endl;
@@ -58,7 +59,6 @@ void Window::poolEvents() {
 
 void Window::destroy() {
     glfwDestroyWindow(window);
-
     glfwTerminate();
 }
 

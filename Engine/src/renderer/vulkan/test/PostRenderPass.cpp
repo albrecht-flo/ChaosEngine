@@ -6,9 +6,12 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <stdexcept>
+
+using namespace Renderer;
 
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
@@ -35,10 +38,10 @@ void PostRenderPass::init() {
     // This descriptor set contains the textures for composition
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(device)
-                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)// Color attachment from main scene
-                    .addBinding(1, DescriptorType::Texture, ShaderStage::Fragment)// Depth attachment from main scene
-                    .addBinding(2, DescriptorType::Texture, ShaderStage::Fragment)// Background texture
-                    .addBinding(3, DescriptorType::Texture, ShaderStage::Fragment)// ImGui framebuffer texture
+                    .addBinding(0, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Color attachment from main scene
+                    .addBinding(1, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Depth attachment from main scene
+                    .addBinding(2, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Background texture
+                    .addBinding(3, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// ImGui framebuffer texture
                     .build()
     );
 

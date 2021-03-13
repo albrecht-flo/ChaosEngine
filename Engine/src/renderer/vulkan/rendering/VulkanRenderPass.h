@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
+#include "Engine/src/renderer/api/RenderPass.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
+#include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <vector>
 
@@ -14,7 +15,7 @@ struct VulkanAttachmentDescription;
  *
  *  Note: Currently only one main graphics sub pass is supported.
  */
-class VulkanRenderPass {
+class VulkanRenderPass : public Renderer::RenderPass {
 private:
 
     void destroy();
