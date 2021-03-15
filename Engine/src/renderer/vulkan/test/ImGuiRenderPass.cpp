@@ -26,7 +26,7 @@ ImGuiRenderPass::ImGuiRenderPass(VulkanDevice &device,
 void ImGuiRenderPass::init() {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments, ""));
 
     // Create descriptor pool for ImGui
     descriptorPool = std::make_unique<VulkanDescriptorPool>(

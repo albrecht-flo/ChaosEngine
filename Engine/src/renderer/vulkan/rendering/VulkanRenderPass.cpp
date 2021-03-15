@@ -6,8 +6,9 @@
 #include <array>
 
 VulkanRenderPass
-VulkanRenderPass::Create(const VulkanDevice &device,
-                         const std::vector<VulkanAttachmentDescription> &attachmentDescriptions) {
+VulkanRenderPass::Create(const VulkanContext &context,
+                         const std::vector<VulkanAttachmentDescription> &attachmentDescriptions,
+                         const std::string &debugName) {
     assert(!attachmentDescriptions.empty());
     std::vector<VkAttachmentReference> colorAttachmentRefs;
     std::vector<VkAttachmentReference> depthAttachmentRefs;
@@ -64,12 +65,13 @@ VulkanRenderPass::Create(const VulkanDevice &device,
     renderPassInfo.pDependencies = dependencies.data();
 
     VkRenderPass renderPass{};
-    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create render rendering!");
+    if (vkCreateRenderPass(context.getDevice().vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("[Vulkan] Failed to create render pass!");
     }
+    if (!debugName.empty())
+        context.setDebugName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t) renderPass, debugName);
 
-
-    return VulkanRenderPass(device, renderPass, attachments.size());
+    return VulkanRenderPass(context.getDevice(), renderPass, attachments.size());
 }
 
 VulkanRenderPass::VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount)

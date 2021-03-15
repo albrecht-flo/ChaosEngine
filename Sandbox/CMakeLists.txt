@@ -33,6 +33,8 @@ set(GLSL_SOURCE_FILES
         "res/shaders/base.frag"
         "res/shaders/post.vert"
         "res/shaders/post.frag"
+        "res/shaders/2DBase.vert"
+        "res/shaders/2DBase.frag"
         "res/shaders/2DSprite.vert"
         "res/shaders/2DStaticColoredSprite.frag"
         "res/shaders/2DPostProcessing.vert"

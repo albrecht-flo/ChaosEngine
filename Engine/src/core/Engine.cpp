@@ -59,5 +59,6 @@ void Engine::run() {
         scene->update(deltaTime);
 
     }
+    RenderingSystem::GetContext().waitIdle();
 }
 

@@ -44,13 +44,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        #     Test classes
-        src/renderer/vulkan/test/VulkanRendererOld.cpp
-        src/renderer/vulkan/test/VulkanRenderPassOld.cpp
-        src/renderer/vulkan/test/TestRenderer.cpp
-        src/renderer/vulkan/test/MainSceneRenderPass.cpp
-        src/renderer/vulkan/test/PostRenderPass.cpp
-        src/renderer/vulkan/test/ImGuiRenderPass.cpp
+        #     Engine API classes
         src/renderer/api/Material.cpp
         src/renderer/vulkan/api/VulkanMaterial.cpp
         src/renderer/api/RenderPass.cpp

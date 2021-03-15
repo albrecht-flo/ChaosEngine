@@ -38,11 +38,13 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+                                     .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Preserve, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                                      .build());
-    auto renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    auto renderPass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 
     auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
 

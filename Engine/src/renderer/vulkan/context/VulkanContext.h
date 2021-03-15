@@ -2,6 +2,7 @@
 
 #include "Engine/src/renderer/api/GraphicsContext.h"
 #include "VulkanInstance.h"
+#include "VulkanSurface.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanMemory.h"
@@ -21,7 +22,7 @@
  */
 class VulkanContext : public Renderer::GraphicsContext {
 public:
-    static constexpr uint32_t maxFramesInFlight = 1;
+    static constexpr uint32_t maxFramesInFlight = 2;
 public:
     explicit VulkanContext(Window &window);
 
@@ -37,11 +38,15 @@ public:
 
     void recreateSwapChain();
 
+    void beginFrame() const override;
+
     bool flushCommands() override;
 
     void destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) override;
 
     void tickFrame() override;
+
+    void waitIdle() override { device.waitIdle(); }
 
     [[nodiscard]] inline const Window &getWindow() const { return window; }
 
@@ -49,7 +54,7 @@ public:
 
     [[nodiscard]] inline const VulkanInstance &getInstance() const { return instance; }
 
-    [[nodiscard]] inline VkSurfaceKHR getSurface() const { return surface; }
+    [[nodiscard]] inline VkSurfaceKHR getSurface() const { return surface.vk(); }
 
     [[nodiscard]] inline const VulkanCommandPool &getCommandPool() const { return commandPool; }
 
@@ -64,10 +69,16 @@ public:
     [[nodiscard]] inline const VulkanCommandBuffer &
     getCurrentPrimaryCommandBuffer() const { return primaryCommandBuffers[currentFrame]; }
 
+    // Debug members
+
+    inline void setDebugName(VkObjectType type, uint64_t handle, const std::string &name) const {
+        instance.setDebugName(device.vk(), type, handle, name);
+    }
+
 private:
     const Window &window;
     const VulkanInstance instance;
-    VkSurfaceKHR surface;
+    VulkanSurface surface;
     const VulkanDevice device;
     const VulkanCommandPool commandPool;
     VulkanSwapChain swapChain;

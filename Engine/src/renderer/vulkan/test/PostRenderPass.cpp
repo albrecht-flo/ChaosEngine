@@ -32,7 +32,7 @@ void PostRenderPass::init() {
     // Create the render rendering
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments, ""));
 
 
     // This descriptor set contains the textures for composition

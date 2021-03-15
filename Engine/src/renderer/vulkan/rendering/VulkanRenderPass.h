@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Engine/src/renderer/api/RenderPass.h"
+#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
-#include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <vector>
 
@@ -23,7 +23,7 @@ private:
 public:
     VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
 
-    ~VulkanRenderPass();
+    ~VulkanRenderPass() override;
 
     VulkanRenderPass(const VulkanRenderPass &o) = delete;
 
@@ -34,7 +34,8 @@ public:
     VulkanRenderPass &operator=(VulkanRenderPass &&o) = delete;
 
     static VulkanRenderPass
-    Create(const VulkanDevice &device, const std::vector<VulkanAttachmentDescription> &attachmentDescriptions);
+    Create(const VulkanContext &context, const std::vector<VulkanAttachmentDescription> &attachmentDescriptions,
+           const std::string &debugName = "");
 
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
 

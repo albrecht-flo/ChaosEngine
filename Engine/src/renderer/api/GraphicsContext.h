@@ -33,6 +33,11 @@ namespace Renderer {
         static std::unique_ptr<GraphicsContext> Create(Window &window, GraphicsAPI api);
 
         /**
+         * This method must do all neccesary preparations to start recording a new frame.
+         */
+        virtual void beginFrame() const = 0;
+
+        /**
          * This method submits all recorded draw commands to the GPU and starts rendering the next Frame.
          * @return <i>false</i> if the presenting surface has changed and was recreated.
          */
@@ -49,6 +54,12 @@ namespace Renderer {
          */
         virtual void tickFrame() = 0;
 
+        /**
+         * Wait until the graphics process has finished all its async tasks.
+         */
+        virtual void waitIdle() = 0;
+
+    public:
         static GraphicsAPI currentAPI;
     };
 

@@ -34,6 +34,7 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
             return false;
         }
     }
+    return true;
 }
 
 static bool checkDebugLayerSupport(std::vector<const char *> debugLayers) {
@@ -209,3 +210,18 @@ void VulkanInstance::destroy() {
         vkDestroyInstance(instance, nullptr);
 }
 
+
+// ------------------------------------ Debug Members ------------------------------------------------------------------
+
+#ifndef NDEBUG
+
+void VulkanInstance::setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const {
+    VkDebugUtilsObjectNameInfoEXT fenceDgbInfo = {};
+    fenceDgbInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    fenceDgbInfo.objectType = type;
+    fenceDgbInfo.objectHandle = handle;
+    fenceDgbInfo.pObjectName = name.c_str();
+    setDebugUtilsObjectNameEXT(device, &fenceDgbInfo);
+}
+
+#endif

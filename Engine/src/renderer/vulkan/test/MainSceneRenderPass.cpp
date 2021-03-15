@@ -32,7 +32,7 @@ void MainSceneRenderPass::init() {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
     attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Depth).build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments, ""));
 
     // Descriptor layout for this pipeline and the pool
     createBufferedDescriptorSetLayout();

@@ -49,11 +49,13 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+                                     .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
                                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                                      .build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
     swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
 

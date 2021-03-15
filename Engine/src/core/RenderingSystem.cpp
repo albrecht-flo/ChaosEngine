@@ -43,6 +43,8 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     auto view = ecs.getRegistry().view<const Transform, const RenderComponent>();
     auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
 
+    context->beginFrame();
+
     assert("There must be one active camera" && cameras.begin() != cameras.end());
     for (const auto&[entity, transform, camera] : cameras.each()) {
         renderer->beginScene(transform.getModelMatrix(), camera);

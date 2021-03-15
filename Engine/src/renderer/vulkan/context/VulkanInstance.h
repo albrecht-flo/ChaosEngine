@@ -33,6 +33,26 @@ public:
 
     [[nodiscard]] inline const std::vector<const char *> &getValidationLayers() const { return validationLayers; }
 
+
+    // Debug calls
+#ifndef NDEBUG
+public:
+    void setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const;
+
+private:
+    inline void setDebugUtilsObjectNameEXT(VkDevice device, VkDebugUtilsObjectNameInfoEXT *objectNameInfo) const {
+        auto pfnSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)
+                vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
+        pfnSetDebugUtilsObjectNameEXT(device, objectNameInfo);
+    }
+
+#else
+    public:
+
+        void setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const {}
+
+#endif
+
 private:
     VkInstance instance;
     VkDebugUtilsMessengerEXT debugMessenger;

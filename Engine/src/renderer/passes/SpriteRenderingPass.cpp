@@ -82,8 +82,8 @@ void SpriteRenderingPass::createStandardPipeline() {
     pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), *opaquePass,
                                                                       std::move(pipelineLayout),
                                                                       VulkanMaterial::vertex_3P_3C_3N_2U,
-                                                                      "2DSprite")
-                                                        .setFragmentShader("2DStaticColoredSprite")
+                                                                      "2DBase")
+                                                        .setFragmentShader("2DBase")
                                                         .setTopology(Renderer::Topology::TriangleList)
                                                         .setPolygonMode(Renderer::PolygonMode::Fill)
                                                         .setCullFace(Renderer::CullFace::CCLW)
@@ -121,7 +121,8 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
                                      .build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
-    opaquePass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    opaquePass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "SpriteRenderPass-Color"));
 
     createAttachments(width, height);
 
