@@ -24,8 +24,9 @@ public:
     VulkanInstance &operator=(VulkanInstance &&o) = delete;
 
 
-    static VulkanInstance Create(const std::vector<const char *>& validationLayers, const std::string &applicationName,
-                                 const std::string &engineName);
+    static VulkanInstance
+    Create(const std::vector<const char *> &validationLayers, const std::string &applicationName,
+           const std::string &engineName);
 
 
     [[nodiscard]] inline VkInstance vk() const { return instance; }

@@ -23,7 +23,9 @@ createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool 
 
 VulkanContext::VulkanContext(Window &window)
         : window(window),
-          instance(VulkanInstance::Create({"VK_LAYER_KHRONOS_validation"}, "Hello Triangle", "Foo Bar")),
+          instance(VulkanInstance::Create(
+                  {"VK_LAYER_KHRONOS_validation"},
+                  "Hello Triangle", "Foo Bar")),
           surface(window.createSurface(instance.vk())),
           device(VulkanDevice::Create(instance, surface)),
           commandPool(VulkanCommandPool::Create(device)),
@@ -38,6 +40,8 @@ VulkanContext::~VulkanContext() {
         res.resource->destroy();
     }
 //    bufferedResourceDestroyQueue.clear();
+
+    vkDestroySurfaceKHR(instance.vk(), surface, nullptr);
 }
 
 void VulkanContext::recreateSwapChain() {

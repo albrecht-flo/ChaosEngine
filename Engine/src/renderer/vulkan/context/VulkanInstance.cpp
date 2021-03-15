@@ -7,6 +7,7 @@
 #include <cstring>
 #include <iostream>
 #include <utility>
+#include <set>
 
 /* Checks if the driver supports validation layers. */
 static bool checkValidationLayerSupport(const std::vector<const char *> &validationLayers) {
@@ -15,6 +16,9 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
 
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const auto &layerProperties : availableLayers) {
+    }
 
     for (const char *layerName : validationLayers) {
         bool layerFound = false;
@@ -30,8 +34,20 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
             return false;
         }
     }
+}
 
-    return true;
+static bool checkDebugLayerSupport(std::vector<const char *> debugLayers) {
+    uint32_t extensionCount;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
+
+    auto dbgLayer = std::set<std::string>(debugLayers.begin(), debugLayers.end());
+    for (const auto &extensionProperties : availableExtensions) {
+        dbgLayer.erase(extensionProperties.extensionName);
+    }
+
+    return dbgLayer.empty();
 }
 
 /* Gets the necessary extension from glfw. */
@@ -50,13 +66,31 @@ static std::vector<const char *> getRequiredExtensions(bool enableValidationLaye
 }
 
 /* Debug callback to print debug messages emitted by vulkan. */
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT /*messageSeverity*/,
-                                                    VkDebugUtilsMessageTypeFlagsEXT /*messageType*/,
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                    VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
                                                     void * /*pUserData*/) {
-//    if(!std::strcmp(pCallbackData->pMessage, "Device Extension:"))
-    if(std::string(pCallbackData->pMessage).find("Device Extension:") == std::string::npos)
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    if (std::string(pCallbackData->pMessage).find("Device Extension:") != std::string::npos)
+        return VK_FALSE;
+
+    std::string messageTypePrefix = (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) ? "General" : "";
+    if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) {
+        messageTypePrefix += "VALI";
+        if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+            messageTypePrefix += "|";
+    }
+    if (messageType & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+        messageTypePrefix += "PERF";
+
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+        std::cerr << "[Vulkan Validation ERROR](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+        std::cerr << "[Vulkan Validation WARNING](" << messageTypePrefix << "): " << pCallbackData->pMessage
+                  << std::endl;
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+        std::cout << "[Vulkan Validation INFO](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
+    if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+        std::cout << "[Vulkan Validation DEBUG](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
 
     return VK_FALSE;
 }
@@ -114,11 +148,6 @@ VulkanInstance::Create(const std::vector<const char *> &validationLayers, const 
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    VkInstance newInstance{};
-    if (vkCreateInstance(&createInfo, nullptr, &newInstance) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create newInstance!");
-    }
-
     // If required setup debug callback
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
     if (!validationLayers.empty()) {
@@ -142,6 +171,11 @@ VulkanInstance::Create(const std::vector<const char *> &validationLayers, const 
         createInfo.pNext = nullptr;
     }
 
+
+    VkInstance newInstance{};
+    if (vkCreateInstance(&createInfo, nullptr, &newInstance) != VK_SUCCESS) {
+        throw std::runtime_error("[VULKAN] Failed to create newInstance!");
+    }
 
     VkDebugUtilsMessengerEXT newDebugMessenger = VK_NULL_HANDLE;
     if (!validationLayers.empty())
