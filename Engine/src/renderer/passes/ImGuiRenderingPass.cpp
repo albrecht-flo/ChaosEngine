@@ -60,7 +60,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
                     .addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
                     .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
                     .addDescriptor(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
-                    .setMaxSets(1000 * 5)
+                    .setMaxSets(1000 * 11)
                     .build());
 
     // Init imgui window
@@ -85,6 +85,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
     VkCommandBuffer cmdBuf = context.getMemory().beginSingleTimeCommands();
     ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
     context.getMemory().endSingleTimeCommands(cmdBuf);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 
     return ImGuiRenderingPass(context, std::move(renderPass), std::move(swapChainFrameBuffers),

@@ -152,7 +152,7 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     for (const auto &device : devices) {
       VkPhysicalDeviceProperties props;
       vkGetPhysicalDeviceProperties(device, &props);
-      std::cout << "    GPU: " << props.deviceName << std::endl;
+      std::cout << "    GPU(" << props.deviceID << "): "<< props.deviceName << std::endl;
     }
 
     VkPhysicalDevice physicalDevice{};

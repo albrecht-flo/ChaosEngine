@@ -54,11 +54,11 @@ protected:
 public: // RenderObject handling
     RenderMesh uploadMesh(Mesh &mesh);
 
-    RenderObjectRef addObject(RenderMesh &rmesh, glm::mat4 modelMat, MaterialRef material);
+    RenderObjectRef addObject(RenderMesh &rmesh, glm::mat4 modelMat, OldMaterialRef material);
 
     bool setModelMatrix(uint32_t robjID, glm::mat4 modelMat);
 
-    MaterialRef createMaterial(const TexturePhongMaterial &material);
+    OldMaterialRef createMaterial(const TexturePhongMaterial &material);
 
     // Camera handling
     void setViewMatrix(const glm::mat4 &view);

@@ -8,7 +8,10 @@
 #include "Engine/src/renderer/vulkan/command/VulkanCommandPool.h"
 #include "Engine/src/renderer/vulkan/command/VulkanCommandBuffer.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanFrame.h"
+
 #include <iostream>
+#include <deque>
+
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
  * Because this is referenced throughout the application it **must** not be moved,
@@ -22,7 +25,7 @@ public:
 public:
     explicit VulkanContext(Window &window);
 
-    ~VulkanContext() = default;
+    ~VulkanContext() override;
 
     VulkanContext(const VulkanContext &o) = delete;
 
@@ -35,6 +38,10 @@ public:
     void recreateSwapChain();
 
     bool flushCommands() override;
+
+    void destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) override;
+
+    void tickFrame() override;
 
     [[nodiscard]] inline const Window &getWindow() const { return window; }
 
@@ -70,5 +77,7 @@ private:
 
     uint32_t currentFrame = 0;
     uint32_t currentSwapChainImage = 0;
+    uint32_t currentFrameCounter = 0;
+    std::deque<BufferedGPUResourceEntry> bufferedResourceDestroyQueue;
 };
 

@@ -74,10 +74,6 @@ void VulkanRenderer2D::endScene() {
     spriteRenderingPass.end();
     postProcessingPass.draw();
 
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-    }
     imGuiRenderingPass.draw();
     context.getCurrentPrimaryCommandBuffer().end();
 }
@@ -96,6 +92,11 @@ void VulkanRenderer2D::flush() {
     if (!context.flushCommands()) {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
+    }
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
     }
 }
 

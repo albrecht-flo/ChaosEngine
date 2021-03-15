@@ -55,7 +55,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/api/VulkanMaterial.cpp
         src/renderer/api/RenderPass.cpp
         src/renderer/api/Texture.cpp
-        )
+        src/renderer/api/BufferedGPUResource.cpp src/renderer/api/BufferedGPUResource.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm

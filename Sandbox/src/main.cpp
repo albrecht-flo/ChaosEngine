@@ -6,6 +6,10 @@
 
 /* TODOs:
  *
+ * TODO(Current): - Change Material at Runtime
+ *       - Delete Entity at Runtime
+ *       - Create Entity at Runtime
+
     To Think:
 		- use factory Create() instead of init (https://abseil.io/tips/42)
         - Consider PIMPL pattern https://oliora.github.io/2015/12/29/pimpl-and-rule-of-zero.html
@@ -18,19 +22,8 @@
 		- Migrate to Vulkan C++ headers
 		- Memory management
 			- https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-		- Rendering
-			- Render Objects (created from mesh)
-				- Object manager within renderer
-				- Map mapping renderObjectID -> {vertexBuffer, indexBuffer, pipeline}
-				- Instance {renderObjectID, modelMat, materialDescriptorset}
-			- Uniforms
-				- push constants for per instance stuff (model matrix)
-				- Descriptor sets for multi instance stuff (material) -> do not change often
-				- Descriptor sets for multi object (camera) -> changes often = buffered, TODO constantly mapped
-				- Descriptor sets for multi object (lights) -> changes not often = buffer switch
-			- Textures
+        - Textures
 		- Swap chain
-			- Cleanup
 			- Creation -> Parameters
 
 	Features:
@@ -44,15 +37,13 @@
                 - material loading
 		- Noise functions
 		Rendering:
-		- Sky box
 		- Transparent Pass (Alpha blending)
-		- Lighting
-		- GUI with ImGui
-		- Post processing
+		- Text rendering
 		- Batch rendering
+		- Lighting
+		- Sky box
 		- Geometry shader
 		- TesselationControl shader
-		- Text rendering
 		- Particles
 		- Shadows
 		- Reflections

@@ -80,7 +80,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     // Wait for the old frame to finish rendering
     vkWaitForFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    // Aquire the next image to draw to from the swapchain
+    // Acquire the next image to draw to from the swapchain
     // Specifies the sync objects to be notified when the image is ready
     uint32_t imageIndex; // index of available image
     VkResult result = vkAcquireNextImageKHR(context.getDevice().vk(),

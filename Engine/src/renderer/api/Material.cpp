@@ -20,14 +20,12 @@ std::vector<ShaderPushConstantLayout> Material::StandardOpaquePushConstants = st
                 ShaderPushConstantLayout{.type = ShaderValueType::Mat4, .stage=ShaderStage::Vertex, .offset=0, .name ="modelMat"},
         });
 
-std::unique_ptr<Material> Material::Create(const MaterialCreateInfo &info) {
+MaterialRef Material::Create(const MaterialCreateInfo &info) {
     switch (GraphicsContext::currentAPI) {
         case GraphicsAPI::Vulkan:
-            return std::make_unique<VulkanMaterial>(
-                    RenderingSystem::GetContext(), RenderingSystem::GetCurrentRenderer(), info
-            );
+            return MaterialRef(VulkanMaterial::Create(RenderingSystem::GetContext(), RenderingSystem::GetCurrentRenderer(), info));
         case GraphicsAPI::None:
             assert("Invalid Graphics API" && false);
     }
-    return nullptr;
+    return MaterialRef(nullptr);
 }

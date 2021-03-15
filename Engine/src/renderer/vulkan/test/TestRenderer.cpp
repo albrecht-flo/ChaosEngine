@@ -395,7 +395,7 @@ RenderMesh TestRenderer::uploadMesh(Mesh &mesh) {
     return rmesh;
 }
 
-RenderObjectRef TestRenderer::addObject(RenderMesh &rmesh, glm::mat4 modelMat, MaterialRef material) {
+RenderObjectRef TestRenderer::addObject(RenderMesh &rmesh, glm::mat4 modelMat, OldMaterialRef material) {
     renderObjects.emplace_back(RenderObject{.mesh=&rmesh, .modelMat=modelMat, .material=material});
     return renderObjects.size() - 1;
 }
@@ -411,7 +411,7 @@ bool TestRenderer::setModelMatrix(uint32_t robjID, glm::mat4 modelMat) {
 /* Creates a material containing only one texture and loads the texture if it
 	has not been loaded before. 
 	*/
-MaterialRef TestRenderer::createMaterial(const TexturePhongMaterial &material) {
+OldMaterialRef TestRenderer::createMaterial(const TexturePhongMaterial &material) {
     return mainGraphicsPass.createMaterial(material);
 }
 

@@ -29,12 +29,13 @@ const VulkanVertexInput VulkanMaterial::vertex_3P_3C_3N_2U =
                 .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
                 .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
 
-VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAPI &renderer,
+VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &renderer,
                                MaterialCreateInfo pInfo)
-        : context(dynamic_cast<const VulkanContext &>(pContext)), info(std::move(pInfo)) {
+        : Material(pContext), info(std::move(pInfo)) {
+    auto &vulkanContext = dynamic_cast<VulkanContext &>(pContext);
 
     if (info.set0) {
-        auto builder = VulkanDescriptorSetLayoutBuilder(context.getDevice());
+        auto builder = VulkanDescriptorSetLayoutBuilder(vulkanContext.getDevice());
 
         for (uint32_t i = 0; i < info.set0.value().size(); ++i) {
             auto binding = info.set0.value()[i];
@@ -45,7 +46,7 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
 
     if (info.set1) {
         assert("For set 1 to be active set 0 is required" && set0);
-        auto builder = VulkanDescriptorSetLayoutBuilder(context.getDevice());
+        auto builder = VulkanDescriptorSetLayoutBuilder(vulkanContext.getDevice());
 
         for (uint32_t i = 0; i < info.set1.value().size(); ++i) {
             auto binding = info.set1.value()[i];
@@ -59,7 +60,7 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
         }
         set1 = std::make_unique<VulkanDescriptorSetLayout>(builder.build());
     }
-    auto pipelineLayoutBuilder = VulkanPipelineLayoutBuilder(context.getDevice());
+    auto pipelineLayoutBuilder = VulkanPipelineLayoutBuilder(vulkanContext.getDevice());
     if (set0) pipelineLayoutBuilder.addDescriptorSet(**set0);
     if (set1) pipelineLayoutBuilder.addDescriptorSet(**set1);
     if (info.pushConstant) {
@@ -72,7 +73,7 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
 
     const auto &renderPass = dynamic_cast<const VulkanRenderPass &>(renderer.getRenderPassForShaderStage(info.stage));
 
-    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), renderPass,
+    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(vulkanContext.getDevice(), renderPass,
                                                                       std::move(pipelineLayout), vertex_3P_3C_3N_2U,
                                                                       "")
                                                         .setVertexShader(info.vertexShader)
@@ -85,7 +86,7 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
                                                         .setDepthCompare(Renderer::CompareOp::Less)
                                                         .build());
 
-    auto descriptorPoolBuilder = VulkanDescriptorPoolBuilder(context.getDevice());
+    auto descriptorPoolBuilder = VulkanDescriptorPoolBuilder(vulkanContext.getDevice());
     if (set0) {
         for (int i = 0; i < info.set0->size(); ++i) {
             descriptorPoolBuilder.addDescriptor(set0.value()->getBinding(i).descriptorType, info.set0ExpectedCount);
@@ -101,8 +102,8 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
     descriptorPool = std::make_unique<VulkanDescriptorPool>(descriptorPoolBuilder.build());
 
     if (set1 && materialBufferSize > 0) {
-        materialBuffer = std::make_unique<VulkanUniformBuffer>(context.getMemory().createUniformBuffer(
-                sizeWithUboPadding(context, materialBufferSize),
+        materialBuffer = std::make_unique<VulkanUniformBuffer>(vulkanContext.getMemory().createUniformBuffer(
+                sizeWithUboPadding(vulkanContext, materialBufferSize),
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 info.set1ExpectedCount, false));
     }
@@ -110,29 +111,40 @@ VulkanMaterial::VulkanMaterial(const GraphicsContext &pContext, const RendererAP
 }
 
 std::unique_ptr<MaterialInstance>
-VulkanMaterial::instantiate(const void *materialData, uint32_t size, const std::vector<const Texture *> &textures) {
+VulkanMaterial::instantiate(std::shared_ptr<Material> materialPtr, const void *materialData, uint32_t size,
+                            const std::vector<const Texture *> &textures) {
     {
+        auto &vulkanContext = dynamic_cast<VulkanContext &>(context);
         // TODO Defaults
+        assert("Instantiating a destroyed material is impossible" && materialBuffer != nullptr);
         assert("Material uniform buffer needs to be filled completely" &&
                size == materialBufferSize);
-        if(materialData != nullptr) {
-            if (nextSetOffset >= materialBuffer->size)
+
+        if (!freeDescSets.empty())
+            std::cout << "Reusing descriptor " << freeDescSets.back().first << std::endl;
+
+        uint32_t currentOffset = (freeDescSets.empty()) ? nextSetOffset : freeDescSets.back().first;
+        if (materialData != nullptr) {
+            if (currentOffset >= materialBuffer->size)
                 throw std::runtime_error("Uniform buffer is already full");
 
             // Copy that data to the uniform buffer
-            context.getMemory().copyDataToBuffer(materialBuffer->buffer, materialBuffer->memory, materialData,
-                                                 size, nextSetOffset);
+            vulkanContext.getMemory().copyDataToBuffer(materialBuffer->buffer, materialBuffer->memory, materialData,
+                                                       size, currentOffset);
         }
 
-        VulkanDescriptorSet descriptorSet = descriptorPool->allocate(**set1);
+        VulkanDescriptorSet descriptorSet = (freeDescSets.empty()) ?
+                                            descriptorPool->allocate(**set1) : freeDescSets.back().second;
+        if (!freeDescSets.empty()) freeDescSets.pop_back();
+
         auto writer = descriptorSet.startWriting();
         auto texturesIt = textures.begin();
         for (uint32_t i = 0; i < info.set1.value().size(); ++i) {
             auto binding = info.set1.value()[i];
             switch (binding.type) {
                 case ShaderBindingType::UniformBuffer:
-                    writer.writeBuffer(i, materialBuffer->buffer, nextSetOffset,
-                                       materialBufferSize); // TODO: This is broken
+                    writer.writeBuffer(i, materialBuffer->buffer, currentOffset,
+                                       materialBufferSize);
                     break;
                 case ShaderBindingType::TextureSampler:
                     if (texturesIt == textures.end())
@@ -144,10 +156,11 @@ VulkanMaterial::instantiate(const void *materialData, uint32_t size, const std::
             }
         }
         writer.commit();
-        auto ret = std::make_unique<VulkanMaterialInstance>(this, std::move(descriptorSet), nextSetOffset);
+        auto ret = std::make_unique<VulkanMaterialInstance>(materialPtr, std::move(descriptorSet), currentOffset);
 
-        auto paddedSize = sizeWithUboPadding(context, materialBufferSize);
-        nextSetOffset += paddedSize;
+        auto paddedSize = sizeWithUboPadding(vulkanContext, materialBufferSize);
+        if (currentOffset == nextSetOffset)
+            nextSetOffset += paddedSize;
         return ret;
     };
 }

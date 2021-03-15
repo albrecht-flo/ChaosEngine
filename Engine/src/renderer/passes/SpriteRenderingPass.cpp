@@ -14,12 +14,12 @@ using namespace Renderer;
 static VulkanImageBuffer
 createImageBuffer(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
     VkDeviceMemory imageMemory{};
-    auto depthImage = VulkanImage::createDepthBufferImage(
+    auto image = VulkanImage::createRawImage(
             device, vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
-    auto depthImageView = VulkanImageView::Create(device, depthImage, VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
+    auto imageView = VulkanImageView::Create(device, image, VK_FORMAT_R8G8B8A8_UNORM,
+                                             VK_IMAGE_ASPECT_COLOR_BIT);
 
-    return VulkanImageBuffer(device, std::move(depthImage), std::move(imageMemory), std::move(depthImageView),
+    return VulkanImageBuffer(device, std::move(image), std::move(imageMemory), std::move(imageView),
                              width, height);
 }
 
@@ -37,35 +37,19 @@ createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemor
 }
 
 
-static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
-                            const VulkanRenderPass &renderPass, const VulkanImageBuffer &depthBuffer) {
-    std::vector<VulkanFramebuffer> swapChainFramebuffers;
-    swapChainFramebuffers.reserve(swapChain.size());
-    for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers.emplace_back(
-                renderPass.createFrameBuffer(
-                        {swapChain.getImageViews()[i].vk(), depthBuffer.getImageView().vk()},
-                        swapChain.getExtent()
-                ));
-    }
-    return std::move(swapChainFramebuffers);
-}
-
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 SpriteRenderingPass
-SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain) {
-    auto ret = SpriteRenderingPass(context, renderToSwapChain);
+SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height) {
+    auto ret = SpriteRenderingPass(context);
     ret.init(width, height);
-    return std::move(ret);
+    return ret;
 }
 
 SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
-        context(o.context), opaquePass(std::move(o.opaquePass)), renderToSwapChain(o.renderToSwapChain),
+        context(o.context), opaquePass(std::move(o.opaquePass)),
         colorBuffer(std::move(o.colorBuffer)), depthBuffer(std::move(o.depthBuffer)),
         framebuffer(std::move(o.framebuffer)),
-        swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
         descriptorPool(std::move(o.descriptorPool)),
         cameraDescriptorLayout(std::move(o.cameraDescriptorLayout)),
         materialDescriptorLayout(std::move(o.materialDescriptorLayout)),
@@ -79,14 +63,9 @@ void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
             createImageBuffer(context.getDevice(), context.getMemory(), width, height));
     depthBuffer = std::make_unique<VulkanImageBuffer>(
             createDepthResources(context.getDevice(), context.getMemory(), width, height));
-    if (!renderToSwapChain) {
-        framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
-                {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
-                {colorBuffer->getWidth(), colorBuffer->getHeight()}));
-    } else {
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *opaquePass,
-                                                            *depthBuffer);
-    }
+    framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
+            {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
+            {colorBuffer->getWidth(), colorBuffer->getHeight()}));
 }
 
 void SpriteRenderingPass::createStandardPipeline() {
@@ -140,8 +119,6 @@ void SpriteRenderingPass::createStandardPipeline() {
 void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
-                                     .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
-                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                                      .build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
     opaquePass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
@@ -182,10 +159,7 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = opaquePass->vk(); // the renderpass to use
-    if (!renderToSwapChain)
-        renderPassInfo.framebuffer = framebuffer->vk();
-    else
-        renderPassInfo.framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()].vk(); // the attatchment
+    renderPassInfo.framebuffer = framebuffer->vk();
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = VkExtent2D{viewportDimensions.x, viewportDimensions.y}; // based on swap chain
 
@@ -199,8 +173,8 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     vkCmdBeginRenderPass(commandBuffer.vk(), &renderPassInfo,
                          VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
 
-    // Now vkCmd... can be written do define the draw call
-    // Bind the pipline as a graphics pipeline
+    // Now vkCmd... can be written, to define the draw calls
+    // Bind the pipeline as a graphics pipeline
     vkCmdBindPipeline(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                       pipeline->getPipeline());
 

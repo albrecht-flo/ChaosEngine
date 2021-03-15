@@ -1,7 +1,9 @@
 #include "TestScene.h"
 #include "Engine/src/renderer/api/Material.h"
+
 #include <imgui.h>
 
+#include <iostream>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
@@ -69,18 +71,18 @@ void TestScene::loadEntities() {
     yellowQuad = registry.createEntity();
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 yellowColor(1, 1, 0, 1);
-    yellowQuad.setComponent<RenderComponent>(coloredMaterial->instantiate(&yellowColor, sizeof(yellowColor), {}));
+    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&yellowColor, sizeof(yellowColor), {}));
 
     redQuad = registry.createEntity();
     redQuad.setComponent<Transform>(Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(1, 0, 0, 1);
-    redQuad.setComponent<RenderComponent>(coloredMaterial->instantiate(&redColor, sizeof(redColor), {}));
+    redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}));
 
     texturedQuad = registry.createEntity();
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
-            texturedMaterial->instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}));
+            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}));
 }
 
 // Test data
@@ -117,6 +119,9 @@ void TestScene::update(float deltaTime) {
 
 }
 
+
+static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
+
 void TestScene::updateImGui() {
     ImGui::NewFrame();
     if (cameraControllerActive) {
@@ -134,6 +139,12 @@ void TestScene::updateImGui() {
             ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
             ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
             ImGui::Separator();
+            ImGui::ColorEdit4("Color", &(editTintColor.r));
+            if (ImGui::Button("Apply")) {
+                std::cout << "Apply new color" << std::endl;
+                texturedQuad.setComponent<RenderComponent>(
+                        texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}));
+            }
         }
         ImGui::End();
     }

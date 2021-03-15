@@ -77,7 +77,7 @@ VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemo
 
 /* Creates an image for color attachment and sample use. */
 VkImage VulkanImage::createRawImage(const VulkanDevice &device,
-                                    VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+                                    const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                                     VkFormat format, VkDeviceMemory &imageMemory/*TEMP*/) {
 
     VkImage image;

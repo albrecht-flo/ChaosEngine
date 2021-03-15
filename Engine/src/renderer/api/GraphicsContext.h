@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/src/renderer/window/Window.h"
+#include "BufferedGPUResource.h"
 #include <memory>
 
 namespace Renderer {
@@ -36,6 +37,17 @@ namespace Renderer {
          * @return <i>false</i> if the presenting surface has changed and was recreated.
          */
         virtual bool flushCommands() = 0;
+
+        /**
+         * Deletes the passed in resource when all frames in which it could have been used have passed.
+         * @param resource The resource to be destroyed when it is no longer in use
+         */
+        virtual void destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) = 0;
+
+        /**
+         * This method handles per frame tasks of the context such as destruction of buffered resources.
+         */
+        virtual void tickFrame() = 0;
 
         static GraphicsAPI currentAPI;
     };

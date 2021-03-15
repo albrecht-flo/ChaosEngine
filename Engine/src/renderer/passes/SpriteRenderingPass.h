@@ -25,8 +25,7 @@ private:
         alignas(16) glm::mat4 proj;
     };
 private:
-    explicit SpriteRenderingPass(const VulkanContext &context, bool renderToSwapChain = false)
-            : context(context), renderToSwapChain(renderToSwapChain) {}
+    explicit SpriteRenderingPass(const VulkanContext &context) : context(context) {}
 
     void init(uint32_t width, uint32_t height);
 
@@ -42,7 +41,7 @@ public:
     SpriteRenderingPass &operator=(SpriteRenderingPass &&o) = delete;
 
     static SpriteRenderingPass
-    Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain = false);
+    Create(const VulkanContext &context, uint32_t width, uint32_t height);
 
     void begin(const glm::mat4 &viewMat, const CameraComponent &camera);
 
@@ -50,7 +49,8 @@ public:
 
     void resizeAttachments(uint32_t width, uint32_t height);
 
-    void drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat, const Renderer::VulkanMaterialInstance &material);
+    void drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
+                    const Renderer::VulkanMaterialInstance &material);
 
     inline const VulkanImageBuffer &getColorBuffer() const { return *colorBuffer; }
 
@@ -69,12 +69,10 @@ private:
 private:
     const VulkanContext &context;
     std::unique_ptr<VulkanRenderPass> opaquePass;
-    bool renderToSwapChain;
 
     std::unique_ptr<VulkanImageBuffer> colorBuffer;
     std::unique_ptr<VulkanImageBuffer> depthBuffer;
     std::unique_ptr<VulkanFramebuffer> framebuffer;
-    std::vector<VulkanFramebuffer> swapChainFrameBuffers;
 
     // Dynamic resources ------------------------------------------------------
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;

@@ -300,7 +300,7 @@ void MainSceneRenderPass::destroy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &material) {
+OldMaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &material) {
     // Load texture // TODO: Remove when reimplementation of 3D is finished
     const VulkanTexture &texture = textures.emplace(material.textureFile, VulkanTexture::createTexture(
             device, vulkanMemory, "textures/" + material.textureFile)).first->second;
@@ -322,7 +322,7 @@ MaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &mate
 
     // Create and write descriptor set for this material
     descriptorSetsMaterials.emplace_back(descriptorPoolMaterials->allocate(*descriptorSetLayoutMaterials));
-    MaterialRef ref = descriptorSetsMaterials.size() - 1;
+    OldMaterialRef ref = descriptorSetsMaterials.size() - 1;
     descriptorSetsMaterials[ref].startWriting()
             .writeBuffer(1, materialBuffer.buffer)
             .writeImageSampler(0, texture.getSampler(), texture.getImageView().vk(),

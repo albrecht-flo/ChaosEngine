@@ -1,5 +1,9 @@
 #pragma once
 
+#include "GraphicsContext.h"
+#include "BufferedGPUResource.h"
+#include "Texture.h"
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -8,7 +12,6 @@
 #include <optional>
 #include <vector>
 #include <cassert>
-#include "Texture.h"
 
 namespace Renderer {
 
@@ -83,23 +86,53 @@ namespace Renderer {
     };
 
 
-    class MaterialInstance {
+    class MaterialInstance : public BufferedGPUResource {
     public:
         virtual ~MaterialInstance() = default;
     };
 
+    class MaterialRef;
+
     class Material {
+    protected:
+        explicit Material(GraphicsContext &context) : context(context) {}
+
     public:
         virtual ~Material() = default;
 
-        static std::unique_ptr<Material> Create(const MaterialCreateInfo &info);
+        static MaterialRef Create(const MaterialCreateInfo &info);
 
         virtual std::unique_ptr<MaterialInstance>
-        instantiate(const void *materialData, uint32_t size, const std::vector<const Texture *> &textures) = 0;
+        instantiate(std::shared_ptr<Material> materialPtr, const void *materialData, uint32_t size,
+                    const std::vector<const Texture *> &textures) = 0;
+
+        GraphicsContext &getContext() { return context; }
+
+    protected:
+        GraphicsContext &context;
 
     public:
         static std::vector<ShaderBindings> StandardOpaqueSet0;
         static std::vector<ShaderPushConstantLayout> StandardOpaquePushConstants;
         static constexpr uint32_t StandardOpaqueSet0ExpectedCount = 2; // VulkanContext::maxFramesInFlight;
+
     };
+
+    class MaterialRef {
+    public:
+        explicit MaterialRef(std::shared_ptr<Material> ptr) : pointer(std::move(ptr)) {}
+
+        ~MaterialRef() = default;
+
+        std::unique_ptr<MaterialInstance>
+        instantiate(const void *materialData, uint32_t size, const std::vector<const Texture *> &textures) {
+            return pointer->instantiate(pointer, materialData, size, textures);
+        }
+
+        auto operator->() { return pointer.operator->(); }
+
+    private:
+        std::shared_ptr<Material> pointer;
+    };
+
 }

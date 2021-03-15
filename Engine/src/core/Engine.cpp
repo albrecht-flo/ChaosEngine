@@ -40,6 +40,7 @@ void Engine::run() {
         window.poolEvents();
 
         // TOBE: Apply all changes to components
+        renderingSys.updateComponents(scene->registry);
         // --------------------------------------------------------------------
         // TOBE Syncpoint
 

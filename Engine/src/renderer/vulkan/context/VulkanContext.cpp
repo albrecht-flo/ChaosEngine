@@ -16,7 +16,7 @@ createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool 
                 VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
     }
 
-    return std::move(primaryCommandBuffers);
+    return primaryCommandBuffers;
 }
 
 // ------------------------------------ Class members ------------------------------------------------------------------
@@ -32,6 +32,13 @@ VulkanContext::VulkanContext(Window &window)
           primaryCommandBuffers(createPrimaryCommandBuffers(device, commandPool, maxFramesInFlight)),
           frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {}
 
+VulkanContext::~VulkanContext() {
+    // Clear buffered resources
+    for (auto &res : bufferedResourceDestroyQueue) {
+        res.resource->destroy();
+    }
+//    bufferedResourceDestroyQueue.clear();
+}
 
 void VulkanContext::recreateSwapChain() {
     surface = window.createSurface(instance.vk());
@@ -47,6 +54,27 @@ bool VulkanContext::flushCommands() {
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
     currentSwapChainImage = (currentSwapChainImage < swapChain.size() - 1) ? currentSwapChainImage + 1
                                                                            : 0;
-
     return swapChainOk;
+}
+
+void VulkanContext::destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) {
+    bufferedResourceDestroyQueue.emplace_back(std::move(resource), currentFrameCounter);
+}
+
+void VulkanContext::tickFrame() {
+    // destroy buffered resources
+    uint32_t i = 0;
+    // If the currentFrame has overflowed to 0... the minus still works because all ints are uint32_t
+    while (!bufferedResourceDestroyQueue.empty() &&
+           bufferedResourceDestroyQueue.front().frameDeleted == currentFrameCounter - maxFramesInFlight) {
+        bufferedResourceDestroyQueue.front().resource->destroy();
+        bufferedResourceDestroyQueue.pop_front();
+        ++i;
+    }
+
+    if (i != 0) {
+        std::cout << "Cleared " << i << " buffered resources" << std::endl;
+    }
+
+    ++currentFrameCounter;
 }

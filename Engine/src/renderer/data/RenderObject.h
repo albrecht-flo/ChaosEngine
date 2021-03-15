@@ -17,7 +17,7 @@
 // TODO: Refactor
 
 typedef const uint32_t RenderObjectRef;
-typedef const uint32_t MaterialRef;
+typedef const uint32_t OldMaterialRef;
 
 struct RenderMesh {
     VulkanBuffer vertexBuffer;
@@ -31,7 +31,7 @@ public: // public needed for MSVC
 struct RenderObject {
     RenderMesh *mesh;
     glm::mat4 modelMat;
-    MaterialRef material;
+    OldMaterialRef material;
 };
 
 struct TexturePhongMaterial {

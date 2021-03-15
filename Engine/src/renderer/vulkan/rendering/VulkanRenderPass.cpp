@@ -33,8 +33,9 @@ VulkanRenderPass::Create(const VulkanDevice &device,
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
     subpass.colorAttachmentCount = colorAttachmentRefs.size();
     subpass.pColorAttachments = colorAttachmentRefs.data();
-    if (depthAttachmentRefs.size() == 1)
+    if (depthAttachmentRefs.size() == 1) {
         subpass.pDepthStencilAttachment = depthAttachmentRefs.data();
+    }
 
     // Configure subpass dependency
     // We want our subpass to wait for the previous stage to finish reading the color attachment
@@ -87,7 +88,8 @@ void VulkanRenderPass::destroy() {
 }
 
 VulkanFramebuffer
-VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages, VkExtent2D extent) const {
+VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages,
+                                    VkExtent2D extent) const {
     assert(attachmentImages.size() == attachmentCount);
     return VulkanFramebuffer::createFramebuffer(device, attachmentImages, renderPass, extent.width, extent.height);
 }

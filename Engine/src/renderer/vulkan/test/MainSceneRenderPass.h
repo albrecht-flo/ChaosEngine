@@ -62,7 +62,7 @@ public:
 
     void destroySwapChainDependent() override;
 
-    MaterialRef createMaterial(const TexturePhongMaterial &material);
+    OldMaterialRef createMaterial(const TexturePhongMaterial &material);
 
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass->vk(); }
 

@@ -15,7 +15,7 @@ public:
                    VkDeviceMemory &imageMemory/*TEMP*/);
 
     static VkImage
-    createRawImage(const VulkanDevice &device, VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+    createRawImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                    VkFormat format,
                    VkDeviceMemory &imageMemory/*TEMP*/);
 
