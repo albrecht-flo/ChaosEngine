@@ -20,12 +20,12 @@ VulkanTexture::createTexture(const VulkanDevice &device, const VulkanMemory &vul
 VulkanTexture::VulkanTexture(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory,
                              VkImageLayout imageLayout,
                              VulkanImageView &&imageView, VulkanSampler &&sampler)
-        : device(device), image(image), imageMemory(imageMemory), imageView(std::move(imageView)),
-          sampler(std::move(sampler)), imageLayout(imageLayout) {}
+        : device(device), image(image), imageMemory(imageMemory), imageLayout(imageLayout),
+          imageView(std::move(imageView)), sampler(std::move(sampler)) {}
 
 VulkanTexture::VulkanTexture(VulkanTexture &&o) noexcept
         : device(o.device), image(std::exchange(o.image, nullptr)),
-          imageMemory(std::exchange(o.imageMemory, nullptr)),
+          imageMemory(std::exchange(o.imageMemory, nullptr)), imageLayout(o.imageLayout),
           imageView(std::move(o.imageView)), sampler(std::move(o.sampler)) {}
 
 VulkanTexture::~VulkanTexture() {

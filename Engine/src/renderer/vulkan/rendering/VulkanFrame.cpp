@@ -117,8 +117,10 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     vkResetFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame]);
 
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
-    if (vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
+    VkResult res;
+    if ((res = vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) !=
         VK_SUCCESS) {
+        std::cerr << "vkQueueSubmit Failed with result = " << res << std::endl;
         throw std::runtime_error("[Vulkan] Failed to submit draw command buffer!");
     }
 
