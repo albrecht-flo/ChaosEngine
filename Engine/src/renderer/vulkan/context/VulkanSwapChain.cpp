@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <iostream>
+#include <cassert>
 
 /* Helper to select an appropriate surface format. */
 static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
@@ -61,10 +62,11 @@ static VkExtent2D chooseSwapExtent(const Window &window, const VkSurfaceCapabili
 
 /* Creates the swapchain and its images. */
 static std::tuple<VkSwapchainKHR, VkFormat, VkExtent2D>
-createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
-                VkSwapchainKHR oldSwapChain = VK_NULL_HANDLE) {
+createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
     // Check for available swapchain
     SwapChainSupportDetails swapChainSupport = device.querySwapChainSupport();
+    bool surfaceAvailable = device.checkSurfaceAvailability(surface);
+    assert("Expect surface KHR to be supported" && surfaceAvailable);
 
     // Select our surface and dimensions
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -90,8 +92,7 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
     createInfo.imageArrayLayers = 1;
     createInfo.imageUsage =
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; // images are used for color output // ~ TRANSFER for post processing
-    if (oldSwapChain != VK_NULL_HANDLE)
-        createInfo.oldSwapchain = oldSwapChain; // To speed up swapchain recreation
+    createInfo.oldSwapchain = VK_NULL_HANDLE; // To speed up swapchain recreation
 
     // Determine how the images will be accessed by different queues
     QueueFamilyIndices indices = device.findQueueFamilies();
@@ -191,8 +192,9 @@ void VulkanSwapChain::destroy() {
 }
 
 void VulkanSwapChain::recreate(VkSurfaceKHR mSurface) {
+    destroy();
     surface = mSurface;
-    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface, swapChain);
+    auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface);
     swapChain = mSwapChain;
     swapChainImageFormat = mSwapChainImageFormat;
     swapChainExtent = mSwapChainExtent;
