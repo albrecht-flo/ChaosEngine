@@ -6,8 +6,12 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <stdexcept>
+
+using namespace Renderer;
 
 /* Configures the render rendering with the attachments and subpasses */
 PostRenderPass::PostRenderPass(VulkanDevice &device,
@@ -28,16 +32,16 @@ void PostRenderPass::init() {
     // Create the render rendering
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(device, AttachmentType::Color).build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(device, attachments, ""));
 
 
     // This descriptor set contains the textures for composition
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(device)
-                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)// Color attachment from main scene
-                    .addBinding(1, DescriptorType::Texture, ShaderStage::Fragment)// Depth attachment from main scene
-                    .addBinding(2, DescriptorType::Texture, ShaderStage::Fragment)// Background texture
-                    .addBinding(3, DescriptorType::Texture, ShaderStage::Fragment)// ImGui framebuffer texture
+                    .addBinding(0, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Color attachment from main scene
+                    .addBinding(1, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Depth attachment from main scene
+                    .addBinding(2, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// Background texture
+                    .addBinding(3, ShaderBindingType::TextureSampler, ShaderStage::Fragment)// ImGui framebuffer texture
                     .build()
     );
 
@@ -53,11 +57,11 @@ void PostRenderPass::init() {
     postprocessingPipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(device, *renderPass, std::move(postprocessingPipelineLayout), vertex_3P_3C_3N_2U,
                                   "post")
-                    .setTopology(Topology::TriangleList)
-                    .setPolygonMode(PolygonMode::Fill)
-                    .setCullFace(CullFace::CCLW)
+                    .setTopology(Renderer::Topology::TriangleList)
+                    .setPolygonMode(Renderer::PolygonMode::Fill)
+                    .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(false)
-                    .setDepthCompare(CompareOp::Less)
+                    .setDepthCompare(Renderer::CompareOp::Less)
                     .build()
     );
 

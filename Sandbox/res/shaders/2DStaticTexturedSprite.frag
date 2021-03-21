@@ -10,15 +10,15 @@ layout(location = 3) in vec3 in_fragWorldPos;// Interpolated world position of f
 layout(location = 0) out vec4 out_Color;
 
 // Material Parameters
-//layout(set = 1, binding = 0) uniform sampler2D diffuseTexture;// Model texture
-layout(push_constant) uniform FramentData {
-    layout(offset = 64) vec4 color;
-} framentData;
+layout(set = 1, binding = 0) uniform sampler2D diffuseTexture;// Model texture
+layout(set = 1, binding = 1) uniform FramentData {
+    vec4 color;
+} materialData;
 
 void main() {
     // Get the base color of the fragment
-    //    vec4 color = texture(diffuseTexture, in_fragUVs);
+    vec4 color = texture(diffuseTexture, in_fragUVs);
 
     // Combine calculated texture color with fragment color // used for tinting models
-    out_Color = framentData.color;//vec4(color.rgb * in_fragColor, color.a);
+    out_Color = vec4(color.rgb * in_fragColor, color.a) * materialData.color;
 }

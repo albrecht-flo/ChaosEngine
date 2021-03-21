@@ -6,8 +6,9 @@
 #include <array>
 
 VulkanRenderPass
-VulkanRenderPass::Create(const VulkanDevice &device,
-                         const std::vector<VulkanAttachmentDescription> &attachmentDescriptions) {
+VulkanRenderPass::Create(const VulkanContext &context,
+                         const std::vector<VulkanAttachmentDescription> &attachmentDescriptions,
+                         const std::string &debugName) {
     assert(!attachmentDescriptions.empty());
     std::vector<VkAttachmentReference> colorAttachmentRefs;
     std::vector<VkAttachmentReference> depthAttachmentRefs;
@@ -33,8 +34,9 @@ VulkanRenderPass::Create(const VulkanDevice &device,
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
     subpass.colorAttachmentCount = colorAttachmentRefs.size();
     subpass.pColorAttachments = colorAttachmentRefs.data();
-    if (depthAttachmentRefs.size() == 1)
+    if (depthAttachmentRefs.size() == 1) {
         subpass.pDepthStencilAttachment = depthAttachmentRefs.data();
+    }
 
     // Configure subpass dependency
     // We want our subpass to wait for the previous stage to finish reading the color attachment
@@ -63,12 +65,13 @@ VulkanRenderPass::Create(const VulkanDevice &device,
     renderPassInfo.pDependencies = dependencies.data();
 
     VkRenderPass renderPass{};
-    if (vkCreateRenderPass(device.vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create render rendering!");
+    if (vkCreateRenderPass(context.getDevice().vk(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("[Vulkan] Failed to create render pass!");
     }
+    if (!debugName.empty())
+        context.setDebugName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t) renderPass, debugName);
 
-
-    return VulkanRenderPass(device, renderPass, attachments.size());
+    return VulkanRenderPass(context.getDevice(), renderPass, attachments.size());
 }
 
 VulkanRenderPass::VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount)
@@ -87,7 +90,8 @@ void VulkanRenderPass::destroy() {
 }
 
 VulkanFramebuffer
-VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages, VkExtent2D extent) const {
+VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages,
+                                    VkExtent2D extent) const {
     assert(attachmentImages.size() == attachmentCount);
     return VulkanFramebuffer::createFramebuffer(device, attachmentImages, renderPass, extent.width, extent.height);
 }

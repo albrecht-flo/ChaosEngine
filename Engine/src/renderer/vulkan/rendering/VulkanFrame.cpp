@@ -6,7 +6,7 @@
 #include <vector>
 #include <stdexcept>
 
-static std::vector<VkFence> createFence(VkDevice device, uint32_t amount) {
+static std::vector<VkFence> createFence(const VulkanContext &context, uint32_t amount) {
     std::vector<VkFence> fences;
     fences.resize(amount);
 
@@ -15,9 +15,13 @@ static std::vector<VkFence> createFence(VkDevice device, uint32_t amount) {
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (size_t i = 0; i < amount; i++) {
-        if (vkCreateFence(device, &fenceInfo, nullptr, &fences[i]) != VK_SUCCESS) {
+        if (vkCreateFence(context.getDevice().vk(), &fenceInfo, nullptr, &fences[i]) != VK_SUCCESS) {
             throw std::runtime_error("[VULKAN] Failed to create fence!");
         }
+        char t[] = "Frame Fence 0";
+        t[12] = static_cast<char>('0' + (char) i);
+
+        context.setDebugName(VK_OBJECT_TYPE_FENCE, (uint64_t) fences[i], t);
     }
 
     return std::move(fences);
@@ -44,7 +48,7 @@ static std::vector<VkSemaphore> createSemaphore(VkDevice device, uint32_t amount
 VulkanFrame VulkanFrame::Create(Window &window, const VulkanContext &context, uint32_t maxFramesInFlight) {
     auto imageAvailableSemaphores = createSemaphore(context.getDevice().vk(), maxFramesInFlight);
     auto renderFinishedSemaphores = createSemaphore(context.getDevice().vk(), maxFramesInFlight);
-    auto inFlightFences = createFence(context.getDevice().vk(), maxFramesInFlight);
+    auto inFlightFences = createFence(context, maxFramesInFlight);
 
     return VulkanFrame(window, context, std::move(imageAvailableSemaphores), std::move(renderFinishedSemaphores),
                        std::move(inFlightFences));
@@ -80,7 +84,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     // Wait for the old frame to finish rendering
     vkWaitForFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-    // Aquire the next image to draw to from the swapchain
+    // Acquire the next image to draw to from the swapchain
     // Specifies the sync objects to be notified when the image is ready
     uint32_t imageIndex; // index of available image
     VkResult result = vkAcquireNextImageKHR(context.getDevice().vk(),
@@ -117,8 +121,10 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     vkResetFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame]);
 
     // Submit the command buffers to the queue and the fence to be notified after finishing this frame
-    if (vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) !=
+    VkResult res;
+    if ((res = vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) !=
         VK_SUCCESS) {
+        std::cerr << "vkQueueSubmit Failed with result = " << res << std::endl;
         throw std::runtime_error("[Vulkan] Failed to submit draw command buffer!");
     }
 
@@ -145,4 +151,9 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
         throw std::runtime_error("[Vulkan] Failed to present swap chain image!");
     }
     return true;
+}
+
+void VulkanFrame::waitUntilCurrentFrameIsFree(uint32_t currentFrame) const {
+    // Wait until the frame that we are going to record in the next cycle has finished rendering
+    vkWaitForFences(context.getDevice().vk(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 }

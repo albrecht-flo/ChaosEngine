@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include "Engine/src/renderer/window/Window.h"
+#include "Engine/src/renderer/api/GraphicsContext.h"
 #include "Scene.h"
 #include "RenderingSystem.h"
 
@@ -32,15 +33,17 @@ public:
 
 private:
     Window window;
+
+    // Systems
+    RenderingSystem renderingSys;
+
+    // Scene Data
     std::unique_ptr<Scene> scene;
 
     // FPS counter
-    std::chrono::time_point<std::chrono::steady_clock> deltaTimer;
+    std::chrono::time_point<std::chrono::high_resolution_clock> deltaTimer;
     uint32_t frameCounter;
     float fpsDelta;
-
-    // Per Scene configured objects
-    RenderingSystem renderingSys{};
 };
 
 

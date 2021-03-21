@@ -30,7 +30,7 @@ VkImage VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemo
                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
                               stagingBufferMemory);
     // Copy the image to the staging buffer
-    vulkanMemory.copyDataToBuffer(stagingBuffer, stagingBufferMemory, pixels, imageSize);
+    vulkanMemory.copyDataToBuffer(stagingBuffer, stagingBufferMemory, pixels, imageSize, 0);
     stbi_image_free(pixels); // no longer needed
 
     // Create the image and its memory
@@ -77,7 +77,7 @@ VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemo
 
 /* Creates an image for color attachment and sample use. */
 VkImage VulkanImage::createRawImage(const VulkanDevice &device,
-                                    VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+                                    const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
                                     VkFormat format, VkDeviceMemory &imageMemory/*TEMP*/) {
 
     VkImage image;

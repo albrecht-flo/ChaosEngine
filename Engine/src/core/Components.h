@@ -9,7 +9,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/quaternion.hpp>
-#include <GLFW/glfw3.h>
+
+#include "Engine/src/renderer/api/Material.h"
 
 struct Transform {
     glm::vec3 position;
@@ -24,7 +25,9 @@ struct Transform {
 };
 
 struct RenderComponent {
-    glm::vec4 color;
+    // The Material Instance can't be stored here because depending on the used Graphics API the storage of a Material
+    // Instance might change. So we need to store a pointer for now.
+    std::shared_ptr<Renderer::MaterialInstance> materialInstance;
 };
 
 struct CameraComponent {

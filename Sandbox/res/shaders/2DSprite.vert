@@ -17,15 +17,15 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
 } cameraUbo;
 
 layout(push_constant) uniform ModelData {
-    layout(offset = 0) mat4 model;
+    layout(offset = 0) mat4 modelMat;
 } modelData;
 
 void main() {
     out_fragColor = in_Color;
     // We only want the rotation effect of the model matrix, scale can be ignored
-    out_fragNormal = normalize(mat3(transpose(inverse(modelData.model))) * in_Normal);
+    out_fragNormal = normalize(mat3(transpose(inverse(modelData.modelMat))) * in_Normal);
     out_fragUVs = in_UVs;
-    vec4 position = modelData.model * vec4(in_Position, 1.0);
+    vec4 position = modelData.modelMat * vec4(in_Position, 1.0);
     out_fragWorldPos = position.xyz;
     gl_Position = cameraUbo.proj * cameraUbo.view * position;
 }

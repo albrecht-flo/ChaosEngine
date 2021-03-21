@@ -2,12 +2,16 @@
 
 #include "Engine/src/renderer/api/GraphicsContext.h"
 #include "VulkanInstance.h"
+#include "VulkanSurface.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanMemory.h"
 #include "Engine/src/renderer/vulkan/command/VulkanCommandPool.h"
 #include "Engine/src/renderer/vulkan/command/VulkanCommandBuffer.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanFrame.h"
+
+#include <iostream>
+#include <deque>
 
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
@@ -22,7 +26,7 @@ public:
 public:
     explicit VulkanContext(Window &window);
 
-    ~VulkanContext() = default;
+    ~VulkanContext() override;
 
     VulkanContext(const VulkanContext &o) = delete;
 
@@ -34,13 +38,23 @@ public:
 
     void recreateSwapChain();
 
+    void beginFrame() const override;
+
     bool flushCommands() override;
+
+    void destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) override;
+
+    void tickFrame() override;
+
+    void waitIdle() override { device.waitIdle(); }
+
+    [[nodiscard]] inline const Window &getWindow() const { return window; }
 
     [[nodiscard]] inline const VulkanDevice &getDevice() const { return device; }
 
     [[nodiscard]] inline const VulkanInstance &getInstance() const { return instance; }
 
-    [[nodiscard]] inline VkSurfaceKHR getSurface() const { return surface; }
+    [[nodiscard]] inline VkSurfaceKHR getSurface() const { return surface.vk(); }
 
     [[nodiscard]] inline const VulkanCommandPool &getCommandPool() const { return commandPool; }
 
@@ -55,10 +69,16 @@ public:
     [[nodiscard]] inline const VulkanCommandBuffer &
     getCurrentPrimaryCommandBuffer() const { return primaryCommandBuffers[currentFrame]; }
 
+    // Debug members
+
+    inline void setDebugName(VkObjectType type, uint64_t handle, const std::string &name) const {
+        instance.setDebugName(device.vk(), type, handle, name);
+    }
+
 private:
     const Window &window;
     const VulkanInstance instance;
-    VkSurfaceKHR surface;
+    VulkanSurface surface;
     const VulkanDevice device;
     const VulkanCommandPool commandPool;
     VulkanSwapChain swapChain;
@@ -68,5 +88,7 @@ private:
 
     uint32_t currentFrame = 0;
     uint32_t currentSwapChainImage = 0;
+    uint32_t currentFrameCounter = 0;
+    std::deque<BufferedGPUResourceEntry> bufferedResourceDestroyQueue;
 };
 

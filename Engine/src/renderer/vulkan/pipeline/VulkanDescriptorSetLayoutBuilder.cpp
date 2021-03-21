@@ -1,11 +1,13 @@
 #include "VulkanDescriptorSetLayoutBuilder.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <stdexcept>
 
 using namespace VulkanPipelineUtility;
+using namespace Renderer;
 
 VulkanDescriptorSetLayoutBuilder &
-VulkanDescriptorSetLayoutBuilder::addBinding(uint32_t binding, DescriptorType type, ShaderStage stage, uint32_t size) {
+VulkanDescriptorSetLayoutBuilder::addBinding(uint32_t binding, Renderer::ShaderBindingType type, ShaderStage stage, uint32_t size) {
     assert(("Bindings must have different binding indices!",
             std::find_if(descriptorBindings.begin(), descriptorBindings.end(),
                          [&](VkDescriptorSetLayoutBinding b) { return b.binding == binding; }) ==

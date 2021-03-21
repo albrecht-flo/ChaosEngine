@@ -4,6 +4,8 @@
 #include "VulkanPipeline.h"
 #include "VulkanDescriptorSetLayout.h"
 #include "VulkanPipelineLayout.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
 
 #include <string>
 #include <utility>
@@ -11,22 +13,6 @@
 #include <cassert>
 
 class VulkanRenderPass;
-
-enum class Topology {
-    PointList, LineList, LineStrip, TriangleList, TriangleStrip, TriangleFan
-};
-
-enum class PolygonMode {
-    Fill, Line, Point
-};
-
-enum class CullFace {
-    CLW, CCLW
-};
-
-enum class CompareOp {
-    Less, LessEqual, Greater, GreaterEqual, NotEqual, Equal, Always, Never
-};
 
 class VulkanPipelineBuilder {
 public:
@@ -61,18 +47,18 @@ public:
         return *this;
     }
 
-    VulkanPipelineBuilder &setTopology(Topology pTopology, bool pPrimitiveRestart = false) {
+    VulkanPipelineBuilder &setTopology(Renderer::Topology pTopology, bool pPrimitiveRestart = false) {
         topology = pTopology;
         primitiveRestart = pPrimitiveRestart;
         return *this;
     }
 
-    VulkanPipelineBuilder &setPolygonMode(PolygonMode pPolygonMode) {
+    VulkanPipelineBuilder &setPolygonMode(Renderer::PolygonMode pPolygonMode) {
         polygonMode = pPolygonMode;
         return *this;
     }
 
-    VulkanPipelineBuilder &setCullFace(CullFace pCullFace) {
+    VulkanPipelineBuilder &setCullFace(Renderer::CullFace pCullFace) {
         cullFace = pCullFace;
         return *this;
     }
@@ -82,7 +68,7 @@ public:
         return *this;
     }
 
-    VulkanPipelineBuilder &setDepthCompare(CompareOp pDepthCompare) {
+    VulkanPipelineBuilder &setDepthCompare(Renderer::CompareOp pDepthCompare) {
         depthCompare = pDepthCompare;
         return *this;
     }
@@ -100,77 +86,77 @@ private:
     std::string vertexShaderName;
     std::string fragmentShaderName;
     VulkanVertexInput vertexInput;
-    Topology topology = Topology::TriangleList;
+    Renderer::Topology topology = Renderer::Topology::TriangleList;
     bool primitiveRestart = false;
-    PolygonMode polygonMode = PolygonMode::Fill;
-    CullFace cullFace = CullFace::CCLW;
+    Renderer::PolygonMode polygonMode = Renderer::PolygonMode::Fill;
+    Renderer::CullFace cullFace = Renderer::CullFace::CCLW;
     bool depthTestEnabled = true;
-    CompareOp depthCompare = CompareOp::Less;
+    Renderer::CompareOp depthCompare = Renderer::CompareOp::Less;
     VkExtent2D viewportExtent{0, 0};
     // Internal error catching ----------------------------
     bool layoutValid = true;
 
 private: // Translation helpers
-    static VkPrimitiveTopology getVkTopology(Topology topology) {
+    static VkPrimitiveTopology getVkTopology(Renderer::Topology topology) {
         switch (topology) {
-            case Topology::PointList:
+            case Renderer::Topology::PointList:
                 return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-            case Topology::LineList:
+            case Renderer::Topology::LineList:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-            case Topology::LineStrip:
+            case Renderer::Topology::LineStrip:
                 return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-            case Topology::TriangleList:
+            case Renderer::Topology::TriangleList:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-            case Topology::TriangleStrip:
+            case Renderer::Topology::TriangleStrip:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-            case Topology::TriangleFan:
+            case Renderer::Topology::TriangleFan:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
         }
         assert("Unknown Primitive type");
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 
-    static VkPolygonMode getVkPolygonMode(PolygonMode polygonMode) {
+    static VkPolygonMode getVkPolygonMode(Renderer::PolygonMode polygonMode) {
         switch (polygonMode) {
-            case PolygonMode::Fill:
+            case Renderer::PolygonMode::Fill:
                 return VK_POLYGON_MODE_FILL;
-            case PolygonMode::Line:
+            case Renderer::PolygonMode::Line:
                 return VK_POLYGON_MODE_LINE;
-            case PolygonMode::Point:
+            case Renderer::PolygonMode::Point:
                 return VK_POLYGON_MODE_POINT;
         }
         assert("Unknown Polygon Mode");
         return VK_POLYGON_MODE_POINT;
     }
 
-    static VkFrontFace getVkCullFace(CullFace cullFace) {
+    static VkFrontFace getVkCullFace(Renderer::CullFace cullFace) {
         switch (cullFace) {
-            case CullFace::CCLW:
+            case Renderer::CullFace::CCLW:
                 return VK_FRONT_FACE_COUNTER_CLOCKWISE;
-            case CullFace::CLW:
+            case Renderer::CullFace::CLW:
                 return VK_FRONT_FACE_CLOCKWISE;
         }
         assert("Unknown Cull Type");
         return VK_FRONT_FACE_COUNTER_CLOCKWISE;
     }
 
-    static VkCompareOp getVkCompareOp(CompareOp compareOp) {
+    static VkCompareOp getVkCompareOp(Renderer::CompareOp compareOp) {
         switch (compareOp) {
-            case CompareOp::Less:
+            case Renderer::CompareOp::Less:
                 return VK_COMPARE_OP_LESS;
-            case CompareOp::LessEqual:
+            case Renderer::CompareOp::LessEqual:
                 return VK_COMPARE_OP_LESS_OR_EQUAL;
-            case CompareOp::Greater:
+            case Renderer::CompareOp::Greater:
                 return VK_COMPARE_OP_GREATER;
-            case CompareOp::GreaterEqual:
+            case Renderer::CompareOp::GreaterEqual:
                 return VK_COMPARE_OP_GREATER_OR_EQUAL;
-            case CompareOp::Equal:
+            case Renderer::CompareOp::Equal:
                 return VK_COMPARE_OP_EQUAL;
-            case CompareOp::NotEqual:
+            case Renderer::CompareOp::NotEqual:
                 return VK_COMPARE_OP_NOT_EQUAL;
-            case CompareOp::Always:
+            case Renderer::CompareOp::Always:
                 return VK_COMPARE_OP_ALWAYS;
-            case CompareOp::Never:
+            case Renderer::CompareOp::Never:
                 return VK_COMPARE_OP_NEVER;
         }
         assert("Unknown Compare Operation");

@@ -1,5 +1,9 @@
 #include "TestScene.h"
+#include "Engine/src/renderer/api/Material.h"
+
 #include <imgui.h>
+
+#include <iostream>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
@@ -9,6 +13,53 @@ SceneConfiguration TestScene::configure(Window &pWindow) {
 }
 
 void TestScene::load() {
+    using namespace Renderer;
+    // Load Materials
+    coloredMaterial = Material::Create(MaterialCreateInfo{
+            .stage = ShaderPassStage::Opaque,
+            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
+            .vertexShader = "2DSprite",
+            .fragmentShader = "2DStaticColoredSprite",
+            .pushConstant = Material::StandardOpaquePushConstants,
+            .set0 = Material::StandardOpaqueSet0,
+            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount, // maxFramesInFlight
+            .set1 = std::vector<ShaderBindings>(
+                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
+                            .layout=std::vector<ShaderBindingLayout>(
+                                    {
+                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
+                                    })
+                    }}),
+            .set1ExpectedCount = 64,
+
+    });
+    texturedMaterial = Material::Create(MaterialCreateInfo{
+            .stage = ShaderPassStage::Opaque,
+            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
+            .vertexShader = "2DSprite",
+            .fragmentShader = "2DStaticTexturedSprite",
+            .pushConstant = Material::StandardOpaquePushConstants,
+            .set0 = Material::StandardOpaqueSet0,
+            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount, // maxFramesInFlight
+            .set1 = std::vector<ShaderBindings>(
+                    {ShaderBindings{.type = ShaderBindingType::TextureSampler, .stage=ShaderStage::Fragment, .name="diffuseTexture"},
+                     ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
+                             .layout=std::vector<ShaderBindingLayout>(
+                                     {
+                                             ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
+                                     })
+                     }
+                    }),
+            .set1ExpectedCount = 64,
+
+    });
+
+    fallbackTexture = Texture::Create("TestAtlas.jpg");
+    loadEntities();
+
+}
+
+void TestScene::loadEntities() {
     cameraEnt = registry.createEntity();
     cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     cameraEnt.setComponent<CameraComponent>(CameraComponent{
@@ -17,17 +68,21 @@ void TestScene::load() {
             .far = 100.0f,
     });
 
-    whiteQuad = registry.createEntity();
-    whiteQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
-    whiteQuad.setComponent<RenderComponent>(glm::vec4(1));
+    yellowQuad = registry.createEntity();
+    yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
+    glm::vec4 yellowColor(1, 1, 0, 1);
+    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&yellowColor, sizeof(yellowColor), {}));
 
     redQuad = registry.createEntity();
     redQuad.setComponent<Transform>(Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
-    redQuad.setComponent<RenderComponent>(glm::vec4(1, 0, 0, 1));
+    glm::vec4 redColor(1, 0, 0, 1);
+    redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}));
 
-    greenQuad = registry.createEntity();
-    greenQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
-    greenQuad.setComponent<RenderComponent>(glm::vec4(0, 1, 0, 1));
+    texturedQuad = registry.createEntity();
+    texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
+    glm::vec4 whiteTintColor(1, 1, 1, 1);
+    texturedQuad.setComponent<RenderComponent>(
+            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}));
 }
 
 // Test data
@@ -64,6 +119,9 @@ void TestScene::update(float deltaTime) {
 
 }
 
+
+static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
+
 void TestScene::updateImGui() {
     ImGui::NewFrame();
     if (cameraControllerActive) {
@@ -75,14 +133,18 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(greenQuad));
-            auto &tc = greenQuad.get<Transform>();
+            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(texturedQuad));
+            auto &tc = texturedQuad.get<Transform>();
             ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
             ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
             ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
             ImGui::Separator();
-            auto &rc = greenQuad.get<RenderComponent>();
-            ImGui::ColorEdit4("Color", &(rc.color.r));
+            ImGui::ColorEdit4("Color", &(editTintColor.r));
+            if (ImGui::Button("Apply")) {
+                std::cout << "Apply new color" << std::endl;
+                texturedQuad.setComponent<RenderComponent>(
+                        texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}));
+            }
         }
         ImGui::End();
     }

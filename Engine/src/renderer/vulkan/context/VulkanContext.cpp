@@ -5,37 +5,54 @@
 #include <vulkan/vulkan.h>
 
 #include <stdexcept>
-
+#include <cstdio>
 
 static std::vector<VulkanCommandBuffer>
-createPrimaryCommandBuffers(const VulkanDevice &device, const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
+createPrimaryCommandBuffers(const VulkanInstance &instance, const VulkanDevice &device,
+                            const VulkanCommandPool &commandPool, uint32_t swapChainSize) {
     std::vector<VulkanCommandBuffer> primaryCommandBuffers;
     primaryCommandBuffers.reserve(swapChainSize);
     for (uint32_t i = 0; i < swapChainSize; ++i) {
         primaryCommandBuffers.emplace_back(
                 VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
+        char name[sizeof("PrimaryCommandBuffer-0")];
+        snprintf(name, sizeof(name), "PrimaryCommandBuffer-%u", i & 0x7);
+        instance.setDebugName(device.vk(), VK_OBJECT_TYPE_COMMAND_BUFFER, (uint64_t) primaryCommandBuffers.back().vk(),
+                              name);
     }
 
-    return std::move(primaryCommandBuffers);
+    return primaryCommandBuffers;
 }
 
 // ------------------------------------ Class members ------------------------------------------------------------------
 
 VulkanContext::VulkanContext(Window &window)
         : window(window),
-          instance(VulkanInstance::Create({"VK_LAYER_KHRONOS_validation"}, "Hello Triangle", "Foo Bar")),
-          surface(window.createSurface(instance.vk())),
-          device(VulkanDevice::Create(instance, surface)),
+          instance(VulkanInstance::Create(
+                  {"VK_LAYER_KHRONOS_validation"},
+                  "Hello Triangle", "Foo Bar")),
+          surface(instance, window.createSurface(instance.vk())),
+          device(VulkanDevice::Create(instance, surface.vk())),
           commandPool(VulkanCommandPool::Create(device)),
-          swapChain(VulkanSwapChain::Create(window, device, surface)),
+          swapChain(VulkanSwapChain::Create(window, device, surface.vk())),
           memory(device, commandPool),
-          primaryCommandBuffers(createPrimaryCommandBuffers(device, commandPool, maxFramesInFlight)),
+          primaryCommandBuffers(createPrimaryCommandBuffers(instance, device, commandPool, maxFramesInFlight)),
           frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {}
 
+VulkanContext::~VulkanContext() {
+    // Clear buffered resources
+    for (auto &res : bufferedResourceDestroyQueue) {
+        res.resource->destroy();
+    }
+}
+
+void VulkanContext::beginFrame() const {
+    frame.waitUntilCurrentFrameIsFree(currentFrame);
+}
 
 void VulkanContext::recreateSwapChain() {
-    surface = window.createSurface(instance.vk());
-    swapChain.recreate(surface);
+    surface = VulkanSurface(instance, window.createSurface(instance.vk()));
+    swapChain.recreate(surface.vk());
 }
 
 bool VulkanContext::flushCommands() {
@@ -47,6 +64,30 @@ bool VulkanContext::flushCommands() {
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
     currentSwapChainImage = (currentSwapChainImage < swapChain.size() - 1) ? currentSwapChainImage + 1
                                                                            : 0;
-
     return swapChainOk;
 }
+
+void VulkanContext::destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) {
+    bufferedResourceDestroyQueue.emplace_back(std::move(resource), currentFrameCounter);
+    std::cout << "Descriptor scheduled for destruction on frame " << currentFrameCounter << std::endl;
+}
+
+void VulkanContext::tickFrame() {
+    // destroy buffered resources
+    uint32_t i = 0;
+    // If the currentFrame has overflowed to 0... the minus still works because all ints are uint32_t
+    while (!bufferedResourceDestroyQueue.empty() &&
+           bufferedResourceDestroyQueue.front().frameDeleted == (currentFrameCounter - swapChain.size())) {
+        bufferedResourceDestroyQueue.front().resource->destroy();
+        bufferedResourceDestroyQueue.pop_front();
+        std::cout << "Descriptor destroyed on frame " << currentFrameCounter << std::endl;
+        ++i;
+    }
+
+    if (i != 0) {
+        std::cout << "Cleared " << i << " buffered resources" << std::endl;
+    }
+
+    ++currentFrameCounter;
+}
+

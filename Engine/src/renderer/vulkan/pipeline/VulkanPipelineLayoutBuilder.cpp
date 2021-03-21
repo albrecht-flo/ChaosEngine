@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 using namespace VulkanPipelineUtility;
+using namespace Renderer;
 
 VulkanPipelineLayoutBuilder &
 VulkanPipelineLayoutBuilder::addPushConstant(uint32_t size, uint32_t offset, ShaderStage stage) {

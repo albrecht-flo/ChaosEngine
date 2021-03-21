@@ -1,3 +1,4 @@
+#include <Engine/src/renderer/vulkan/api/VulkanMaterial.h>
 #include "SpriteRenderingPass.h"
 #include "Engine/src/renderer/data/Mesh.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
@@ -5,16 +6,20 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/Material.h"
+
+using namespace Renderer;
 
 static VulkanImageBuffer
 createImageBuffer(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
     VkDeviceMemory imageMemory{};
-    auto depthImage = VulkanImage::createDepthBufferImage(
+    auto image = VulkanImage::createRawImage(
             device, vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
-    auto depthImageView = VulkanImageView::Create(device, depthImage, VK_FORMAT_R8G8B8A8_UNORM,
-                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
+    auto imageView = VulkanImageView::Create(device, image, VK_FORMAT_R8G8B8A8_UNORM,
+                                             VK_IMAGE_ASPECT_COLOR_BIT);
 
-    return VulkanImageBuffer(device, std::move(depthImage), std::move(imageMemory), std::move(depthImageView),
+    return VulkanImageBuffer(device, std::move(image), std::move(imageMemory), std::move(imageView),
                              width, height);
 }
 
@@ -32,35 +37,19 @@ createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemor
 }
 
 
-static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
-                            const VulkanRenderPass &renderPass, const VulkanImageBuffer &depthBuffer) {
-    std::vector<VulkanFramebuffer> swapChainFramebuffers;
-    swapChainFramebuffers.reserve(swapChain.size());
-    for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers.emplace_back(
-                renderPass.createFrameBuffer(
-                        {swapChain.getImageViews()[i].vk(), depthBuffer.getImageView().vk()},
-                        swapChain.getExtent()
-                ));
-    }
-    return std::move(swapChainFramebuffers);
-}
-
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 SpriteRenderingPass
-SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height, bool renderToSwapChain) {
-    auto ret = SpriteRenderingPass(context, renderToSwapChain);
+SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height) {
+    auto ret = SpriteRenderingPass(context);
     ret.init(width, height);
-    return std::move(ret);
+    return ret;
 }
 
 SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
-        context(o.context), opaquePass(std::move(o.opaquePass)), renderToSwapChain(o.renderToSwapChain),
+        context(o.context), opaquePass(std::move(o.opaquePass)),
         colorBuffer(std::move(o.colorBuffer)), depthBuffer(std::move(o.depthBuffer)),
         framebuffer(std::move(o.framebuffer)),
-        swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
         descriptorPool(std::move(o.descriptorPool)),
         cameraDescriptorLayout(std::move(o.cameraDescriptorLayout)),
         materialDescriptorLayout(std::move(o.materialDescriptorLayout)),
@@ -74,58 +63,39 @@ void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
             createImageBuffer(context.getDevice(), context.getMemory(), width, height));
     depthBuffer = std::make_unique<VulkanImageBuffer>(
             createDepthResources(context.getDevice(), context.getMemory(), width, height));
-    if (!renderToSwapChain) {
-        framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
-                {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
-                {colorBuffer->getWidth(), colorBuffer->getHeight()}));
-    } else {
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *opaquePass,
-                                                            *depthBuffer);
-    }
+    framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
+            {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
+            {colorBuffer->getWidth(), colorBuffer->getHeight()}));
 }
 
 void SpriteRenderingPass::createStandardPipeline() {
-    auto vertex_3P_3C_3N_2U = std::make_unique<VulkanVertexInput>(
-            VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
-                    .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
-                    .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
-                    .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
-                    .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build());
-
     cameraDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(context.getDevice())
-                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Vertex)
+                    .addBinding(0, Renderer::ShaderBindingType::UniformBuffer, Renderer::ShaderStage::Vertex)
                     .build());
-//    materialDescriptorLayout = std::make_unique<VulkanDescriptorSetLayout>(
-//            VulkanDescriptorSetLayoutBuilder(context.getDevice())
-//                    .addBinding(0, DescriptorType::Texture, ShaderStage::Fragment)
-//                    .build());
 
     VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
-            .addPushConstant(sizeof(glm::mat4), 0, ShaderStage::Vertex)
-            .addPushConstant(sizeof(glm::vec4), sizeof(glm::mat4), ShaderStage::Fragment)
+            .addPushConstant(sizeof(glm::mat4), 0, Renderer::ShaderStage::Vertex)
             .addDescriptorSet(*cameraDescriptorLayout) // set = 0
-//            .addDescriptorSet(*materialDescriptorLayout) // set = 1
             .build();
 
     pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), *opaquePass,
-                                                                      std::move(pipelineLayout), *vertex_3P_3C_3N_2U,
-                                                                      "2DSprite")
-                                                        .setFragmentShader("2DStaticSprite")
-                                                        .setTopology(Topology::TriangleList)
-                                                        .setPolygonMode(PolygonMode::Fill)
-                                                        .setCullFace(CullFace::CCLW)
+                                                                      std::move(pipelineLayout),
+                                                                      VulkanMaterial::vertex_3P_3C_3N_2U,
+                                                                      "2DBase")
+                                                        .setFragmentShader("2DBase")
+                                                        .setTopology(Renderer::Topology::TriangleList)
+                                                        .setPolygonMode(Renderer::PolygonMode::Fill)
+                                                        .setCullFace(Renderer::CullFace::CCLW)
                                                         .setDepthTestEnabled(true)
-                                                        .setDepthCompare(CompareOp::Less)
+                                                        .setDepthCompare(Renderer::CompareOp::Less)
                                                         .build());
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
                                                                             0).descriptorType,
                                                                                    VulkanContext::maxFramesInFlight)
-//                                                                    .addDescriptor(materialDescriptorLayout->getBinding(
-//                                                                            0).descriptorType, 1024)
-                                                                    .setMaxSets(VulkanContext::maxFramesInFlight + 1024)
+                                                                    .setMaxSets(VulkanContext::maxFramesInFlight)
                                                                     .build());
 
 
@@ -149,11 +119,10 @@ void SpriteRenderingPass::createStandardPipeline() {
 void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
-                                     .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
-                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                                      .build());
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
-    opaquePass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    opaquePass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "SpriteRenderPass-Color"));
 
     createAttachments(width, height);
 
@@ -178,7 +147,7 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Ca
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
                                          perFrameUniformBuffers[context.getCurrentFrame()].memory,
-                                         uboContent.data(), uboContent.size());
+                                         uboContent.data(), uboContent.size(), 0);
 }
 
 void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
@@ -191,16 +160,13 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = opaquePass->vk(); // the renderpass to use
-    if (!renderToSwapChain)
-        renderPassInfo.framebuffer = framebuffer->vk();
-    else
-        renderPassInfo.framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()].vk(); // the attatchment
+    renderPassInfo.framebuffer = framebuffer->vk();
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = VkExtent2D{viewportDimensions.x, viewportDimensions.y}; // based on swap chain
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
     std::array<VkClearValue, 2> clearValues{};
-    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    clearValues[0].color = {1.0f, 0.0f, 1.0f, 1.0f};
     clearValues[1].depthStencil = {1.0f, 0};
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
@@ -208,8 +174,8 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     vkCmdBeginRenderPass(commandBuffer.vk(), &renderPassInfo,
                          VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
 
-    // Now vkCmd... can be written do define the draw call
-    // Bind the pipline as a graphics pipeline
+    // Now vkCmd... can be written, to define the draw calls
+    // Bind the pipeline as a graphics pipeline
     vkCmdBindPipeline(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS,
                       pipeline->getPipeline());
 
@@ -245,14 +211,35 @@ void SpriteRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 }
 
 void
-SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat, const glm::vec4 &color) {
+SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
+                                const Renderer::VulkanMaterialInstance &material) {
+    glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
+
+    // Bind Material TODO: The pipeline should be bound for a group of objects
+    vkCmdBindPipeline(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS, material.getPipeline());
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(viewportDimensions.x);
+    viewport.height = static_cast<float>(viewportDimensions.y);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer.vk(), 0, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = {0, 0};
+    scissor.extent = {context.getSwapChain().getWidth(), context.getSwapChain().getHeight()};
+    vkCmdSetScissor(commandBuffer.vk(), 0, 1, &scissor);
+
+    // Bind Material
+    auto materialDescriptorSet = material.getDescriptorSet().vk();
+    vkCmdBindDescriptorSets(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS, material.getPipelineLayout(), 1, 1,
+                            &materialDescriptorSet, 0, nullptr);
+
     // Set model matrix via push constant
     vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
-    // Set model matrix via push constant
-    vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
-                       VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(modelMat), sizeof(color), &color);
 
     VkBuffer vertexBuffers[]{renderObject.vertexBuffer.buffer};
     VkDeviceSize offsets[] = {0};

@@ -38,11 +38,13 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+                                     .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Preserve, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                                      .build());
-    auto renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    auto renderPass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 
     auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
 
@@ -60,7 +62,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
                     .addDescriptor(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000)
                     .addDescriptor(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000)
                     .addDescriptor(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
-                    .setMaxSets(1000 * 5)
+                    .setMaxSets(1000 * 11)
                     .build());
 
     // Init imgui window
@@ -85,6 +87,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
     VkCommandBuffer cmdBuf = context.getMemory().beginSingleTimeCommands();
     ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
     context.getMemory().endSingleTimeCommands(cmdBuf);
+    ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 
     return ImGuiRenderingPass(context, std::move(renderPass), std::move(swapChainFrameBuffers),

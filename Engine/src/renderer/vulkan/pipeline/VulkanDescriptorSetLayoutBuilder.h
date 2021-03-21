@@ -2,13 +2,8 @@
 
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 #include "VulkanDescriptorSetLayout.h"
-
-enum class ShaderStage {
-    Vertex, Fragment, VertexFragment, Geometry, TesselationControl, TesselationEvaluation, All
-};
-enum class DescriptorType {
-    UniformBuffer, Texture
-};
+#include "VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/api/Material.h"
 
 class VulkanDescriptorSetLayoutBuilder {
 public:
@@ -17,8 +12,8 @@ public:
 
     ~VulkanDescriptorSetLayoutBuilder() = default;
 
-    VulkanDescriptorSetLayoutBuilder &addBinding(uint32_t binding, DescriptorType type,
-                                                 ShaderStage stage, uint32_t size = 1);
+    VulkanDescriptorSetLayoutBuilder &addBinding(uint32_t binding, Renderer::ShaderBindingType type,
+                                                 Renderer::ShaderStage stage, uint32_t size = 1);
 
     VulkanDescriptorSetLayout build();
 
@@ -28,32 +23,32 @@ private:
 };
 
 namespace VulkanPipelineUtility {
-    static inline VkShaderStageFlags getVkShaderStage(ShaderStage stage) {
+    static inline VkShaderStageFlags getVkShaderStage(Renderer::ShaderStage stage) {
         switch (stage) {
-            case ShaderStage::Vertex:
+            case Renderer::ShaderStage::Vertex:
                 return VK_SHADER_STAGE_VERTEX_BIT;
-            case ShaderStage::Fragment:
+            case Renderer::ShaderStage::Fragment:
                 return VK_SHADER_STAGE_FRAGMENT_BIT;
-            case ShaderStage::VertexFragment:
+            case Renderer::ShaderStage::VertexFragment:
                 return VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-            case ShaderStage::Geometry:
+            case Renderer::ShaderStage::Geometry:
                 return VK_SHADER_STAGE_GEOMETRY_BIT;
-            case ShaderStage::TesselationControl:
+            case Renderer::ShaderStage::TesselationControl:
                 return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-            case ShaderStage::TesselationEvaluation:
+            case Renderer::ShaderStage::TesselationEvaluation:
                 return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-            case ShaderStage::All:
+            case Renderer::ShaderStage::All:
                 return VK_SHADER_STAGE_ALL_GRAPHICS;
         }
         assert("Unknown shader stage");
         return VK_SHADER_STAGE_VERTEX_BIT;
     }
 
-    static inline VkDescriptorType getVkDescriptorType(DescriptorType type) {
+    static inline VkDescriptorType getVkDescriptorType(Renderer::ShaderBindingType type) {
         switch (type) {
-            case DescriptorType::UniformBuffer:
+            case Renderer::ShaderBindingType::UniformBuffer:
                 return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            case DescriptorType::Texture:
+            case Renderer::ShaderBindingType::TextureSampler:
                 return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         }
         assert(false);

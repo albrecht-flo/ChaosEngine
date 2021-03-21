@@ -67,10 +67,11 @@ void VulkanMemory::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSi
 }
 
 /* Copies data to buffer. */
-void VulkanMemory::copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size) const {
+void VulkanMemory::copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size,
+                                    size_t offset) const {
     void *bufferData;
     vkMapMemory(device.vk(), memory, 0, size, 0, &bufferData);
-    memcpy(bufferData, data, (size_t) size);
+    memcpy(&(reinterpret_cast<char*>(bufferData)[offset]), data, (size_t) size);
     vkUnmapMemory(device.vk(), memory);
 }
 
@@ -181,7 +182,7 @@ VulkanMemory::createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flag
 	The buffer is a transfer_dst and device_local.
 	The data is transmitted using a staging buffer. 
 	*/
-const VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, void *data, VkBufferUsageFlags flags) const {
+VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const {
     // Staging buffer to contain data for transfer
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -190,7 +191,7 @@ const VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, void *data
                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
                  stagingBufferMemory);
 
-    copyDataToBuffer(stagingBuffer, stagingBufferMemory, data, size);
+    copyDataToBuffer(stagingBuffer, stagingBufferMemory, data, size, 0);
 
     // Vertex buffer
     VkBuffer inputBuffer;

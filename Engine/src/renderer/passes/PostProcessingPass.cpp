@@ -6,6 +6,8 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 
+using namespace Renderer;
+
 static std::vector<VulkanFramebuffer>
 createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
                             const VulkanRenderPass &renderPass) {
@@ -47,11 +49,13 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+                                     .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
                                                       VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                                      .build());
-    renderPass = std::make_unique<VulkanRenderPass>(VulkanRenderPass::Create(context.getDevice(), attachments));
+    renderPass = std::make_unique<VulkanRenderPass>(
+            VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
     swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
 
@@ -77,9 +81,9 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
 
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(
             VulkanDescriptorSetLayoutBuilder(context.getDevice())
-                    .addBinding(0, DescriptorType::UniformBuffer, ShaderStage::Fragment) // Configuration
-                    .addBinding(1, DescriptorType::Texture, ShaderStage::Fragment) // Color
-                    .addBinding(2, DescriptorType::Texture, ShaderStage::Fragment) // Depth
+                    .addBinding(0, ShaderBindingType::UniformBuffer, ShaderStage::Fragment) // Configuration
+                    .addBinding(1, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // Color
+                    .addBinding(2, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // Depth
                     .build());
 
     VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
@@ -89,9 +93,9 @@ void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const Vulkan
     postprocessingPipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(context.getDevice(), *renderPass, std::move(pipelineLayout), *vertex_3P_2U,
                                   "2DPostProcessing")
-                    .setTopology(Topology::TriangleList)
-                    .setPolygonMode(PolygonMode::Fill)
-                    .setCullFace(CullFace::CCLW)
+                    .setTopology(Renderer::Topology::TriangleList)
+                    .setPolygonMode(Renderer::PolygonMode::Fill)
+                    .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(false)
                     .build());
 
@@ -199,5 +203,5 @@ void PostProcessingPass::updateConfiguration(const PostProcessingPass::PostProce
     ubo->cameraFar = configuration.camera.far;
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffer->buffer, perFrameUniformBuffer->memory,
-                                         uboContent.data(), uboContent.size());
+                                         uboContent.data(), uboContent.size(), 0);
 }

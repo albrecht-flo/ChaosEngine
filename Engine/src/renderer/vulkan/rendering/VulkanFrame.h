@@ -36,6 +36,12 @@ public:
      */
     [[nodiscard]] bool render(size_t currentFrame, const VulkanCommandBuffer &commandBuffer) const;
 
+    /**
+     * Wait until the current has finished rendering on the GPU and is free to be recorded again.
+     * @param currentFrame
+     */
+    void waitUntilCurrentFrameIsFree(uint32_t currentFrame) const;
+
 private:
     Window &window;
     const VulkanContext &context;

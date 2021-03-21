@@ -28,15 +28,17 @@ class VulkanInstance;
  * This class is a wrapper for the vulkan logical device and also handles the creation of it for a physical device.
  */
 class VulkanDevice {
+public:
+    static const std::vector<const char *> deviceExtensions;
+
 private:
     VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
                  VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
-                 VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties);
+                 VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
+                 VkPhysicalDeviceProperties properties);
 
     void destroy();
 
-public:
-    static const std::vector<const char *> deviceExtensions;
 public:
     ~VulkanDevice();
 
@@ -78,6 +80,8 @@ public:
     findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                         VkFormatFeatureFlags features) const;
 
+    [[nodiscard]] bool checkSurfaceAvailability(VkSurfaceKHR newSurface) const;
+
 private:
     VkSurfaceKHR surface;
 
@@ -90,6 +94,7 @@ private:
 
     VkQueue graphicsQueue;
     VkQueue presentQueue;
+    QueueFamilyIndices queueFamilyIndices;
 
     VkPhysicalDeviceProperties properties;
 };

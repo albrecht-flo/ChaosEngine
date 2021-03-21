@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
 
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
@@ -15,11 +15,12 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
+#include "Engine/src/renderer/api/Material.h"
 
 class VulkanRenderer2D : public Renderer::RendererAPI {
 private:
 private:
-    VulkanRenderer2D(std::unique_ptr<VulkanContext> &&context, SpriteRenderingPass &&spriteRenderingPass,
+    VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &&spriteRenderingPass,
                      PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass);
 
 public:
@@ -34,7 +35,7 @@ public:
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
-    static std::unique_ptr<VulkanRenderer2D> Create(Window &window);
+    static std::unique_ptr<VulkanRenderer2D> Create(Renderer::GraphicsContext &graphicsContext);
 
     // Lifecycle
     /// Setup for all dynamic resources
@@ -57,12 +58,14 @@ public:
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent);
 
+    /// Gets the apropriate render pass for the requested shader stage
+    const Renderer::RenderPass &getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const;
 
 private:
     void recreateSwapChain();
 
 private:
-    std::unique_ptr<VulkanContext> context;
+    VulkanContext &context;
 
     SpriteRenderingPass spriteRenderingPass;
     PostProcessingPass postProcessingPass;

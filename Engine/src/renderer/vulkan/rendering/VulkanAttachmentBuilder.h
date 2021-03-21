@@ -101,6 +101,6 @@ private:
 
 private:
     AttachmentType attachmentType;
-    VkAttachmentDescription attachment;
-    VkImageLayout attachmentLayout;
+    VkAttachmentDescription attachment{};
+    VkImageLayout attachmentLayout{};
 };

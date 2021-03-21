@@ -8,6 +8,8 @@
 #include <fstream>
 #include <cassert>
 
+using namespace Renderer;
+
 /* Create shader module form byte code */
 static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
     VkShaderModuleCreateInfo createInfo = {};
@@ -93,7 +95,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = 1;
+    dynamicState.dynamicStateCount = 2;
     dynamicState.pDynamicStates = dynamicStates;
 
     VkViewport viewport = {};
@@ -188,7 +190,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDepthStencilState = &depthTesting;
-//    pipelineInfo.pDynamicState = &dynamicState;
+    pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = layout.vk();
     pipelineInfo.renderPass = renderPass.vk();
     pipelineInfo.subpass = 0;

@@ -2,6 +2,7 @@
 
 #include "VulkanInstance.h"
 
+#include <iostream>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -58,7 +59,6 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
 
         i++;
     }
-
     return indices;
 }
 
@@ -146,6 +146,14 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, devices.data());
+
+    std::cout << deviceCount << " Available GPUs:" << std::endl;
+    for (size_t i = 0; i < devices.size(); ++i) {
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(devices[i], &props);
+        std::cout << "    GPU(" << i << "): " << props.deviceName << std::endl;
+    }
+
     VkPhysicalDevice physicalDevice{};
     for (const auto &device : devices) {
         // Take the first one that fits
@@ -251,15 +259,17 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
     auto[presentQueue, presentQueueFamily] = ::getPresentQueue(device, indices);
 
     return VulkanDevice{surface, physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
-                        graphicsQueue, presentQueue, deviceProperties};
+                        graphicsQueue, presentQueue, indices, deviceProperties};
 }
 
 VulkanDevice::VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
                            VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
-                           VkQueue graphicsQueue, VkQueue presentQueue, VkPhysicalDeviceProperties properties)
-        : surface(surface), physicalDevice(physicalDevice), device(device), graphicsQueueFamily(
-        graphicsQueueFamily), presentQueueFamily(presentQueueFamily), graphicsQueue(graphicsQueue), presentQueue(
-        presentQueue), properties(properties) {}
+                           VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
+                           VkPhysicalDeviceProperties properties)
+        : surface(surface), physicalDevice(physicalDevice), device(device),
+          graphicsQueueFamily(graphicsQueueFamily), presentQueueFamily(presentQueueFamily),
+          graphicsQueue(graphicsQueue), presentQueue(presentQueue), queueFamilyIndices(queueFamilyIndices),
+          properties(properties) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
         : surface(std::exchange(o.surface, nullptr)),
@@ -268,7 +278,9 @@ VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
           graphicsQueueFamily(o.graphicsQueueFamily), presentQueueFamily(o.presentQueueFamily),
           graphicsQueue(std::exchange(o.graphicsQueue, nullptr)),
           presentQueue(std::exchange(o.presentQueue, nullptr)),
-          properties(o.properties) {}
+          queueFamilyIndices(std::move(o.queueFamilyIndices)),
+          properties(o.properties) {
+}
 
 VulkanDevice::~VulkanDevice() { destroy(); }
 
@@ -299,4 +311,10 @@ SwapChainSupportDetails VulkanDevice::querySwapChainSupport() const {
 VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                            VkFormatFeatureFlags features) const {
     return ::findSupportedFormat(physicalDevice, candidates, tiling, features);
+}
+
+bool VulkanDevice::checkSurfaceAvailability(VkSurfaceKHR newSurface) const {
+    VkBool32 presentSupport = false;
+    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, *queueFamilyIndices.graphicsFamily, newSurface, &presentSupport);
+    return presentSupport;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ecs.h"
-#include "Engine/src/renderer/RendererAPI.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/window/Window.h"
 
 /// Via this struct the scene is able to configure the engine runtime.
@@ -16,6 +16,8 @@ class Scene {
     friend class Engine;
 
 public:
+    virtual ~Scene() = default;
+
     /// Returns the configuration of the engine for this scene.
     virtual SceneConfiguration configure(Window &window) = 0;
 
