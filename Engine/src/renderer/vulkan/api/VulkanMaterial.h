@@ -45,8 +45,8 @@ namespace Renderer {
                                                                    std::forward<MaterialCreateInfo>(pInfo)));
         }
 
-        std::unique_ptr<MaterialInstance>
-        instantiate(std::shared_ptr<Material> materialPtr, const void *materialData, uint32_t size,
+        std::shared_ptr<MaterialInstance>
+        instantiate(std::shared_ptr<Material> &materialPtr, const void *materialData, uint32_t size,
                     const std::vector<const Texture *> &textures) override;
 
         void recycleInstance(VulkanDescriptorSet &&descriptorSet, uint32_t uniformBufferOffset) {
@@ -72,12 +72,36 @@ namespace Renderer {
     /**
      * This class contains one instance of a descriptor consisting of pointer into the uniform buffer of the material
      * and texture samplers. <br>
-     * This class is a <i>BufferedGPUResource</i> so upon destruction it registers its resources to the current
-     * <i>GraphicsContext</i> for buffered destruction. <br>
-     * <i>MaterialInstance</i>s have a shared pointer to their parent material so a material will only be destroyed if
-     * its pointers have gone out of scope and the last of its instances gets destroyed.
      */
     class VulkanMaterialInstance : public MaterialInstance {
+    private:
+        /**
+         * This class handles the buffered destruction of a material instance taking with it the material if there are
+         * no other shared pointers to the material.
+         */
+        class VulkanMaterialInstanceBufferedDestroy : public BufferedGPUResource {
+        public:
+            VulkanMaterialInstanceBufferedDestroy(std::shared_ptr<Material> &&material,
+                                                  VulkanDescriptorSet descriptorSet,
+                                                  uint32_t uniformBufferOffset)
+                    : material(std::move(material)), descriptorSet(descriptorSet),
+                      uniformBufferOffset(uniformBufferOffset) {}
+
+            ~VulkanMaterialInstanceBufferedDestroy() override = default;
+
+            /// Notifies the parent material that the resources of this material instance can be recycled.
+            void destroy() override {
+                dynamic_cast<VulkanMaterial *>(material.get())->
+                        recycleInstance(std::move(descriptorSet), uniformBufferOffset);
+                material = nullptr;
+            }
+
+        private:
+            std::shared_ptr<Material> material;
+            VulkanDescriptorSet descriptorSet;
+            uint32_t uniformBufferOffset;
+        };
+
     public:
         VulkanMaterialInstance(std::shared_ptr<Material> material, VulkanDescriptorSet &&descriptorSet,
                                uint32_t uniformBufferOffset)
@@ -94,11 +118,18 @@ namespace Renderer {
 
         VulkanMaterialInstance &operator=(VulkanMaterialInstance &&o) = delete;
 
+        /**
+         * Because a Material instance might currently be in use on the GPU for upto <i>maxFramesInFlight</i> frames
+         * it needs to be destroyed using the buffered GPU resource destruction.
+         * for this to be accomplished the destructor registers a destruction Object with the VulkanContext handing over
+         * the ownership of the parent material.
+         */
         ~VulkanMaterialInstance() override {
-            if (material != nullptr) {
-                auto &vulkanContext = dynamic_cast<VulkanContext &>(material->getContext());
-                vulkanContext.destroyBuffered(std::make_unique<VulkanMaterialInstance>(std::move(*this)));
-            }
+            auto &vulkanContext = dynamic_cast<VulkanContext &>(material->getContext());
+            vulkanContext.destroyBuffered(
+                    std::make_unique<VulkanMaterialInstanceBufferedDestroy>(
+                            std::move(material), std::move(descriptorSet), uniformBufferOffset
+                    ));
         }
 
         inline const VulkanDescriptorSet &getDescriptorSet() const { return descriptorSet; }
@@ -109,11 +140,6 @@ namespace Renderer {
         inline VkPipeline
         getPipeline() const { return dynamic_cast<VulkanMaterial *>(material.get())->pipeline->getPipeline(); }
 
-        void destroy() override {
-            dynamic_cast<VulkanMaterial *>(material.get())->recycleInstance(std::move(descriptorSet),
-                                                                            uniformBufferOffset);
-            material = nullptr;
-        }
 
     private:
         std::shared_ptr<Material> material;

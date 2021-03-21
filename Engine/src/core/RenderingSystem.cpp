@@ -1,8 +1,9 @@
 #include "RenderingSystem.h"
+
 #include "Engine.h"
+#include "Engine/src/renderer/VulkanRenderer2D.h"
 
 #include <iostream>
-#include "Engine/src/renderer/VulkanRenderer2D.h"
 
 using namespace Renderer;
 

@@ -25,7 +25,9 @@ struct Transform {
 };
 
 struct RenderComponent {
-    std::unique_ptr<Renderer::MaterialInstance> materialInstance;
+    // The Material Instance can't be stored here because depending on the used Graphics API the storage of a Material
+    // Instance might change. So we need to store a pointer for now.
+    std::shared_ptr<Renderer::MaterialInstance> materialInstance;
 };
 
 struct CameraComponent {

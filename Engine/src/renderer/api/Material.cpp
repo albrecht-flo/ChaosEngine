@@ -6,6 +6,8 @@
 
 using namespace Renderer;
 
+// --------------------------------- Engine Base Materials -------------------------------------------------------------
+
 std::vector<ShaderBindings> Material::StandardOpaqueSet0 = std::vector<ShaderBindings>(
         {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Vertex, .name="cameraUbo",
                 .layout=std::vector<ShaderBindingLayout>(
@@ -19,6 +21,8 @@ std::vector<ShaderPushConstantLayout> Material::StandardOpaquePushConstants = st
         {
                 ShaderPushConstantLayout{.type = ShaderValueType::Mat4, .stage=ShaderStage::Vertex, .offset=0, .name ="modelMat"},
         });
+
+// ------------------------------------ Class Members ------------------------------------------------------------------
 
 MaterialRef Material::Create(const MaterialCreateInfo &info) {
     switch (GraphicsContext::currentAPI) {

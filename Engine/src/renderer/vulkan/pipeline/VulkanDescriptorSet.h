@@ -70,6 +70,25 @@ private:
 public:
     ~VulkanDescriptorSet() = default;
 
+    VulkanDescriptorSet(const VulkanDescriptorSet &o) = default;
+
+    VulkanDescriptorSet &operator=(const VulkanDescriptorSet &o) noexcept {
+        if (&o == this)
+            return *this;
+        descriptorSet = o.descriptorSet;
+        return *this;
+    }
+
+    VulkanDescriptorSet(VulkanDescriptorSet &&o) noexcept
+            : device(o.device), descriptorSet(std::exchange(o.descriptorSet, nullptr)) {}
+
+    VulkanDescriptorSet &operator=(VulkanDescriptorSet &&o) noexcept {
+        if (&o == this)
+            return *this;
+        descriptorSet = std::exchange(o.descriptorSet, nullptr);
+        return *this;
+    }
+
     VulkanDescriptorSetOperation startWriting() {
         return VulkanDescriptorSetOperation(device, descriptorSet);
     }

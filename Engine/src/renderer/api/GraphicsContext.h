@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Engine/src/renderer/window/Window.h"
 #include "BufferedGPUResource.h"
 #include <memory>
 
+class Window;
 namespace Renderer {
 
     /// Through this enum the used Graphics API can be defined.

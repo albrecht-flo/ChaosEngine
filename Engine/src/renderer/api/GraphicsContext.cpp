@@ -1,9 +1,9 @@
 #include "GraphicsContext.h"
+#include "Engine/src/renderer/window/Window.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 
 #include <stdexcept>
 #include <cassert>
-
 namespace Renderer {
     GraphicsAPI GraphicsContext::currentAPI = GraphicsAPI::None;
 

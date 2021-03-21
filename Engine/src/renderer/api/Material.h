@@ -1,7 +1,5 @@
 #pragma once
 
-#include "GraphicsContext.h"
-#include "BufferedGPUResource.h"
 #include "Texture.h"
 
 #include <glm/glm.hpp>
@@ -14,7 +12,7 @@
 #include <cassert>
 
 namespace Renderer {
-
+// ----------------------------- Fixed Function Configuration ----------------------------------------------------------
     enum class ShaderPassStage {
         Opaque
     };
@@ -37,6 +35,8 @@ namespace Renderer {
         bool depthTest;
         bool depthWrite;
     };
+
+// --------------------------------- Shader Configuration --------------------------------------------------------------
     enum class ShaderStage {
         Vertex, Fragment, VertexFragment, Geometry, TesselationControl, TesselationEvaluation, All
     };
@@ -72,6 +72,8 @@ namespace Renderer {
         std::string name;
         std::optional<std::vector<ShaderBindingLayout>> layout;
     };
+
+// --------------------------------- Material Configuration ------------------------------------------------------------
     struct MaterialCreateInfo {
         ShaderPassStage stage = ShaderPassStage::Opaque;
         // InputBindings
@@ -85,14 +87,25 @@ namespace Renderer {
         uint32_t set1ExpectedCount;
     };
 
+// ------------------------------------ Material classes ---------------------------------------------------------------
+    class GraphicsContext;
 
-    class MaterialInstance : public BufferedGPUResource {
+    /**
+     * A MaterialInstance is a collection of Textures and material parameters that can be assigned to an Entity or
+     * multiple Entities and is used by the Renderer to configure the shaders.
+     */
+    class MaterialInstance {
     public:
         virtual ~MaterialInstance() = default;
     };
 
     class MaterialRef;
 
+    /**
+     * A Material is a container for material instances. <br>
+     * It therefore acts as a blueprint from which material instances can be created.
+     * Therefore it also manages the uniform buffer storage on the GPU that is required for this material.
+     */
     class Material {
     protected:
         explicit Material(GraphicsContext &context) : context(context) {}
@@ -102,8 +115,17 @@ namespace Renderer {
 
         static MaterialRef Create(const MaterialCreateInfo &info);
 
-        virtual std::unique_ptr<MaterialInstance>
-        instantiate(std::shared_ptr<Material> materialPtr, const void *materialData, uint32_t size,
+        /**
+         * This method creates an instance of this material which can be assigned to an entity.
+         *
+         * @param materialPtr
+         * @param materialData
+         * @param size
+         * @param textures
+         * @return
+         */
+        virtual std::shared_ptr<MaterialInstance>
+        instantiate(std::shared_ptr<Material> &materialPtr, const void *materialData, uint32_t size,
                     const std::vector<const Texture *> &textures) = 0;
 
         GraphicsContext &getContext() { return context; }
@@ -118,13 +140,19 @@ namespace Renderer {
 
     };
 
+    /**
+     * This class is a convenience wrapper around a shared_ptr to a Material to simplify the interface.
+     */
     class MaterialRef {
     public:
         explicit MaterialRef(std::shared_ptr<Material> ptr) : pointer(std::move(ptr)) {}
 
         ~MaterialRef() = default;
 
-        std::unique_ptr<MaterialInstance>
+        /**
+         * This method
+         */
+        inline std::shared_ptr<MaterialInstance>
         instantiate(const void *materialData, uint32_t size, const std::vector<const Texture *> &textures) {
             return pointer->instantiate(pointer, materialData, size, textures);
         }

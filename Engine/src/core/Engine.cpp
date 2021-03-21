@@ -2,7 +2,6 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
-#include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/VulkanRenderer2D.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
