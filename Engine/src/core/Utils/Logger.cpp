@@ -8,6 +8,10 @@
 std::shared_ptr<spdlog::logger> Logger::engineLogger;
 
 void Logger::Init(LogLevel level) {
+    if (engineLogger != nullptr) {
+        LOG_WARN("[Logger] Logger already initialized! Skipping init");
+        return;
+    }
     std::vector<spdlog::sink_ptr> logSinks;
     logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
     logSinks.emplace_back(std::make_shared<spdlog::sinks::ringbuffer_sink_mt>(1024));
