@@ -1,11 +1,14 @@
 #pragma once
 
-// This ignores all warnings raised inside External headers
+#include <sstream>
+
 #pragma warning(push, 0)
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
-
+// Fix WinDef.h defines
+#undef near
+#undef far
 #pragma warning(pop)
 
 enum class LogLevel {
@@ -38,8 +41,14 @@ public:
 
     static spdlog::logger &GetLogger() { return *engineLogger; }
 
+//    static std::ostringstream &GetLoggerStream() { return *streamLogger; }
+
+    static void Tick() {
+    }
+
 private:
     static std::shared_ptr<spdlog::logger> engineLogger;
+//    static std::unique_ptr<std::ostringstream> streamLogger;
 };
 
 

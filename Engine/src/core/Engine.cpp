@@ -24,8 +24,8 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
 }
 
 void Engine::run() {
-
     while (!window.shouldClose()) {
+        Logger::Tick();
         // FPS counter + delta time calculation -------------------------------
         frameCounter++;
         auto currentTime = std::chrono::high_resolution_clock::now();

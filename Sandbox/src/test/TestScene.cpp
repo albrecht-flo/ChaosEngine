@@ -121,6 +121,7 @@ void TestScene::update(float deltaTime) {
 
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
+static bool followLog = true;
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
