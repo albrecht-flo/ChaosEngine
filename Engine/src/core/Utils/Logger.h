@@ -10,7 +10,7 @@
 #pragma warning(pop)
 
 enum class LogLevel {
-    Debug, Info, Warn, Error
+    Trace, Debug, Info, Warn, Error
 };
 
 class Logger {
@@ -49,7 +49,7 @@ private:
     static std::shared_ptr<spdlog::logger> engineLogger;
 };
 
-
+#define LOG_TRACE(...) ::Logger::GetLogger().trace(__VA_ARGS__)
 #define LOG_INFO(...) ::Logger::GetLogger().info(__VA_ARGS__)
 #define LOG_DEBUG(...) ::Logger::GetLogger().debug(__VA_ARGS__)
 #define LOG_WARN(...) ::Logger::GetLogger().warn(__VA_ARGS__)

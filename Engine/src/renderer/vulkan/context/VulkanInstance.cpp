@@ -90,7 +90,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
         LOG_INFO("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-        LOG_DEBUG("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
+        LOG_TRACE("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
 
     return VK_FALSE;
 }
