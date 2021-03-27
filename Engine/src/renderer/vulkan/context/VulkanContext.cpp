@@ -1,8 +1,6 @@
 #include "VulkanContext.h"
 
-#include "Engine/src/renderer/window/Window.h"
-
-#include <vulkan/vulkan.h>
+#include "Engine/src/core/Utils/Logger.h"
 
 #include <stdexcept>
 #include <cstdio>
@@ -37,7 +35,9 @@ VulkanContext::VulkanContext(Window &window)
           swapChain(VulkanSwapChain::Create(window, device, surface.vk())),
           memory(device, commandPool),
           primaryCommandBuffers(createPrimaryCommandBuffers(instance, device, commandPool, maxFramesInFlight)),
-          frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {}
+          frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {
+    Logger::I("VulkanContext", "Created Vulkan Context");
+}
 
 VulkanContext::~VulkanContext() {
     // Clear buffered resources
@@ -69,7 +69,7 @@ bool VulkanContext::flushCommands() {
 
 void VulkanContext::destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) {
     bufferedResourceDestroyQueue.emplace_back(std::move(resource), currentFrameCounter);
-    std::cout << "Descriptor scheduled for destruction on frame " << currentFrameCounter << std::endl;
+    LOG_DEBUG("Descriptor scheduled for destruction on frame {0}", currentFrameCounter);
 }
 
 void VulkanContext::tickFrame() {
@@ -80,12 +80,12 @@ void VulkanContext::tickFrame() {
            bufferedResourceDestroyQueue.front().frameDeleted == (currentFrameCounter - swapChain.size())) {
         bufferedResourceDestroyQueue.front().resource->destroy();
         bufferedResourceDestroyQueue.pop_front();
-        std::cout << "Descriptor destroyed on frame " << currentFrameCounter << std::endl;
+        LOG_DEBUG("Descriptor destroyed on frame {0}", currentFrameCounter);
         ++i;
     }
 
     if (i != 0) {
-        std::cout << "Cleared " << i << " buffered resources" << std::endl;
+        LOG_DEBUG("Cleared {0} buffered resources", i);
     }
 
     ++currentFrameCounter;

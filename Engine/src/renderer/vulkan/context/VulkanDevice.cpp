@@ -1,8 +1,8 @@
 #include "VulkanDevice.h"
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "VulkanInstance.h"
 
-#include <iostream>
 #include <set>
 #include <stdexcept>
 #include <tuple>
@@ -147,11 +147,11 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, devices.data());
 
-    std::cout << deviceCount << " Available GPUs:" << std::endl;
+    LOG_INFO("{0} Available GPUS:", deviceCount);
     for (size_t i = 0; i < devices.size(); ++i) {
         VkPhysicalDeviceProperties props;
         vkGetPhysicalDeviceProperties(devices[i], &props);
-        std::cout << "    GPU(" << i << "): " << props.deviceName << std::endl;
+        LOG_INFO("    GPU({0}): {1}", i, props.deviceName);
     }
 
     VkPhysicalDevice physicalDevice{};
@@ -315,6 +315,7 @@ VkFormat VulkanDevice::findSupportedFormat(const std::vector<VkFormat> &candidat
 
 bool VulkanDevice::checkSurfaceAvailability(VkSurfaceKHR newSurface) const {
     VkBool32 presentSupport = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, *queueFamilyIndices.graphicsFamily, newSurface, &presentSupport);
+    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, *queueFamilyIndices.graphicsFamily, newSurface,
+                                         &presentSupport);
     return presentSupport;
 }

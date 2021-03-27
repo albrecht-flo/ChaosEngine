@@ -1,5 +1,6 @@
 #include "VulkanFrame.h"
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 
 #include <array>
@@ -124,7 +125,7 @@ bool VulkanFrame::render(size_t currentFrame, const VulkanCommandBuffer &command
     VkResult res;
     if ((res = vkQueueSubmit(context.getDevice().getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) !=
         VK_SUCCESS) {
-        std::cerr << "vkQueueSubmit Failed with result = " << res << std::endl;
+        LOG_CRITICAL("vkQueueSubmit Failed with result = {0}", res);
         throw std::runtime_error("[Vulkan] Failed to submit draw command buffer!");
     }
 
