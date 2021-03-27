@@ -57,6 +57,10 @@ public:
 
     bool isMouseButtonUp(int button) { return glfwGetMouseButton(window, button) == GLFW_RELEASE; }
 
+    void setScrollDelta(MousePos delta) { scrollDelta = delta; }
+
+    MousePos getScrollDelta() const { return scrollDelta; }
+
     // Rendering specific code
     void setFrameBufferResized(bool b);
 
@@ -67,11 +71,13 @@ public:
     // Vulkan specific code
     [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
 
+
 private:
     GLFWwindow *window = nullptr;
 
     bool framebufferResized = false;
     MousePos lastMousePos;
     MousePos mousePos;
+    MousePos scrollDelta{0, 0};
 };
 
