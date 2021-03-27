@@ -21,6 +21,11 @@ void Logger::Init(LogLevel level) {
     spdlog::register_logger(engineLogger);
 
     switch (level) {
+        case LogLevel::Trace: {
+            engineLogger->set_level(spdlog::level::trace);
+            engineLogger->flush_on(spdlog::level::trace);
+            break;
+        }
         case LogLevel::Debug: {
             engineLogger->set_level(spdlog::level::debug);
             engineLogger->flush_on(spdlog::level::debug);

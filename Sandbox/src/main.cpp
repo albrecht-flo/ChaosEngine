@@ -52,7 +52,7 @@
 
 
 int main() {
-    Logger::Init();
+    Logger::Init(LogLevel::Debug);
     Logger::I("Main", "Engine starting...");
     
     auto testScene = std::make_unique<TestScene>();
