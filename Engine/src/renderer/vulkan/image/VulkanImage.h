@@ -10,7 +10,7 @@
 // TODO: massive refactor to be a RAII Wrapper + Builder [Part of VulkanMemory refactoring]
 class VulkanImage {
 public:
-    static VkImage
+    static std::tuple<VkImage, uint32_t, uint32_t>
     createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
                    VkDeviceMemory &imageMemory/*TEMP*/);
 
@@ -84,6 +84,8 @@ public:
     [[nodiscard]] inline uint32_t getWidth() const { return width; }
 
     [[nodiscard]] inline uint32_t getHeight() const { return height; }
+
+    VkImageLayout getImageLayout() const { return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; } // TODO
 
 private:
     void destroy() { VulkanImage::destroy(device, image, memory); }

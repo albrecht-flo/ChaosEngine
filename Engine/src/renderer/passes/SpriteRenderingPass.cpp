@@ -12,27 +12,31 @@
 using namespace Renderer;
 
 static VulkanImageBuffer
-createImageBuffer(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
+createImageBuffer(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
     VkDeviceMemory imageMemory{};
     auto image = VulkanImage::createRawImage(
-            device, vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
-    auto imageView = VulkanImageView::Create(device, image, VK_FORMAT_R8G8B8A8_UNORM,
+            context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
+    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image, "SpritePassColorAttachment");
+    auto imageView = VulkanImageView::Create(context.getDevice(), image, VK_FORMAT_R8G8B8A8_UNORM,
                                              VK_IMAGE_ASPECT_COLOR_BIT);
 
-    return VulkanImageBuffer(device, std::move(image), std::move(imageMemory), std::move(imageView),
+    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageMemory), std::move(imageView),
                              width, height);
 }
 
 static VulkanImageBuffer
-createDepthResources(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
-    VkFormat depthFormat = VulkanImage::getDepthFormat(device);
+createDepthResources(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
+    VkFormat depthFormat = VulkanImage::getDepthFormat(context.getDevice());
 
     VkDeviceMemory depthImageMemory{};
     auto depthImage = VulkanImage::createDepthBufferImage(
-            device, vulkanMemory, width, height, depthFormat, depthImageMemory);
-    auto depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+            context.getDevice(), vulkanMemory, width, height, depthFormat, depthImageMemory);
+    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) depthImage, "SpritePassDepthAttachment");
+    auto depthImageView = VulkanImageView::Create(context.getDevice(), depthImage, depthFormat,
+                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
 
-    return VulkanImageBuffer(device, std::move(depthImage), std::move(depthImageMemory), std::move(depthImageView),
+    return VulkanImageBuffer(context.getDevice(), std::move(depthImage), std::move(depthImageMemory),
+                             std::move(depthImageView),
                              width, height);
 }
 
@@ -60,9 +64,9 @@ SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
 
 void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
     colorBuffer = std::make_unique<VulkanImageBuffer>(
-            createImageBuffer(context.getDevice(), context.getMemory(), width, height));
+            createImageBuffer(context, context.getMemory(), width, height));
     depthBuffer = std::make_unique<VulkanImageBuffer>(
-            createDepthResources(context.getDevice(), context.getMemory(), width, height));
+            createDepthResources(context, context.getMemory(), width, height));
     framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
             {colorBuffer->getImageView().vk(), depthBuffer->getImageView().vk()},
             {colorBuffer->getWidth(), colorBuffer->getHeight()}));

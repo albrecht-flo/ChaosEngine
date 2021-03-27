@@ -23,17 +23,34 @@ createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &s
     return std::move(swapChainFramebuffers);
 }
 
+static VulkanImageBuffer
+createImageBuffer(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
+    VkDeviceMemory imageMemory{};
+    auto image = VulkanImage::createRawImage(
+            context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
+    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image, "PostProcessingColorAttachment");
+    auto imageView = VulkanImageView::Create(context.getDevice(), image, VK_FORMAT_R8G8B8A8_UNORM,
+                                             VK_IMAGE_ASPECT_COLOR_BIT);
+
+    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageMemory), std::move(imageView), width,
+                             height);
+}
+
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer,
-                                              const VulkanImageBuffer &depthBuffer) {
-    PostProcessingPass postProcessingPass(context);
-    postProcessingPass.init(colorBuffer, depthBuffer);
+                                              const VulkanImageBuffer &depthBuffer,
+                                              bool renderToSwapchain, uint32_t width, uint32_t height) {
+    assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
+           renderToSwapchain || (width != 0 && height != 0));
+    PostProcessingPass postProcessingPass(context, renderToSwapchain);
+    postProcessingPass.init(colorBuffer, depthBuffer, width, height);
     return std::move(postProcessingPass);
 }
 
 PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
-        : context(o.context), renderPass(std::move(o.renderPass)),
+        : context(o.context), renderToSwapchain(o.renderToSwapchain), renderPass(std::move(o.renderPass)),
+          colorAttachmentBuffer(std::move(o.colorAttachmentBuffer)),
           swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
           descriptorSetLayout(std::move(o.descriptorSetLayout)),
           postprocessingPipeline(std::move(o.postprocessingPipeline)),
@@ -45,19 +62,26 @@ PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
           perFrameUniformBuffer(std::move(o.perFrameUniformBuffer)),
           uboContent(std::move(o.uboContent)) {}
 
-void PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer) {
+void
+PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer, uint32_t width,
+                         uint32_t height) {
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
-                                     .format(VK_FORMAT_B8G8R8A8_UNORM)
-                                     .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
-                                     .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
-                                                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                                      .build());
     renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+    if (renderToSwapchain)
+        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+    else {
+        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
+                createImageBuffer(context, context.getMemory(), width, height));
+        swapChainFrameBuffers.emplace_back(renderPass->createFrameBuffer(
+                {colorAttachmentBuffer->getImageView().vk()},
+                {colorAttachmentBuffer->getWidth(), colorAttachmentBuffer->getHeight()})
+        );
+    }
 
     struct Vertex {
         glm::vec3 pos;
@@ -145,9 +169,12 @@ void PostProcessingPass::draw() {
     VkRenderPassBeginInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = renderPass->vk(); // the renderpass to use
-    renderPassInfo.framebuffer = swapChainFrameBuffers[context.getCurrentSwapChainFrame()].vk(); // the attatchment
+    renderPassInfo.framebuffer =
+            swapChainFrameBuffers[renderToSwapchain ? context.getCurrentSwapChainFrame() : 0].vk(); // the attachment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
-    renderPassInfo.renderArea.extent = context.getSwapChain().getExtent(); // based on swap chain
+    renderPassInfo.renderArea.extent = renderToSwapchain ? context.getSwapChain().getExtent() :
+                                       VkExtent2D{colorAttachmentBuffer->getWidth(),
+                                                  colorAttachmentBuffer->getHeight()}; // based on swap chain
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
     std::array<VkClearValue, 2> clearValues{};
@@ -191,8 +218,19 @@ void PostProcessingPass::draw() {
     vkCmdEndRenderPass(cmdBuf);
 }
 
-void PostProcessingPass::resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer) {
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+void PostProcessingPass::resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer,
+                                           uint32_t width, uint32_t height) {
+    assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
+           renderToSwapchain || (width != 0 && height != 0));
+    if (renderToSwapchain)
+        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+    else {
+        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
+                createImageBuffer(context, context.getMemory(), width, height));
+        swapChainFrameBuffers[0] = renderPass->createFrameBuffer(
+                {colorAttachmentBuffer->getImageView().vk()},
+                {colorAttachmentBuffer->getWidth(), colorAttachmentBuffer->getHeight()});
+    }
     writeDescriptorSet(colorBuffer.getImageView(), depthBuffer.getImageView());
 }
 

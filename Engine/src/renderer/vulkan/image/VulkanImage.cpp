@@ -8,8 +8,9 @@
 
 
 /* Creates an image for use as a texture from a file. */
-VkImage VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
-                                    VkDeviceMemory &imageMemory) {
+std::tuple<VkImage, uint32_t, uint32_t>
+VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
+                            VkDeviceMemory &imageMemory) {
     int texWidth, texHeight, texChannels;
 
     stbi_uc *pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -54,7 +55,7 @@ VkImage VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemo
     vkDestroyBuffer(device.vk(), stagingBuffer, nullptr);
     vkFreeMemory(device.vk(), stagingBufferMemory, nullptr);
 
-    return image;
+    return std::make_tuple(image, texWidth, texHeight);
 }
 
 /* Creates an image for depth attachment and sample use. */
@@ -139,7 +140,8 @@ VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanM
 
 /* Transitions the image layout. */
 void
-VulkanImage::transitionImageLayout(const VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
+VulkanImage::transitionImageLayout(const VulkanMemory &vulkanMemory, VkImage image, VkFormat format,
+                                   VkImageLayout oldLayout,
                                    VkImageLayout newLayout) {
     VkCommandBuffer commandBuffer = vulkanMemory.beginSingleTimeCommands();
 

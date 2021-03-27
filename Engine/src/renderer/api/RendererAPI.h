@@ -34,5 +34,7 @@ namespace Renderer {
         virtual void join() = 0;
 
         virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;
+
+        virtual Texture &getRendererTexture() = 0;
     };
 }

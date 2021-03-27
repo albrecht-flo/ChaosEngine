@@ -16,7 +16,6 @@
 namespace Renderer {
     class VulkanMaterialInstance;
 
-    // TODO: Double buffering of Descriptor sets
     class VulkanMaterial : public Material {
         friend class VulkanMaterialInstance;
 

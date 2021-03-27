@@ -56,7 +56,7 @@ void Engine::run() {
         renderingSys.renderEntities(scene->registry);
 
 
-        // Update Scene // TODO: Process scrpits instead ----------------------
+        // Update Scene // TODO: Process scripts instead ----------------------
         scene->update(deltaTime);
 
     }

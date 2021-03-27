@@ -18,6 +18,7 @@ public:
     struct PostProcessingConfiguration {
         CameraComponent camera;
     };
+
 private:
     struct ShaderConfig {
         float cameraNear = 0; // initialize to invalid default to ensure shader gets configured
@@ -30,9 +31,11 @@ private:
     };
 
 private:
-    explicit PostProcessingPass(const VulkanContext &context) : context(context) {}
+    explicit PostProcessingPass(const VulkanContext &context, bool renderToSwapchain)
+            : context(context), renderToSwapchain(renderToSwapchain) {}
 
-    void init(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer);
+    void
+    init(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer, uint32_t width, uint32_t height);
 
 public:
     ~PostProcessingPass() = default;
@@ -46,13 +49,20 @@ public:
     PostProcessingPass &operator=(PostProcessingPass &&o) = delete;
 
     static PostProcessingPass
-    Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer);
+    Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer,
+           bool renderToSwapchain = true, uint32_t width = 0, uint32_t height = 0);
 
     void draw();
 
-    void resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer);
+    void resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer,
+                           uint32_t width = 0, uint32_t height = 0);
 
     void updateConfiguration(const PostProcessingConfiguration &configuration);
+
+    const VulkanImageBuffer &getColorAttachment() const {
+        assert("Color Attachment can only be retrieved if rendering to buffer." && colorAttachmentBuffer != nullptr);
+        return *colorAttachmentBuffer;
+    }
 
 private:
     void writeDescriptorSet(const VulkanImageView &colorView, const VulkanImageView &depthView);
@@ -60,7 +70,9 @@ private:
 
 private:
     const VulkanContext &context;
+    bool renderToSwapchain;
     std::unique_ptr<VulkanRenderPass> renderPass;
+    std::unique_ptr<VulkanImageBuffer> colorAttachmentBuffer;
     std::vector<VulkanFramebuffer> swapChainFrameBuffers;
 
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayout;
