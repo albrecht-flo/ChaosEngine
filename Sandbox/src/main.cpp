@@ -52,8 +52,9 @@
 
 
 int main() {
-    std::cout << "Engine starting..." << std::endl;
-
+    Logger::Init();
+    Logger::I("Main", "Engine starting...");
+    
     auto testScene = std::make_unique<TestScene>();
     Engine engine(std::move(testScene));
     engine.run();
