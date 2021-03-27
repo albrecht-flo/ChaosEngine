@@ -16,7 +16,7 @@ static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*h
 // ------------------------------------ Class members ------------------------------------------------------------------
 
 Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
-    Logger::Init(LogLevel::Info);
+    Logger::Init(LogLevel::Debug);
     Logger::I("Window", "Logger initialized");
 
     glfwSetErrorCallback(glfwErrorCallback);
