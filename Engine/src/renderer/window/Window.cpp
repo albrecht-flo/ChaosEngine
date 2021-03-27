@@ -13,6 +13,12 @@ static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*h
     w->setFrameBufferResized(true);
 }
 
+static void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
+    auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+    auto delta = MousePos{static_cast<int>(xOffset), static_cast<int>(yOffset)};
+    w->setScrollDelta(delta);
+}
+
 // ------------------------------------ Class members ------------------------------------------------------------------
 
 Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
@@ -34,7 +40,7 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
 
     // Setup callbacks
     glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
-
+    glfwSetScrollCallback(windowPtr, scrollCallback);
     return Window{windowPtr};
 }
 

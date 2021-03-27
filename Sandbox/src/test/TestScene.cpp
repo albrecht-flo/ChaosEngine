@@ -1,5 +1,7 @@
 #include "TestScene.h"
+
 #include "Engine/src/renderer/api/Material.h"
+#include "Engine/src/core/Utils/Logger.h"
 
 #include <imgui.h>
 
@@ -149,4 +151,26 @@ void TestScene::updateImGui() {
         }
         ImGui::End();
     }
+
+    ImGui::Begin("Log");
+    if (ImGui::Button("Toggle auto scroll"))
+        followLog = !followLog;
+    std::vector<std::string> logger = Logger::GetLogBuffer();
+    ImGui::BeginListBox("##LogList", ImVec2{-FLT_MIN, -FLT_MIN});
+    for (const auto &str: logger) {
+        ImGui::Selectable(str.c_str());
+    }
+
+    auto left_up = ImGui::GetWindowPos();
+    auto right_down = ImVec2{left_up.x + ImGui::GetWindowWidth(), left_up.y + ImGui::GetWindowHeight()};
+    if (ImGui::IsMouseHoveringRect(left_up, right_down) && ImGui::GetIO().MouseWheel != 0)
+        followLog = false;
+    if (ImGui::IsMouseHoveringRect(left_up, right_down) && ImGui::GetIO().MouseWheel < 0 &&
+        ImGui::GetScrollY() == ImGui::GetScrollMaxY())
+        followLog = true;
+
+    if (followLog)
+        ImGui::SetScrollY(ImGui::GetScrollMaxY());
+    ImGui::EndListBox();
+    ImGui::End();
 }

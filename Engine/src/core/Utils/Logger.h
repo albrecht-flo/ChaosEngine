@@ -39,16 +39,16 @@ public:
         engineLogger->critical("[{0}]: {1}", tag, message);
     }
 
+    static void Tick() {
+
+    }
+
     static spdlog::logger &GetLogger() { return *engineLogger; }
 
-//    static std::ostringstream &GetLoggerStream() { return *streamLogger; }
-
-    static void Tick() {
-    }
+    static std::vector<std::string> GetLogBuffer();
 
 private:
     static std::shared_ptr<spdlog::logger> engineLogger;
-//    static std::unique_ptr<std::ostringstream> streamLogger;
 };
 
 
