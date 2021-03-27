@@ -2,6 +2,7 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/VulkanRenderer2D.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
@@ -10,6 +11,7 @@ Engine::Engine(std::unique_ptr<Scene> &&scene)
           frameCounter(0), fpsDelta(0),
           renderingSys(window) {
     assert("A Scene is required" && scene != nullptr);
+    Logger::I("Engine", "Loading Scene");
     loadScene(std::move(scene));
 }
 
@@ -32,7 +34,7 @@ void Engine::run() {
         deltaTimer = currentTime;
         if (fpsDelta >= 1.0f) {
             fpsDelta -= 1.0f;
-            std::cout << "FPS: " << frameCounter << std::endl;
+            LOG_INFO("FPS: {0}", frameCounter);
             frameCounter = 0;
         }
         // Get window events

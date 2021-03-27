@@ -7,6 +7,13 @@ set(ENGINE_SOURCES
         src/core/Ecs.cpp
         src/core/Entity.cpp
         src/core/RenderingSystem.cpp
+        src/core/Utils/Logger.cpp
+        #     Engine API classes
+        src/renderer/api/Material.cpp
+        src/renderer/vulkan/api/VulkanMaterial.cpp
+        src/renderer/api/RenderPass.cpp
+        src/renderer/api/Texture.cpp
+        src/renderer/api/BufferedGPUResource.cpp
         #       General Rendering files
         src/renderer/DevRenderer.cpp
         src/renderer/api/GraphicsContext.cpp
@@ -44,12 +51,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        #     Engine API classes
-        src/renderer/api/Material.cpp
-        src/renderer/vulkan/api/VulkanMaterial.cpp
-        src/renderer/api/RenderPass.cpp
-        src/renderer/api/Texture.cpp
-        src/renderer/api/BufferedGPUResource.cpp src/renderer/api/BufferedGPUResource.h)
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm
@@ -60,6 +62,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/tinyply/source
         ../dep/tinyobjloader
         ../dep/stb
+        ../dep/spdlog/include
         )
 
 add_library(Engine ${ENGINE_SOURCES})

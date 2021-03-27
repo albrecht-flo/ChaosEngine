@@ -1,11 +1,11 @@
 #include "Window.h"
 
 #include <stdexcept>
-#include <iostream>
 #include <utility>
+#include "Engine/src/core/Utils/Logger.h"
 
 static void glfwErrorCallback(int error_code, const char *description) {
-    std::cerr << "[GLFW] Error: [" << error_code << "] :" << description << std::endl;
+    LOG_ERROR("[GLFW] Error: [{0}] :{1}", error_code, description);
 }
 
 static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*height*/) {
@@ -16,6 +16,9 @@ static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*h
 // ------------------------------------ Class members ------------------------------------------------------------------
 
 Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
+    Logger::Init(LogLevel::Info);
+    Logger::I("Window", "Logger initialized");
+
     glfwSetErrorCallback(glfwErrorCallback);
 
     if (glfwInit() != GLFW_TRUE) {

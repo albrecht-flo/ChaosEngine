@@ -1,11 +1,11 @@
 #include "VulkanInstance.h"
 
+#include "Engine/src/core/Utils/Logger.h"
+
 #include <GLFW/glfw3.h>
 
 #include <stdexcept>
-#include <cstdint>
 #include <cstring>
-#include <iostream>
 #include <utility>
 #include <set>
 
@@ -84,14 +84,13 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
         messageTypePrefix += "PERF";
 
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-        std::cerr << "[Vulkan Validation ERROR](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
+        LOG_ERROR("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-        std::cerr << "[Vulkan Validation WARNING](" << messageTypePrefix << "): " << pCallbackData->pMessage
-                  << std::endl;
+        LOG_WARN("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-        std::cout << "[Vulkan Validation INFO](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
+        LOG_INFO("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
     if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-        std::cout << "[Vulkan Validation DEBUG](" << messageTypePrefix << "): " << pCallbackData->pMessage << std::endl;
+        LOG_DEBUG("[Vulkan] ({0}): {1}", messageTypePrefix, pCallbackData->pMessage);
 
     return VK_FALSE;
 }

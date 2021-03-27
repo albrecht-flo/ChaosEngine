@@ -26,3 +26,6 @@
 [submodule "dep/entt"]
 	path = dep/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "dep/spdlog"]
+	path = dep/spdlog
+	url = https://github.com/gabime/spdlog.git
