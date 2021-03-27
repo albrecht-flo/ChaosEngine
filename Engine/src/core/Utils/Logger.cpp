@@ -19,6 +19,7 @@ void Logger::Init(LogLevel level) {
 
     engineLogger = std::make_shared<spdlog::logger>("ChaosEngine", begin(logSinks), end(logSinks));
     spdlog::register_logger(engineLogger);
+
     switch (level) {
         case LogLevel::Debug: {
             engineLogger->set_level(spdlog::level::debug);
