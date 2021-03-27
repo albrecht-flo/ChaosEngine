@@ -15,8 +15,8 @@
 	url = https://github.com/syoyo/tinyobjloader.git
 [submodule "dep/imgui"]
 	path = dep/imgui
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
+	url = https://github.com/albrecht-flo/imgui.git
+	branch = custom/AddedBasicTextureSupportForVulkan
 [submodule "dep/tinyobjloader"]
 	path = dep/tinyobjloader
 	url = https://github.com/syoyo/tinyobjloader.git

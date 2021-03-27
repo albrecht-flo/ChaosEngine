@@ -39,8 +39,8 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
                                      .format(VK_FORMAT_B8G8R8A8_UNORM)
-                                     .loadStore(AttachmentLoadOp::Preserve, AttachmentStoreOp::Store)
-                                     .layoutInitFinal(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                     .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
+                                     .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
                                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                                      .build());
     auto renderPass = std::make_unique<VulkanRenderPass>(
@@ -64,6 +64,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
                     .addDescriptor(VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000)
                     .setMaxSets(1000 * 11)
                     .build());
+    context.setDebugName(VK_OBJECT_TYPE_DESCRIPTOR_POOL, (uint64_t) descriptorPool->vk(), "ImGuiPrimaryDescriptorPool");
 
     // Init imgui window
     ImGui_ImplGlfw_InitForVulkan(window.getWindow(), true);
@@ -117,7 +118,12 @@ void ImGuiRenderingPass::draw() {
     renderPassInfo.framebuffer = framebuffer.vk(); // the attatchment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = context.getSwapChain().getExtent(); // based on swap chain
-    renderPassInfo.clearValueCount = 0;
+
+    // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
+    std::array<VkClearValue, 1> clearValues{};
+    clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(cmdBuf.vk(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
 

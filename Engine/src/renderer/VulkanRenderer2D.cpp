@@ -17,7 +17,9 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
 
 
     auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getColorBuffer(),
-                                                         spriteRenderingPass.getDepthBuffer());
+                                                         spriteRenderingPass.getDepthBuffer(), false,
+                                                         context.getSwapChain().getWidth(),
+                                                         context.getSwapChain().getHeight());
 
     IMGUI_CHECKVERSION();
     ImGuiContext *imGuiContext = ImGui::CreateContext();

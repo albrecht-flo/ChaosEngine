@@ -4,6 +4,7 @@
 #include "Engine/src/core/Utils/Logger.h"
 
 #include <imgui.h>
+#include <backends/imgui_impl_vulkan.h>
 #include "CustomImGui.h"
 
 #include <iostream>
@@ -122,11 +123,15 @@ void TestScene::update(float deltaTime) {
 
 }
 
+
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
-static bool followLog = true;
+bool demoOpen = true;
+
+#include <renderer/vulkan/image/VulkanTexture.h> // TODO Remove here
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
+    CustomImGui::ImGuiEnableDocking(&demoOpen, *window);
     if (cameraControllerActive) {
         if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
             ImGui::Text("Camera Controller");
@@ -153,4 +158,17 @@ void TestScene::updateImGui() {
     }
 
     CustomImGui::RenderLogWindow();
+
+    // NEXT Rework ImGui Texture allocation (update); Texture refactor (detatch from Image); Resizing
+    ImGui::Begin("Viewport");
+//    auto size = ImGui::GetContentRegionMax();
+//    LOG_DEBUG("Current Viewport size ({0} x {1})", size.x, size.y);
+    // TODO Resize
+    auto &texture = RenderingSystem::GetCurrentRenderer().getRendererTexture();
+    auto &vTex = dynamic_cast<VulkanTexture &>(texture);
+    // TODO Reuse (Currently this breaks after ~ 1000 allocations
+    auto x = ImGui_ImplVulkan_AddTexture(vTex.getSampler(), vTex.getImageView().vk(), vTex.getImageLayout());
+    // TODO(Idea): custom ImGui Function for
+    ImGui::Image(x, ImVec2(vTex.getWidth(), vTex.getHeight()));
+    ImGui::End();
 }
