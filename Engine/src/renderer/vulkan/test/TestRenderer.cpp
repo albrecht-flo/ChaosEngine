@@ -125,14 +125,14 @@ void TestRenderer::createImageBuffers() {
 /* Creates framebuffers for offscreen render passes and final composite rendering. */
 void TestRenderer::createFramebuffers() {
     // Create offscreen frame buffer // ONLY ONE because we only have one frame in active rendering
-    offscreenFramebuffer = VulkanFramebuffer::createFramebuffer(
+    offscreenFramebuffer = VulkanFramebuffer::Create(
             device,
             {offscreenImageView.vk(), depthBuffer.getImageView().vk()},
             mainGraphicsPass.vk(),
             swapChain.getExtent().width, swapChain.getExtent().height
     );
     // Create offscreen ImGui framebuffer
-    imGuiFramebuffer = VulkanFramebuffer::createFramebuffer(
+    imGuiFramebuffer = VulkanFramebuffer::Create(
             device,
             {imGuiImageView.vk()},
             imGuiRenderPass.vk(),
@@ -143,7 +143,7 @@ void TestRenderer::createFramebuffers() {
     swapChainFramebuffers.clear();
     swapChainFramebuffers.reserve(swapChain.size());
     for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers.emplace_back(VulkanFramebuffer::createFramebuffer(
+        swapChainFramebuffers.emplace_back(VulkanFramebuffer::Create(
                 device,
                 {swapChain.getImageViews()[i].vk()},
                 postRenderPass.vk(),

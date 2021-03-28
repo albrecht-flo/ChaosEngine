@@ -8,9 +8,8 @@
 
 
 /* Creates an image for use as a texture from a file. */
-std::tuple<VkImage, uint32_t, uint32_t>
-VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename,
-                            VkDeviceMemory &imageMemory) {
+VulkanImage
+VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename) {
     int texWidth, texHeight, texChannels;
 
     stbi_uc *pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -21,7 +20,8 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
         throw std::runtime_error("STBI: Failed to load " + filename);
     }
 
-    VkImage image;
+    VkDeviceMemory imageMemory{};
+    VkImage image{};
 
     // Staging buffer to contain data for transfer
     VkBuffer stagingBuffer;
@@ -55,16 +55,15 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
     vkDestroyBuffer(device.vk(), stagingBuffer, nullptr);
     vkFreeMemory(device.vk(), stagingBufferMemory, nullptr);
 
-    return std::make_tuple(image, texWidth, texHeight);
+    return VulkanImage(device, image, imageMemory, texWidth, texHeight);
 }
 
 /* Creates an image for depth attachment and sample use. */
-VkImage
-VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width,
-                                    uint32_t height,
-                                    VkFormat depthFormat, VkDeviceMemory &depthImageMemory) {
+VulkanImage VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory,
+                                                uint32_t width, uint32_t height, VkFormat depthFormat) {
 
-    VkImage depthImage;
+    VkDeviceMemory depthImageMemory{};
+    VkImage depthImage{};
 
     createImage(device, vulkanMemory, width, height, depthFormat,
                 VK_IMAGE_TILING_OPTIMAL,
@@ -72,16 +71,16 @@ VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemo
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage,
                 depthImageMemory);
 
-    return depthImage;
+    return VulkanImage(device, depthImage, depthImageMemory, width, height);
 }
 
 
 /* Creates an image for color attachment and sample use. */
-VkImage VulkanImage::createRawImage(const VulkanDevice &device,
-                                    const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
-                                    VkFormat format, VkDeviceMemory &imageMemory/*TEMP*/) {
+VulkanImage VulkanImage::createRawImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory,
+                                        uint32_t width, uint32_t height, VkFormat format) {
 
-    VkImage image;
+    VkDeviceMemory imageMemory{};
+    VkImage image{};
 
     createImage(device, vulkanMemory, width, height, format,
                 VK_IMAGE_TILING_OPTIMAL,
@@ -89,7 +88,7 @@ VkImage VulkanImage::createRawImage(const VulkanDevice &device,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image,
                 imageMemory);
 
-    return image;
+    return VulkanImage(device, image, imageMemory, width, height);
 }
 
 /* Creates an image, allocates its memory and binds the two together. */
@@ -224,12 +223,4 @@ VkFormat VulkanImage::getDepthFormat(const VulkanDevice &device) {
              VK_FORMAT_D24_UNORM_S8_UINT},
             VK_IMAGE_TILING_OPTIMAL,
             VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-}
-
-/* Destroyes the image and the memory. */
-void VulkanImage::destroy(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory) {
-    if (image != nullptr)
-        vkDestroyImage(device.vk(), image, nullptr);
-    if (imageMemory != nullptr)
-        vkFreeMemory(device.vk(), imageMemory, nullptr);
 }

@@ -61,18 +61,8 @@ public:
     /// Gets the apropriate render pass for the requested shader stage
     const Renderer::RenderPass &getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
 
-    Renderer::Texture & getRendererTexture() override { // TODO: IN Progress
-        const auto& color = postProcessingPass.getColorAttachment();
-        if(color.getImage() != renderImage) {
-            auto x = VulkanImageView::Create(context.getDevice(), color.getImage(), VK_FORMAT_R8G8B8A8_UNORM,
-                                             VK_IMAGE_ASPECT_COLOR_BIT);
-            renderImage = color.getImage();
-            renderTexture = std::make_unique<VulkanTexture>(context.getDevice(), color.getImage(), nullptr,
-                                                   color.getImageLayout(), std::move(x),
-                                                   VulkanSampler::create(context.getDevice()),
-                                                   color.getWidth(), color.getHeight());
-        }
-        return *renderTexture;
+    const Renderer::Framebuffer &getFramebuffer() override {
+        return postProcessingPass.getColorAttachment();
     }
 
 private:
@@ -88,7 +78,5 @@ private:
     // TEMP
     RenderMesh quadMesh;
 
-    VkImage renderImage = VK_NULL_HANDLE;
-    std::unique_ptr<VulkanTexture> renderTexture = nullptr;
 };
 

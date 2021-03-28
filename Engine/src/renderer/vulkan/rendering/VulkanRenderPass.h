@@ -21,7 +21,7 @@ private:
     void destroy();
 
 public:
-    VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount);
+    VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, int attachmentCount);
 
     ~VulkanRenderPass() override;
 
@@ -40,10 +40,11 @@ public:
     [[nodiscard]] inline VkRenderPass vk() const { return renderPass; }
 
     [[nodiscard]] VulkanFramebuffer
-    createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages, VkExtent2D extent) const;
+    createFrameBuffer(const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
+                      uint32_t width, uint32_t height) const;
 
 private:
-    const VulkanDevice &device;
+    const VulkanContext &context;
     VkRenderPass renderPass;
     int attachmentCount;
 };

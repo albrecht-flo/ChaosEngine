@@ -2,12 +2,13 @@
 
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 
-VulkanAttachmentBuilder::VulkanAttachmentBuilder(const VulkanDevice &device, AttachmentType attachmentType)
+
+VulkanAttachmentBuilder::VulkanAttachmentBuilder(const VulkanDevice &device, Renderer::AttachmentType attachmentType)
         : attachmentType(attachmentType) {
-    attachmentLayout = (attachmentType == AttachmentType::Color)
+    attachmentLayout = (attachmentType == Renderer::AttachmentType::Color)
                        ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
                        : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    if (attachmentType == AttachmentType::Color) {
+    if (attachmentType == Renderer::AttachmentType::Color) {
         attachment.format = VK_FORMAT_R8G8B8A8_UNORM;
         attachment.samples = VK_SAMPLE_COUNT_1_BIT; // no multisampling so only 1
         attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // clear before new frame
@@ -16,7 +17,7 @@ VulkanAttachmentBuilder::VulkanAttachmentBuilder(const VulkanDevice &device, Att
         attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // layout ~before~ render rendering
         attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // layout ~after~ render rendering
-    } else if (attachmentType == AttachmentType::Depth) {
+    } else if (attachmentType == Renderer::AttachmentType::Depth) {
         attachment.format = VulkanImage::getDepthFormat(device);
         attachment.samples = VK_SAMPLE_COUNT_1_BIT;
         attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // clear before next draw

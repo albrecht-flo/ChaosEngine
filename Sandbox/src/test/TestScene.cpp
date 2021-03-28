@@ -26,7 +26,7 @@ void TestScene::load() {
             .fragmentShader = "2DStaticColoredSprite",
             .pushConstant = Material::StandardOpaquePushConstants,
             .set0 = Material::StandardOpaqueSet0,
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount, // maxFramesInFlight
+            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
             .set1 = std::vector<ShaderBindings>(
                     {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
                             .layout=std::vector<ShaderBindingLayout>(
@@ -44,7 +44,7 @@ void TestScene::load() {
             .fragmentShader = "2DStaticTexturedSprite",
             .pushConstant = Material::StandardOpaquePushConstants,
             .set0 = Material::StandardOpaqueSet0,
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount, // maxFramesInFlight
+            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
             .set1 = std::vector<ShaderBindings>(
                     {ShaderBindings{.type = ShaderBindingType::TextureSampler, .stage=ShaderStage::Fragment, .name="diffuseTexture"},
                      ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
@@ -164,11 +164,11 @@ void TestScene::updateImGui() {
 //    auto size = ImGui::GetContentRegionMax();
 //    LOG_DEBUG("Current Viewport size ({0} x {1})", size.x, size.y);
     // TODO Resize
-    auto &texture = RenderingSystem::GetCurrentRenderer().getRendererTexture();
-    auto &vTex = dynamic_cast<VulkanTexture &>(texture);
+    const auto& fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
+    const auto& tex = dynamic_cast<const VulkanTexture&>(fb.getAttachmentTexture(Renderer::AttachmentType::Color, 0));
     // TODO Reuse (Currently this breaks after ~ 1000 allocations
-    auto x = ImGui_ImplVulkan_AddTexture(vTex.getSampler(), vTex.getImageView().vk(), vTex.getImageLayout());
+    auto x = ImGui_ImplVulkan_AddTexture(tex.getSampler(), tex.getImageView(), tex.getImageLayout());
     // TODO(Idea): custom ImGui Function for
-    ImGui::Image(x, ImVec2(vTex.getWidth(), vTex.getHeight()));
+    ImGui::Image(x, ImVec2(fb.getWidth(), fb.getHeight()));
     ImGui::End();
 }

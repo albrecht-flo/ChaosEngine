@@ -10,6 +10,7 @@
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/api/RenderPass.h"
 #include "Engine/src/renderer/api/Material.h"
+#include "Engine/src/renderer/api/Framebuffer.h"
 
 namespace Renderer {
 
@@ -35,6 +36,6 @@ namespace Renderer {
 
         virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;
 
-        virtual Texture &getRendererTexture() = 0;
+        virtual const Renderer::Framebuffer & getFramebuffer() = 0;
     };
 }
