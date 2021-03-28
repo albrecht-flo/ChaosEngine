@@ -52,11 +52,9 @@ public:
     void drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
                     const Renderer::VulkanMaterialInstance &material);
 
-    inline const VulkanImageBuffer &getColorBuffer() const { return *colorBuffer; }
-
-    inline const VulkanImageBuffer &getDepthBuffer() const { return *depthBuffer; }
-
     inline const VulkanRenderPass &getOpaquePass() const { return *opaquePass; }
+
+    inline const VulkanFramebuffer &getFramebuffer() const { return *framebuffer; }
 
 private:
     void createAttachments(uint32_t width, uint32_t height);
@@ -70,8 +68,8 @@ private:
     const VulkanContext &context;
     std::unique_ptr<VulkanRenderPass> opaquePass;
 
-    std::unique_ptr<VulkanImageBuffer> colorBuffer;
-    std::unique_ptr<VulkanImageBuffer> depthBuffer;
+//    std::unique_ptr<VulkanImageBuffer> colorBuffer;
+//    std::unique_ptr<VulkanImageBuffer> depthBuffer;
     std::unique_ptr<VulkanFramebuffer> framebuffer;
 
     // Dynamic resources ------------------------------------------------------

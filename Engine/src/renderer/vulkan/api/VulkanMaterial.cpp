@@ -156,7 +156,7 @@ VulkanMaterial::instantiate(std::shared_ptr<Material> &materialPtr, const void *
                 if (texturesIt == textures.end())
                     throw std::runtime_error("Missing textures.");
                 const auto *tex = dynamic_cast<const VulkanTexture *>(*texturesIt);
-                writer.writeImageSampler(i, tex->getSampler(), tex->getImageView().vk(), tex->getImageLayout());
+                writer.writeImageSampler(i, tex->getSampler(), tex->getImageView(), tex->getImageLayout());
                 ++texturesIt;
                 break;
         }

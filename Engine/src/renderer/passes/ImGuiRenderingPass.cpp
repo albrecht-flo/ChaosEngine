@@ -9,6 +9,8 @@
 
 #include <array>
 
+using namespace Renderer;
+
 static void check_imgui_vk_result(VkResult result) {
     if (result != VK_SUCCESS)
         throw std::runtime_error("[ERROR] [ImGui - Vulkan] Error in ImGui Vulkan code.");
@@ -16,16 +18,15 @@ static void check_imgui_vk_result(VkResult result) {
 }
 
 static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
-                            const VulkanRenderPass &renderPass) {
+createSwapChainFrameBuffers(const VulkanSwapChain &swapChain, const VulkanRenderPass &renderPass) {
     std::vector<VulkanFramebuffer> swapChainFramebuffers;
     swapChainFramebuffers.reserve(swapChain.size());
     for (uint32_t i = 0; i < swapChain.size(); i++) {
         swapChainFramebuffers.emplace_back(
                 renderPass.createFrameBuffer(
-                        {swapChain.getImageViews()[i].vk()},
-                        swapChain.getExtent()
-                ));
+                        {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
+                        swapChain.getWidth(), swapChain.getHeight())
+        );
     }
     return std::move(swapChainFramebuffers);
 }
@@ -37,7 +38,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
                            ImGuiContext *imGuiContext) {
 
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
+    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), Renderer::AttachmentType::Color)
                                      .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
@@ -46,7 +47,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
     auto renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 
-    auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+    auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
 
     // Create descriptor pool for ImGui
     auto descriptorPool = std::make_unique<VulkanDescriptorPool>(
@@ -135,7 +136,7 @@ void ImGuiRenderingPass::draw() {
 }
 
 void ImGuiRenderingPass::resizeAttachments(uint32_t, uint32_t) {
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
 
     ImGui_ImplVulkan_SetMinImageCount(context.getSwapChain().size());
 }

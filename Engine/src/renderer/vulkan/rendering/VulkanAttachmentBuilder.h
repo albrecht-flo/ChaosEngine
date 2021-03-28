@@ -1,13 +1,11 @@
 #pragma once
 
+#include "Engine/src/renderer/api/Framebuffer.h"
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <cassert>
 #include <utility>
 
-enum class AttachmentType {
-    Color, Depth
-};
 
 enum class AttachmentLoadOp {
     Preserve, Clear, Undefined
@@ -19,7 +17,7 @@ enum class AttachmentStoreOp {
 
 struct VulkanAttachmentDescription {
 
-    AttachmentType attachmentType;
+    Renderer::AttachmentType attachmentType;
     VkAttachmentDescription attachment;
     VkImageLayout attachmentLayout;
 };
@@ -32,7 +30,7 @@ struct VulkanAttachmentDescription {
 class VulkanAttachmentBuilder {
 
 public:
-    explicit VulkanAttachmentBuilder(const VulkanDevice &device, AttachmentType attachmentType);
+    explicit VulkanAttachmentBuilder(const VulkanDevice &device, Renderer::AttachmentType attachmentType);
 
     ~VulkanAttachmentBuilder() = default;
 
@@ -100,7 +98,7 @@ private:
     }
 
 private:
-    AttachmentType attachmentType;
+    Renderer::AttachmentType attachmentType;
     VkAttachmentDescription attachment{};
     VkImageLayout attachmentLayout{};
 };

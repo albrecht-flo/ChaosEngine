@@ -9,62 +9,58 @@
 using namespace Renderer;
 
 static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanDevice &device, const VulkanSwapChain &swapChain,
-                            const VulkanRenderPass &renderPass) {
+createSwapChainFrameBuffers(const VulkanSwapChain &swapChain, const VulkanRenderPass &renderPass) {
     std::vector<VulkanFramebuffer> swapChainFramebuffers;
     swapChainFramebuffers.reserve(swapChain.size());
     for (uint32_t i = 0; i < swapChain.size(); i++) {
         swapChainFramebuffers.emplace_back(
                 renderPass.createFrameBuffer(
-                        {swapChain.getImageViews()[i].vk()},
-                        swapChain.getExtent()
-                ));
+                        {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
+                        swapChain.getWidth(), swapChain.getHeight())
+        );
     }
     return std::move(swapChainFramebuffers);
 }
 
 static VulkanImageBuffer
 createImageBuffer(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
-    VkDeviceMemory imageMemory{};
-    auto image = VulkanImage::createRawImage(
-            context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM, imageMemory);
-    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image, "PostProcessingColorAttachment");
-    auto imageView = VulkanImageView::Create(context.getDevice(), image, VK_FORMAT_R8G8B8A8_UNORM,
+    auto image = VulkanImage::
+    createRawImage(context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM);
+    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image.vk(), "PostProcessingColorAttachment");
+
+    auto imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                                              VK_IMAGE_ASPECT_COLOR_BIT);
 
-    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageMemory), std::move(imageView), width,
-                             height);
+    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageView));
 }
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, const VulkanImageBuffer &colorBuffer,
-                                              const VulkanImageBuffer &depthBuffer,
+PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, const VulkanFramebuffer &previousPassFB,
                                               bool renderToSwapchain, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            renderToSwapchain || (width != 0 && height != 0));
     PostProcessingPass postProcessingPass(context, renderToSwapchain);
-    postProcessingPass.init(colorBuffer, depthBuffer, width, height);
+    postProcessingPass.init(width, height, previousPassFB);
     return std::move(postProcessingPass);
 }
 
 PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
         : context(o.context), renderToSwapchain(o.renderToSwapchain), renderPass(std::move(o.renderPass)),
-          colorAttachmentBuffer(std::move(o.colorAttachmentBuffer)),
+//          colorAttachmentBuffer(std::move(o.colorAttachmentBuffer)),
           swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
           descriptorSetLayout(std::move(o.descriptorSetLayout)),
           postprocessingPipeline(std::move(o.postprocessingPipeline)),
           descriptorPool(std::move(o.descriptorPool)),
           quadBuffer(std::move(o.quadBuffer)),
-          colorBufferSampler(std::move(o.colorBufferSampler)),
-          depthBufferSampler(std::move(o.depthBufferSampler)),
+//          colorBufferSampler(std::move(o.colorBufferSampler)),
+//          depthBufferSampler(std::move(o.depthBufferSampler)),
           perFrameDescriptorSet(std::move(o.perFrameDescriptorSet)),
           perFrameUniformBuffer(std::move(o.perFrameUniformBuffer)),
           uboContent(std::move(o.uboContent)) {}
 
 void
-PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer, uint32_t width,
-                         uint32_t height) {
+PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffer &previousPassFb) {
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
@@ -73,13 +69,12 @@ PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const VulkanImage
             VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
     if (renderToSwapchain)
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
     else {
-        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
-                createImageBuffer(context, context.getMemory(), width, height));
+//        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
+//                createImageBuffer(context, context.getMemory(), width, height));
         swapChainFrameBuffers.emplace_back(renderPass->createFrameBuffer(
-                {colorAttachmentBuffer->getImageView().vk()},
-                {colorAttachmentBuffer->getWidth(), colorAttachmentBuffer->getHeight()})
+                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height)
         );
     }
 
@@ -139,20 +134,20 @@ PostProcessingPass::init(const VulkanImageBuffer &colorBuffer, const VulkanImage
     uboContent.at(0)->cameraNear = ShaderConfig{}.cameraNear;
     uboContent.at(0)->cameraFar = ShaderConfig{}.cameraFar;
 
-    colorBufferSampler = std::make_unique<VulkanSampler>(VulkanSampler::create(context.getDevice(), VK_FILTER_LINEAR));
-    depthBufferSampler = std::make_unique<VulkanSampler>(VulkanSampler::create(context.getDevice(), VK_FILTER_LINEAR));
-
     perFrameDescriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
     perFrameDescriptorSet->startWriting().writeBuffer(0, perFrameUniformBuffer->buffer).commit();
-    writeDescriptorSet(colorBuffer.getImageView(), depthBuffer.getImageView());
+    writeDescriptorSet(previousPassFb);
 }
 
-void PostProcessingPass::writeDescriptorSet(const VulkanImageView &colorView, const VulkanImageView &depthView) {
+void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPassFB) {
+    const auto &depthTex = dynamic_cast<const VulkanTexture &>(
+            previousPassFB.getAttachmentTexture(AttachmentType::Depth, 0));
+    const auto &colorTex = dynamic_cast<const VulkanTexture &>(
+            previousPassFB.getAttachmentTexture(AttachmentType::Color, 0));
     // Fill the descriptor set
     perFrameDescriptorSet->startWriting()
-            .writeImageSampler(1, colorBufferSampler->vk(), colorView.vk(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-            .writeImageSampler(2, depthBufferSampler->vk(), depthView.vk(),
-                               VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+            .writeImageSampler(1, colorTex.getSampler(), colorTex.getImageView(), colorTex.getImageLayout())
+            .writeImageSampler(2, depthTex.getSampler(), depthTex.getImageView(), depthTex.getImageLayout())
             .commit();
 }
 
@@ -173,8 +168,8 @@ void PostProcessingPass::draw() {
             swapChainFrameBuffers[renderToSwapchain ? context.getCurrentSwapChainFrame() : 0].vk(); // the attachment
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
     renderPassInfo.renderArea.extent = renderToSwapchain ? context.getSwapChain().getExtent() :
-                                       VkExtent2D{colorAttachmentBuffer->getWidth(),
-                                                  colorAttachmentBuffer->getHeight()}; // based on swap chain
+                                       VkExtent2D{swapChainFrameBuffers[0].getWidth(),
+                                                  swapChainFrameBuffers[0].getHeight()}; // based on swap chain
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
     std::array<VkClearValue, 2> clearValues{};
@@ -218,20 +213,17 @@ void PostProcessingPass::draw() {
     vkCmdEndRenderPass(cmdBuf);
 }
 
-void PostProcessingPass::resizeAttachments(const VulkanImageBuffer &colorBuffer, const VulkanImageBuffer &depthBuffer,
-                                           uint32_t width, uint32_t height) {
+void PostProcessingPass::resizeAttachments(const VulkanFramebuffer &framebuffer, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            renderToSwapchain || (width != 0 && height != 0));
     if (renderToSwapchain)
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getDevice(), context.getSwapChain(), *renderPass);
+        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
     else {
-        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
-                createImageBuffer(context, context.getMemory(), width, height));
         swapChainFrameBuffers[0] = renderPass->createFrameBuffer(
-                {colorAttachmentBuffer->getImageView().vk()},
-                {colorAttachmentBuffer->getWidth(), colorAttachmentBuffer->getHeight()});
+                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height);
     }
-    writeDescriptorSet(colorBuffer.getImageView(), depthBuffer.getImageView());
+
+    writeDescriptorSet(framebuffer);
 }
 
 void PostProcessingPass::updateConfiguration(const PostProcessingPass::PostProcessingConfiguration &configuration) {

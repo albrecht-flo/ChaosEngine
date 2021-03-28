@@ -19,9 +19,9 @@ VulkanRenderPass::Create(const VulkanContext &context,
         VkAttachmentReference attachmentRef = {};
         attachmentRef.attachment = i;
         attachmentRef.layout = attachmentDescriptions[i].attachmentLayout; // layout ~during~ subpass
-        if (attachmentDescriptions[i].attachmentType == AttachmentType::Color) {
+        if (attachmentDescriptions[i].attachmentType == Renderer::AttachmentType::Color) {
             colorAttachmentRefs.emplace_back(attachmentRef);
-        } else if (attachmentDescriptions[i].attachmentType == AttachmentType::Depth) {
+        } else if (attachmentDescriptions[i].attachmentType == Renderer::AttachmentType::Depth) {
             depthAttachmentRefs.emplace_back(attachmentRef);
         } else {
             assert("Attachment type not supported.");
@@ -71,14 +71,14 @@ VulkanRenderPass::Create(const VulkanContext &context,
     if (!debugName.empty())
         context.setDebugName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t) renderPass, debugName);
 
-    return VulkanRenderPass(context.getDevice(), renderPass, attachments.size());
+    return VulkanRenderPass(context, renderPass, attachments.size());
 }
 
-VulkanRenderPass::VulkanRenderPass(const VulkanDevice &device, VkRenderPass renderPass, int attachmentCount)
-        : device(device), renderPass(renderPass), attachmentCount(attachmentCount) {}
+VulkanRenderPass::VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, int attachmentCount)
+        : context(context), renderPass(renderPass), attachmentCount(attachmentCount) {}
 
 VulkanRenderPass::VulkanRenderPass(VulkanRenderPass &&o) noexcept
-        : device(o.device), renderPass(std::exchange(o.renderPass, nullptr)), attachmentCount(o.attachmentCount) {}
+        : context(o.context), renderPass(std::exchange(o.renderPass, nullptr)), attachmentCount(o.attachmentCount) {}
 
 VulkanRenderPass::~VulkanRenderPass() {
     destroy();
@@ -86,12 +86,12 @@ VulkanRenderPass::~VulkanRenderPass() {
 
 void VulkanRenderPass::destroy() {
     if (renderPass != nullptr)
-        vkDestroyRenderPass(device.vk(), renderPass, nullptr);
+        vkDestroyRenderPass(context.getDevice().vk(), renderPass, nullptr);
 }
 
 VulkanFramebuffer
-VulkanRenderPass::createFrameBuffer(const std::initializer_list<VkImageView> &attachmentImages,
-                                    VkExtent2D extent) const {
-    assert(attachmentImages.size() == attachmentCount);
-    return VulkanFramebuffer::createFramebuffer(device, attachmentImages, renderPass, extent.width, extent.height);
+VulkanRenderPass::createFrameBuffer(const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
+                                    uint32_t width, uint32_t height) const {
+    assert("Missing Attachment info when creating framebuffer!" && infos.size() == attachmentCount);
+    return VulkanFramebuffer::Create(context, renderPass, infos, width, height);
 }

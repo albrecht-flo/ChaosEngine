@@ -16,8 +16,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
                                                            context.getSwapChain().getHeight());
 
 
-    auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getColorBuffer(),
-                                                         spriteRenderingPass.getDepthBuffer(), false,
+    auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getFramebuffer(), false,
                                                          context.getSwapChain().getWidth(),
                                                          context.getSwapChain().getHeight());
 
@@ -87,7 +86,7 @@ void VulkanRenderer2D::recreateSwapChain() {
     // Update framebuffer attachments
     spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     imGuiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-    postProcessingPass.resizeAttachments(spriteRenderingPass.getColorBuffer(), spriteRenderingPass.getDepthBuffer());
+    postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer());
 }
 
 void VulkanRenderer2D::flush() {
