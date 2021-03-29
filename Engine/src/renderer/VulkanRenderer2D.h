@@ -58,7 +58,7 @@ public:
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
-    /// Gets the apropriate render pass for the requested shader stage
+    /// Gets the appropriate render pass for the requested shader stage
     const Renderer::RenderPass &getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
 
     const Renderer::Framebuffer &getFramebuffer() override {

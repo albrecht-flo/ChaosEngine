@@ -1,9 +1,11 @@
 #include "VulkanFramebuffer.h"
 
 #include "VulkanImage.h"
+#include "VulkanTexture.h"
 
 #include <stdexcept>
 #include <algorithm>
+#include <cassert>
 
 static VkFormat getVkFormat(const VulkanContext &context, Renderer::AttachmentFormat format) {
     switch (format) {
@@ -145,5 +147,14 @@ VulkanFramebuffer &VulkanFramebuffer::operator=(VulkanFramebuffer &&o) noexcept 
 void VulkanFramebuffer::destroy() {
     if (framebuffer != nullptr)
         vkDestroyFramebuffer(device.vk(), framebuffer, nullptr);
+}
+
+const Renderer::Texture &VulkanFramebuffer::getAttachmentTexture(Renderer::AttachmentType type, uint32_t index) const {
+    assert("Swapchain can not be read!" && type != Renderer::AttachmentType::SwapChain);
+    assert("Depth-Attachment is NOT present!" && type != Renderer::AttachmentType::Depth || depthBufferAttached);
+    if (type == Renderer::AttachmentType::Depth && depthBufferAttached)
+        return attachmentTextures.back();
+
+    return attachmentTextures[index];
 }
 

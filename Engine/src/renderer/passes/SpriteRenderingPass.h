@@ -3,19 +3,18 @@
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/data/RenderObject.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
-#include "Engine/src/renderer/vulkan/api/VulkanMaterial.h"
-#include "Engine/src/renderer/vulkan/image/VulkanImage.h"
-#include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
-#include "Engine/src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipeline.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
+#include "Engine/src/renderer/vulkan/api/VulkanMaterial.h"
 
 #include <string>
 
 // ------------------------------------ Pipeline Description -----------------------------------------------------------
+class VulkanMaterialInstance;
 
 class SpriteRenderingPass {
 private:
@@ -50,7 +49,7 @@ public:
     void resizeAttachments(uint32_t width, uint32_t height);
 
     void drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
-                    const Renderer::VulkanMaterialInstance &material);
+                    const VulkanMaterialInstance &material);
 
     inline const VulkanRenderPass &getOpaquePass() const { return *opaquePass; }
 
@@ -67,9 +66,6 @@ private:
 private:
     const VulkanContext &context;
     std::unique_ptr<VulkanRenderPass> opaquePass;
-
-//    std::unique_ptr<VulkanImageBuffer> colorBuffer;
-//    std::unique_ptr<VulkanImageBuffer> depthBuffer;
     std::unique_ptr<VulkanFramebuffer> framebuffer;
 
     // Dynamic resources ------------------------------------------------------

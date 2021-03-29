@@ -2,12 +2,14 @@
 
 #include "Engine/src/renderer/api/Framebuffer.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
-#include "VulkanTexture.h"
 
 #include <vector>
-#include <cassert>
 
 class VulkanDevice;
+
+class VulkanImageBuffer;
+
+class VulkanTexture;
 
 class VulkanFramebuffer : public Renderer::Framebuffer {
 private:
@@ -27,13 +29,15 @@ public:
     VulkanFramebuffer &operator=(VulkanFramebuffer &&o) noexcept;
 
     /**
-     * The order of attachment infos passed matters: <br>
-     * - first must be swapchain if present
-     * - depth must be after swapchain or first if present
-     * - all other color attachments must be passed in order (index = 0 + # swapchain/depth attachments)
+     * The order of attachment infos passed matters and <b>MUST</b> conform with the following: <br>
+     * <ul>
+         * <li> first must be swapchain if present </li>
+         * <li> depth must be after swapchain or first if present </li>
+         * <li> all other color attachments must be passed in order (index = 0 + # swapchain/depth attachments) </li>
+     * </ul>
      * @param context
      * @param renderPass
-     * @param infos Swapchain Attachment must to be the first one.
+     * @param infos Swapchain Attachment must be the first one and Depth Attachment must be last one (if present).
      * @param width
      * @param height
      * @return
@@ -49,17 +53,10 @@ public:
 
     [[nodiscard]] uint32_t getWidth() const override { return width; }
 
-    uint32_t getHeight() const override { return height; }
+    [[nodiscard]] uint32_t getHeight() const override { return height; }
 
     [[nodiscard]] const Renderer::Texture &
-    getAttachmentTexture(Renderer::AttachmentType type, uint32_t index) const {
-        assert("Swapchain can not be read!" && type != Renderer::AttachmentType::SwapChain);
-        assert("Depth-Attachment is NOT present!" && type != Renderer::AttachmentType::Depth || depthBufferAttached);
-        if (type == Renderer::AttachmentType::Depth && depthBufferAttached)
-            return attachmentTextures.back();
-
-        return attachmentTextures[index];
-    }
+    getAttachmentTexture(Renderer::AttachmentType type, uint32_t index) const override;
 
 private:
     void destroy();

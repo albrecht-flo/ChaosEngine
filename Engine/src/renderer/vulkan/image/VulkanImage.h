@@ -6,7 +6,7 @@
 
 #include <string>
 
-// TODO: massive refactor to be a RAII Wrapper + Builder [Part of VulkanMemory refactoring]
+// TODO: refactor image creation [Part of VulkanMemory refactoring]
 class VulkanImage {
     friend class VulkanFramebuffer;
 private:
