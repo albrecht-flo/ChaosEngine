@@ -19,6 +19,10 @@ static void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
     w->setScrollDelta(delta);
 }
 
+static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+}
+
 // ------------------------------------ Class members ------------------------------------------------------------------
 
 Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
@@ -41,6 +45,7 @@ Window Window::Create(const std::string &applicationName, uint32_t width, uint32
     // Setup callbacks
     glfwSetFramebufferSizeCallback(windowPtr, framebufferResizeCallback);
     glfwSetScrollCallback(windowPtr, scrollCallback);
+    glfwSetKeyCallback(windowPtr, keyCallback);
     return Window{windowPtr};
 }
 

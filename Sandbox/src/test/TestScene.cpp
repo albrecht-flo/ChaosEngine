@@ -123,15 +123,25 @@ void TestScene::update(float deltaTime) {
 
 }
 
+void TestScene::imGuiMainMenu() {
+    ImGui::BeginMainMenuBar();
+    if (ImGui::BeginMenu("File")) {
+        if (ImGui::MenuItem("Close", "Ctrl+Q")) {
+            window->close();
+        }
+        ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+
+}
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
-bool demoOpen = true;
 
 #include <renderer/vulkan/image/VulkanTexture.h> // TODO Remove here
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
-    CustomImGui::ImGuiEnableDocking(&demoOpen, *window);
+    CustomImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
     if (cameraControllerActive) {
         if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
             ImGui::Text("Camera Controller");
@@ -159,13 +169,13 @@ void TestScene::updateImGui() {
 
     CustomImGui::RenderLogWindow();
 
-    // NEXT Rework ImGui Texture allocation (update); Texture refactor (detatch from Image); Resizing
+    // NEXT Rework ImGui Texture allocation (update); Resizing
     ImGui::Begin("Viewport");
 //    auto size = ImGui::GetContentRegionMax();
 //    LOG_DEBUG("Current Viewport size ({0} x {1})", size.x, size.y);
     // TODO Resize
-    const auto& fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    const auto& tex = dynamic_cast<const VulkanTexture&>(fb.getAttachmentTexture(Renderer::AttachmentType::Color, 0));
+    const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
+    const auto &tex = dynamic_cast<const VulkanTexture &>(fb.getAttachmentTexture(Renderer::AttachmentType::Color, 0));
     // TODO Reuse (Currently this breaks after ~ 1000 allocations
     auto x = ImGui_ImplVulkan_AddTexture(tex.getSampler(), tex.getImageView(), tex.getImageLayout());
     // TODO(Idea): custom ImGui Function for

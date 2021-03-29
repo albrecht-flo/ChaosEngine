@@ -71,7 +71,8 @@ public:
     // Vulkan specific code
     [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
 
-
+    // ImGui Viewport code TODO: Input switch
+    // void attachKeyBindingsToAdditionalWindow(GLFWwindow *additionalWindow) const;
 private:
     GLFWwindow *window = nullptr;
 

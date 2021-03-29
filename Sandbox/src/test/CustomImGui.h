@@ -1,8 +1,10 @@
 #pragma once
 
+#include <functional>
+
 class Window;
 namespace CustomImGui {
-    void ImGuiEnableDocking(bool *p_open, Window& window);
+    void ImGuiEnableDocking(const std::function<void(void)>& menuCallback);
 
     void RenderLogWindow();
 }

@@ -6,7 +6,7 @@ class TestScene : public Scene {
 public:
     TestScene() : Scene(), window(nullptr) {}
 
-    ~TestScene() = default;
+    ~TestScene() override = default;
 
     SceneConfiguration configure(Window &window) override;
 
@@ -17,6 +17,12 @@ public:
     void updateImGui() override;
 
 private:
+
+    void loadEntities();
+
+    void imGuiMainMenu();
+
+private:
     Window *window;
     Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
@@ -25,8 +31,6 @@ private:
     Entity yellowQuad;
     Entity redQuad;
     Entity texturedQuad;
-
-    void loadEntities();
 };
 
 
