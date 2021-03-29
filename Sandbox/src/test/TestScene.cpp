@@ -167,7 +167,7 @@ void TestScene::updateImGui() {
     CustomImGui::RenderLogWindow();
 
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    auto size = CustomImGui::renderViewport(fb);
+    auto size = CustomImGui::RenderSceneViewport(fb);
 
     ImGui::Begin("Debug");
     ImGui::Text("Viewport Size: %f x %f", size.x, size.y);

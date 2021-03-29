@@ -66,12 +66,12 @@ void SpriteRenderingPass::createStandardPipeline() {
     descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
                                                                             0).descriptorType,
-                                                                                   VulkanContext::maxFramesInFlight)
-                                                                    .setMaxSets(VulkanContext::maxFramesInFlight)
+                                                                                   GraphicsContext::maxFramesInFlight)
+                                                                    .setMaxSets(GraphicsContext::maxFramesInFlight)
                                                                     .build());
 
 
-    perFrameUniformBuffers.resize(VulkanContext::maxFramesInFlight);
+    perFrameUniformBuffers.resize(GraphicsContext::maxFramesInFlight);
     for (size_t i = 0; i < perFrameUniformBuffers.capacity(); i++) {
         perFrameUniformBuffers[i] = context.getMemory().createUniformBuffer(
                 sizeof(CameraUbo),
@@ -80,7 +80,7 @@ void SpriteRenderingPass::createStandardPipeline() {
     }
     uboContent = UniformBufferContent<CameraUbo>(1);
 
-    perFrameDescriptorSets.reserve(VulkanContext::maxFramesInFlight);
+    perFrameDescriptorSets.reserve(GraphicsContext::maxFramesInFlight);
     for (size_t i = 0; i < perFrameDescriptorSets.capacity(); i++) {
         perFrameDescriptorSets.emplace_back(descriptorPool->allocate(*cameraDescriptorLayout));
         perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();

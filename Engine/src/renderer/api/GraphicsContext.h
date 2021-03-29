@@ -60,6 +60,7 @@ namespace Renderer {
         virtual void waitIdle() = 0;
 
     public:
+        static constexpr uint32_t maxFramesInFlight = 2;
         static GraphicsAPI currentAPI;
     };
 
