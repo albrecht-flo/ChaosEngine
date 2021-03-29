@@ -11,7 +11,8 @@
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 #include "Engine/src/renderer/vulkan/image/VulkanSampler.h"
 
-#include <array>
+#include <memory>
+#include <vector>
 
 class PostProcessingPass {
 public:
@@ -58,7 +59,7 @@ public:
 
     void updateConfiguration(const PostProcessingConfiguration &configuration);
 
-    const VulkanFramebuffer & getColorAttachment() const {
+    [[nodiscard]] const VulkanFramebuffer &getColorAttachment() const {
         assert("Color Attachment can only be retrieved if rendering to buffer." && !renderToSwapchain);
         return swapChainFrameBuffers[0];
     }
@@ -66,20 +67,16 @@ public:
 private:
     void writeDescriptorSet(const VulkanFramebuffer &previousPassFB);
 
-
 private:
     const VulkanContext &context;
     bool renderToSwapchain;
     std::unique_ptr<VulkanRenderPass> renderPass;
-//    std::unique_ptr<VulkanImageBuffer> colorAttachmentBuffer;
-    std::vector<VulkanFramebuffer> swapChainFrameBuffers;
+    std::vector<VulkanFramebuffer> swapChainFrameBuffers; // [0] is final color attachment if not rendering to swapchain
 
     std::unique_ptr<VulkanDescriptorSetLayout> descriptorSetLayout;
     std::unique_ptr<VulkanPipeline> postprocessingPipeline;
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;
     std::unique_ptr<VulkanBuffer> quadBuffer;
-//    std::unique_ptr<VulkanSampler> colorBufferSampler;
-//    std::unique_ptr<VulkanSampler> depthBufferSampler;
 
     std::unique_ptr<VulkanDescriptorSet> perFrameDescriptorSet;
     std::unique_ptr<VulkanUniformBuffer> perFrameUniformBuffer;

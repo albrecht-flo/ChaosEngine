@@ -9,6 +9,10 @@ class VulkanDevice;
 
 class VulkanImageView;
 
+class VulkanFramebuffer;
+
+class VulkanRenderPass;
+
 class VulkanSwapChain {
 private:
     VulkanSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface,
@@ -29,9 +33,11 @@ public:
 
     VulkanSwapChain &operator=(VulkanSwapChain &&o) = delete;
 
+    static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
+
     void recreate(VkSurfaceKHR mSurface);
 
-    static VulkanSwapChain Create(const Window &mWindow, const VulkanDevice &mDevice, VkSurfaceKHR mSurface);
+    std::vector<VulkanFramebuffer> createFramebuffers(const VulkanRenderPass &renderPass) const;
 
     [[nodiscard]] inline uint32_t size() const { return static_cast<uint32_t>(swapChainImages.size()); }
 

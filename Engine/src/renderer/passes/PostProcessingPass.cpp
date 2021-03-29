@@ -5,34 +5,11 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/vulkan/image/VulkanTexture.h"
+
+#include <array>
 
 using namespace Renderer;
-
-static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanSwapChain &swapChain, const VulkanRenderPass &renderPass) {
-    std::vector<VulkanFramebuffer> swapChainFramebuffers;
-    swapChainFramebuffers.reserve(swapChain.size());
-    for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers.emplace_back(
-                renderPass.createFrameBuffer(
-                        {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
-                        swapChain.getWidth(), swapChain.getHeight())
-        );
-    }
-    return std::move(swapChainFramebuffers);
-}
-
-static VulkanImageBuffer
-createImageBuffer(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
-    auto image = VulkanImage::
-    createRawImage(context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM);
-    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image.vk(), "PostProcessingColorAttachment");
-
-    auto imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
-                                             VK_IMAGE_ASPECT_COLOR_BIT);
-
-    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageView));
-}
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
@@ -47,14 +24,11 @@ PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, cons
 
 PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
         : context(o.context), renderToSwapchain(o.renderToSwapchain), renderPass(std::move(o.renderPass)),
-//          colorAttachmentBuffer(std::move(o.colorAttachmentBuffer)),
           swapChainFrameBuffers(std::move(o.swapChainFrameBuffers)),
           descriptorSetLayout(std::move(o.descriptorSetLayout)),
           postprocessingPipeline(std::move(o.postprocessingPipeline)),
           descriptorPool(std::move(o.descriptorPool)),
           quadBuffer(std::move(o.quadBuffer)),
-//          colorBufferSampler(std::move(o.colorBufferSampler)),
-//          depthBufferSampler(std::move(o.depthBufferSampler)),
           perFrameDescriptorSet(std::move(o.perFrameDescriptorSet)),
           perFrameUniformBuffer(std::move(o.perFrameUniformBuffer)),
           uboContent(std::move(o.uboContent)) {}
@@ -69,14 +43,11 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
             VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
     if (renderToSwapchain)
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
-    else {
-//        colorAttachmentBuffer = std::make_unique<VulkanImageBuffer>(
-//                createImageBuffer(context, context.getMemory(), width, height));
+        swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
+    else
         swapChainFrameBuffers.emplace_back(renderPass->createFrameBuffer(
                 {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height)
         );
-    }
 
     struct Vertex {
         glm::vec3 pos;
@@ -144,6 +115,7 @@ void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPas
             previousPassFB.getAttachmentTexture(AttachmentType::Depth, 0));
     const auto &colorTex = dynamic_cast<const VulkanTexture &>(
             previousPassFB.getAttachmentTexture(AttachmentType::Color, 0));
+
     // Fill the descriptor set
     perFrameDescriptorSet->startWriting()
             .writeImageSampler(1, colorTex.getSampler(), colorTex.getImageView(), colorTex.getImageLayout())
@@ -152,9 +124,9 @@ void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPas
 }
 
 void PostProcessingPass::draw() {
-    assert(("No postprocessing configured",
-            !(static_cast<ShaderConfig *>(uboContent.at(0))->cameraNear == 0.0f &&
-              static_cast<ShaderConfig *>(uboContent.at(0))->cameraFar == 0.0f)));
+    assert("No postprocessing configured" &&
+           !(static_cast<ShaderConfig *>(uboContent.at(0))->cameraNear == 0.0f &&
+             static_cast<ShaderConfig *>(uboContent.at(0))->cameraFar == 0.0f));
 
     auto cmdBuf = context.getCurrentPrimaryCommandBuffer().vk();
     auto viewportWidth = context.getSwapChain().getWidth();
@@ -217,11 +189,10 @@ void PostProcessingPass::resizeAttachments(const VulkanFramebuffer &framebuffer,
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            renderToSwapchain || (width != 0 && height != 0));
     if (renderToSwapchain)
-        swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
-    else {
+        swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
+    else
         swapChainFrameBuffers[0] = renderPass->createFrameBuffer(
                 {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height);
-    }
 
     writeDescriptorSet(framebuffer);
 }

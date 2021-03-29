@@ -17,20 +17,6 @@ static void check_imgui_vk_result(VkResult result) {
 
 }
 
-static std::vector<VulkanFramebuffer>
-createSwapChainFrameBuffers(const VulkanSwapChain &swapChain, const VulkanRenderPass &renderPass) {
-    std::vector<VulkanFramebuffer> swapChainFramebuffers;
-    swapChainFramebuffers.reserve(swapChain.size());
-    for (uint32_t i = 0; i < swapChain.size(); i++) {
-        swapChainFramebuffers.emplace_back(
-                renderPass.createFrameBuffer(
-                        {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
-                        swapChain.getWidth(), swapChain.getHeight())
-        );
-    }
-    return std::move(swapChainFramebuffers);
-}
-
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 ImGuiRenderingPass
@@ -47,7 +33,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, u
     auto renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 
-    auto swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
+    auto swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
 
     // Create descriptor pool for ImGui
     auto descriptorPool = std::make_unique<VulkanDescriptorPool>(
@@ -136,7 +122,7 @@ void ImGuiRenderingPass::draw() {
 }
 
 void ImGuiRenderingPass::resizeAttachments(uint32_t, uint32_t) {
-    swapChainFrameBuffers = createSwapChainFrameBuffers(context.getSwapChain(), *renderPass);
+    swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
 
     ImGui_ImplVulkan_SetMinImageCount(context.getSwapChain().size());
 }

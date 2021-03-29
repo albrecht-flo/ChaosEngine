@@ -3,8 +3,8 @@
 #include "Engine/src/renderer/window/Window.h"
 #include "VulkanDevice.h"
 #include "Engine/src/renderer/vulkan/image/VulkanImageView.h"
-
-#include <vulkan/vulkan.h>
+#include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
+#include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
 
 #include <array>
 #include <stdexcept>
@@ -202,4 +202,18 @@ void VulkanSwapChain::recreate(VkSurfaceKHR mSurface) {
     swapChainImages = getSwapChainImages(device.vk(), swapChain);
 
     swapChainImageViews = createImageViews(device, swapChainImages, swapChainImageFormat);
+}
+
+std::vector<VulkanFramebuffer> VulkanSwapChain::createFramebuffers(const VulkanRenderPass &renderPass) const {
+    using namespace Renderer;
+    std::vector<VulkanFramebuffer> swapChainFramebuffers;
+    swapChainFramebuffers.reserve(size());
+    for (uint32_t i = 0; i < size(); i++) {
+        swapChainFramebuffers.emplace_back(
+                renderPass.createFrameBuffer(
+                        {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
+                        getWidth(), getHeight())
+        );
+    }
+    return std::move(swapChainFramebuffers);
 }

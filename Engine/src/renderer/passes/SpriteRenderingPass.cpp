@@ -6,35 +6,8 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/renderer/api/RendererAPI.h"
-#include "Engine/src/renderer/api/Material.h"
 
 using namespace Renderer;
-
-static VulkanImageBuffer
-createImageBuffer(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
-    auto image = VulkanImage::createRawImage(
-            context.getDevice(), vulkanMemory, width, height, VK_FORMAT_R8G8B8A8_UNORM);
-    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) image.vk(), "SpritePassColorAttachment");
-    auto imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
-                                             VK_IMAGE_ASPECT_COLOR_BIT);
-
-    return VulkanImageBuffer(context.getDevice(), std::move(image), std::move(imageView));
-}
-
-static VulkanImageBuffer
-createDepthResources(const VulkanContext &context, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height) {
-    VkFormat depthFormat = VulkanImage::getDepthFormat(context.getDevice());
-
-    auto depthImage = VulkanImage::createDepthBufferImage(
-            context.getDevice(), vulkanMemory, width, height, depthFormat);
-    context.setDebugName(VK_OBJECT_TYPE_IMAGE, (uint64_t) depthImage.vk(), "SpritePassDepthAttachment");
-    auto depthImageView = VulkanImageView::Create(context.getDevice(), depthImage.vk(), depthFormat,
-                                                  VK_IMAGE_ASPECT_DEPTH_BIT);
-
-    return VulkanImageBuffer(context.getDevice(), std::move(depthImage), std::move(depthImageView));
-}
-
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
@@ -47,7 +20,6 @@ SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32
 
 SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
         context(o.context), opaquePass(std::move(o.opaquePass)),
-//        colorBuffer(std::move(o.colorBuffer)), depthBuffer(std::move(o.depthBuffer)),
         framebuffer(std::move(o.framebuffer)),
         descriptorPool(std::move(o.descriptorPool)),
         cameraDescriptorLayout(std::move(o.cameraDescriptorLayout)),
@@ -58,10 +30,6 @@ SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
         uboContent(std::move(o.uboContent)) {}
 
 void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
-//    colorBuffer = std::make_unique<VulkanImageBuffer>(
-//            createImageBuffer(context, context.getMemory(), width, height));
-//    depthBuffer = std::make_unique<VulkanImageBuffer>(
-//            createDepthResources(context, context.getMemory(), width, height));
     framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
             {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8},
              FramebufferAttachmentInfo{AttachmentType::Depth, AttachmentFormat::Auto_Depth}},
@@ -142,7 +110,7 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Ca
         float aspect = static_cast<float>(viewportDimensions.y) / viewportDimensions.x;
         ubo->proj = glm::ortho(-3.0f, 3.0f, -3.0f * aspect, 3.0f * aspect, 0.1f, 100.0f);
     }
-    ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be fliped
+    ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be flipped
 
     // Copy that data to the uniform buffer
     context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
@@ -212,7 +180,7 @@ void SpriteRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 
 void
 SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
-                                const Renderer::VulkanMaterialInstance &material) {
+                                const VulkanMaterialInstance &material) {
     glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
 

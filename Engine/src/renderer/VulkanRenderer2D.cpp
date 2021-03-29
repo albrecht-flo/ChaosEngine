@@ -103,7 +103,7 @@ void VulkanRenderer2D::flush() {
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
     spriteRenderingPass.drawSprite(quadMesh, modelMat,
-                                   dynamic_cast<const Renderer::VulkanMaterialInstance &>(*(renderComponent.materialInstance)));
+                                   dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance)));
 }
 
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {
