@@ -22,20 +22,37 @@ namespace Renderer {
     public:
         virtual ~RendererAPI() = default;
 
+        // Lifecycle
+        /// Setup for all dynamic resources
         virtual void setup() = 0;
 
-        virtual void beginScene(const glm::mat4 &viewMatrix, const CameraComponent &camera) = 0;
-
-        virtual void draw(const glm::mat4 &viewMatrix, const RenderComponent &renderComponent) = 0;
-
-        virtual void endScene() = 0;
-
-        virtual void flush() = 0;
-
+        /// Wait for GPU tasks to finish
         virtual void join() = 0;
 
+        // Context commands
+        /// Start recording commands with this renderer
+        virtual void beginScene(const glm::mat4 &viewMatrix, const CameraComponent &camera) = 0;
+
+        /// Stop recording commands with this renderer
+        virtual void endScene() = 0;
+
+        /// Submit recorded commands to gpu
+        virtual void flush() = 0;
+
+        /// Resizes the scene viewport, after the next frame has been submited to the GPU
+
+        virtual void requestViewportResize(const glm::vec2 &viewportSize) = 0;
+
+        // Rendering commands
+        /// Render an object with its material and model matrix
+        virtual void draw(const glm::mat4 &viewMatrix, const RenderComponent &renderComponent) = 0;
+
+        /// Gets the appropriate render pass for the requested shader stage
         virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;
 
-        virtual const Renderer::Framebuffer & getFramebuffer() = 0;
+        // Getters
+        virtual const Renderer::Framebuffer &getFramebuffer() = 0;
+
+
     };
 }

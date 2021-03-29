@@ -1,6 +1,7 @@
-#include <Engine/src/renderer/vulkan/api/VulkanMaterial.h>
 #include "SpriteRenderingPass.h"
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/data/Mesh.h"
+#include "Engine/src/renderer/vulkan/api/VulkanMaterial.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
@@ -13,6 +14,7 @@ using namespace Renderer;
 
 SpriteRenderingPass
 SpriteRenderingPass::Create(const VulkanContext &context, uint32_t width, uint32_t height) {
+    assert("Viewport size MUST be greater than 0!" && width > 0 && height > 0);
     auto ret = SpriteRenderingPass(context);
     ret.init(width, height);
     return ret;
@@ -27,13 +29,15 @@ SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
         pipeline(std::move(o.pipeline)),
         perFrameDescriptorSets(std::move(o.perFrameDescriptorSets)),
         perFrameUniformBuffers(std::move(o.perFrameUniformBuffers)),
-        uboContent(std::move(o.uboContent)) {}
+        uboContent(std::move(o.uboContent)),
+        viewportSize(std::move(o.viewportSize)) {}
 
 void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
     framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
             {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8},
              FramebufferAttachmentInfo{AttachmentType::Depth, AttachmentFormat::Auto_Depth}},
             width, height));
+    viewportSize = {width, height};
 }
 
 void SpriteRenderingPass::createStandardPipeline() {
@@ -98,17 +102,18 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
 }
 
 void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const CameraComponent &camera,
-                                              const glm::vec2 &viewportDimensions) {
+                                              const glm::uvec2 &viewportDimensions) {
 
     CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
     ubo->view = viewMat;
     if (viewportDimensions.x > viewportDimensions.y) {
-        float aspect = static_cast<float>(viewportDimensions.x) / viewportDimensions.y;
+        float aspect = static_cast<float>(viewportDimensions.x) / static_cast<float>(viewportDimensions.y);
         ubo->proj = glm::ortho(-camera.fieldOfView * aspect, camera.fieldOfView * aspect, -camera.fieldOfView,
                                camera.fieldOfView, camera.near, camera.far);
     } else {
-        float aspect = static_cast<float>(viewportDimensions.y) / viewportDimensions.x;
-        ubo->proj = glm::ortho(-3.0f, 3.0f, -3.0f * aspect, 3.0f * aspect, 0.1f, 100.0f);
+        float aspect = static_cast<float>(viewportDimensions.y) / static_cast<float>(viewportDimensions.x);
+        ubo->proj = glm::ortho(-camera.fieldOfView, camera.fieldOfView, -camera.fieldOfView * aspect,
+                               camera.fieldOfView * aspect, camera.near, camera.far);
     }
     ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be flipped
 
@@ -119,8 +124,7 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Ca
 }
 
 void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
-    glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-    updateUniformBuffer(viewMat, camera, viewportDimensions);
+    updateUniformBuffer(viewMat, camera, viewportSize);
 
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
     commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
@@ -130,7 +134,7 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     renderPassInfo.renderPass = opaquePass->vk(); // the renderpass to use
     renderPassInfo.framebuffer = framebuffer->vk();
     renderPassInfo.renderArea.offset = {0, 0}; // size of the render area ...
-    renderPassInfo.renderArea.extent = VkExtent2D{viewportDimensions.x, viewportDimensions.y}; // based on swap chain
+    renderPassInfo.renderArea.extent = VkExtent2D{viewportSize.x, viewportSize.y}; // based on swap chain
 
     // Define the values used for VK_ATTACHMENT_LOAD_OP_CLEAR
     std::array<VkClearValue, 2> clearValues{};
@@ -150,8 +154,8 @@ void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(viewportDimensions.x);
-    viewport.height = static_cast<float>(viewportDimensions.y);
+    viewport.width = static_cast<float>(viewportSize.x);
+    viewport.height = static_cast<float>(viewportSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer.vk(), 0, 1, &viewport);
@@ -181,7 +185,6 @@ void SpriteRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 void
 SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
                                 const VulkanMaterialInstance &material) {
-    glm::uvec2 viewportDimensions(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
 
     // Bind Material TODO: The pipeline should be bound for a group of objects
@@ -189,15 +192,15 @@ SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(viewportDimensions.x);
-    viewport.height = static_cast<float>(viewportDimensions.y);
+    viewport.width = static_cast<float>(viewportSize.x);
+    viewport.height = static_cast<float>(viewportSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer.vk(), 0, 1, &viewport);
 
     VkRect2D scissor = {};
     scissor.offset = {0, 0};
-    scissor.extent = {context.getSwapChain().getWidth(), context.getSwapChain().getHeight()};
+    scissor.extent = {viewportSize.x, viewportSize.y};
     vkCmdSetScissor(commandBuffer.vk(), 0, 1, &scissor);
 
     // Bind Material

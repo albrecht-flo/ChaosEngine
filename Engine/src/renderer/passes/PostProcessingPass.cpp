@@ -1,4 +1,5 @@
 #include "PostProcessingPass.h"
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
@@ -31,7 +32,8 @@ PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
           quadBuffer(std::move(o.quadBuffer)),
           perFrameDescriptorSet(std::move(o.perFrameDescriptorSet)),
           perFrameUniformBuffer(std::move(o.perFrameUniformBuffer)),
-          uboContent(std::move(o.uboContent)) {}
+          uboContent(std::move(o.uboContent)),
+          viewportSize(std::move(o.viewportSize)) {}
 
 void
 PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffer &previousPassFb) {
@@ -42,12 +44,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
     renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
-    if (renderToSwapchain)
-        swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
-    else
-        swapChainFrameBuffers.emplace_back(renderPass->createFrameBuffer(
-                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height)
-        );
+    createAttachments(width, height);
 
     struct Vertex {
         glm::vec3 pos;
@@ -110,6 +107,21 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
     writeDescriptorSet(previousPassFb);
 }
 
+void PostProcessingPass::createAttachments(uint32_t width, uint32_t height) {
+    if (renderToSwapchain) {
+        swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
+        viewportSize = {context.getSwapChain().getWidth(), context.getSwapChain().getHeight()};
+    } else {
+        auto fb = renderPass->createFrameBuffer(
+                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height);
+        if (swapChainFrameBuffers.empty())
+            swapChainFrameBuffers.emplace_back(std::move(fb));
+        else
+            swapChainFrameBuffers[0] = std::move(fb);
+        viewportSize = {width, height};
+    }
+}
+
 void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPassFB) {
     const auto &depthTex = dynamic_cast<const VulkanTexture &>(
             previousPassFB.getAttachmentTexture(AttachmentType::Depth, 0));
@@ -129,8 +141,6 @@ void PostProcessingPass::draw() {
              static_cast<ShaderConfig *>(uboContent.at(0))->cameraFar == 0.0f));
 
     auto cmdBuf = context.getCurrentPrimaryCommandBuffer().vk();
-    auto viewportWidth = context.getSwapChain().getWidth();
-    auto viewportHeight = context.getSwapChain().getHeight();
 
     // Define render rendering to draw with
     VkRenderPassBeginInfo renderPassInfo = {};
@@ -153,21 +163,21 @@ void PostProcessingPass::draw() {
     vkCmdBeginRenderPass(cmdBuf, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE); // use commands in primary cmdbuffer
 
     // Now vkCmd... can be written do define the draw call
-    // Bind the pipline as a graphics pipeline
+    // Bind the pipeline as a graphics pipeline
     vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, postprocessingPipeline->getPipeline());
 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(viewportWidth);
-    viewport.height = static_cast<float>(viewportHeight);
+    viewport.width = static_cast<float>(viewportSize.x);
+    viewport.height = static_cast<float>(viewportSize.y);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
 
     VkRect2D scissor = {}; // !!! Important, otherwise ImGui sets this
     scissor.offset = {0, 0};
-    scissor.extent = {viewportWidth, viewportHeight};
+    scissor.extent = {viewportSize.x, viewportSize.y};
     vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
     // Bind the descriptor set to the pipeline
@@ -188,11 +198,7 @@ void PostProcessingPass::draw() {
 void PostProcessingPass::resizeAttachments(const VulkanFramebuffer &framebuffer, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            renderToSwapchain || (width != 0 && height != 0));
-    if (renderToSwapchain)
-        swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
-    else
-        swapChainFrameBuffers[0] = renderPass->createFrameBuffer(
-                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height);
+    createAttachments(width, height);
 
     writeDescriptorSet(framebuffer);
 }

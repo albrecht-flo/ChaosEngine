@@ -21,7 +21,8 @@ class VulkanRenderer2D : public Renderer::RendererAPI {
 private:
 private:
     VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &&spriteRenderingPass,
-                     PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass);
+                     PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass,
+                     bool renderingSceneToSwapchain);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -31,7 +32,6 @@ public:
     VulkanRenderer2D &operator=(const VulkanRenderer2D &o) = delete;
 
     VulkanRenderer2D(VulkanRenderer2D &&o) = delete;
-
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
@@ -54,6 +54,9 @@ public:
     /// Submit recorded commands to gpu
     void flush() override;
 
+    /// Resizes the scene viewport
+    void requestViewportResize(const glm::vec2 &viewportSize) override;
+
     // Rendering commands
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
@@ -74,6 +77,9 @@ private:
     SpriteRenderingPass spriteRenderingPass;
     PostProcessingPass postProcessingPass;
     ImGuiRenderingPass imGuiRenderingPass;
+
+    bool renderingSceneToSwapchain;
+    glm::uvec2 sceneResize{0, 0};
 
     // TEMP
     RenderMesh quadMesh;

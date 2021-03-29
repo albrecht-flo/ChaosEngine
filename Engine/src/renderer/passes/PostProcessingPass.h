@@ -55,7 +55,7 @@ public:
 
     void draw();
 
-    void resizeAttachments(const VulkanFramebuffer &framebuffer, uint32_t width = 0, uint32_t height = 0);
+    void resizeAttachments(const VulkanFramebuffer &framebuffer, uint32_t width, uint32_t height);
 
     void updateConfiguration(const PostProcessingConfiguration &configuration);
 
@@ -82,6 +82,10 @@ private:
     std::unique_ptr<VulkanUniformBuffer> perFrameUniformBuffer;
     UniformBufferContent<ShaderConfig> uboContent;
 
+    // State resources --------------------------------------------------------
+    glm::uvec2 viewportSize{0, 0};
+
+    void createAttachments(uint32_t width, uint32_t height);
 };
 
 
