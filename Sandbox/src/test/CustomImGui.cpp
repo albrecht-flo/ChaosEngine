@@ -11,7 +11,7 @@
 namespace CustomImGui {
 
     // Source: https://gist.github.com/Pikachuxxxx/a3796bb193ca0aaed4ad4f591b2dab07
-    void ImGuiEnableDocking(bool *p_open, Window& window) {
+    void ImGuiEnableDocking(const std::function<void(void)>& menuCallback) {
         static bool opt_fullscreen = true;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
@@ -43,7 +43,7 @@ namespace CustomImGui {
         // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
         // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", p_open, window_flags);
+        ImGui::Begin("DockSpace", nullptr, window_flags);
         ImGui::PopStyleVar();
 
         if (opt_fullscreen)
@@ -58,14 +58,7 @@ namespace CustomImGui {
             Logger::E("ImGui", "Cannot Dock Windows");
         }
 
-        ImGui::BeginMainMenuBar();
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Close", "Ctrl+Q")) {
-                window.close();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
+        menuCallback();
 
         ImGui::End();
     }
