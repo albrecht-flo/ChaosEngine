@@ -29,3 +29,6 @@
 [submodule "dep/spdlog"]
 	path = dep/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule ".\\dep\\VulkanMemoryAllocator"]
+	path = .\\dep\\VulkanMemoryAllocator
+	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
