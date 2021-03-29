@@ -92,22 +92,49 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
 }
 
 
-ImVec2 CustomImGui::renderViewport(const Renderer::Framebuffer &framebuffer) {
-    // NEXT Rework ImGui Texture allocation (update)
+ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title) {
+    using namespace Renderer;
+    if (state.sceneImageGPUHandles.empty())
+        state.sceneImageGPUHandles = std::vector<void *>(GraphicsContext::maxFramesInFlight + 1, nullptr);
+
+    // Get attachment texture
+    switch (GraphicsContext::currentAPI) {
+        case GraphicsAPI::Vulkan: {
+            const auto &tex = dynamic_cast<const VulkanTexture &>(framebuffer.getAttachmentTexture(
+                    Renderer::AttachmentType::Color, 0));
+            if (state.sceneImageGPUHandles[state.currentFrame] == nullptr) {
+                state.sceneImageGPUHandles[state.currentFrame] = ImGui_ImplVulkan_AddTexture(tex.getSampler(),
+                                                                                             tex.getImageView(),
+                                                                                             tex.getImageLayout());
+            } else {
+                ImGui_ImplVulkan_UpdateTexture((VkDescriptorSet) state.sceneImageGPUHandles[state.currentFrame],
+                                               tex.getSampler(), tex.getImageView(), tex.getImageLayout());
+            }
+            break;
+        }
+        default: {
+            Logger::E("RenderSceneViewport", "Unsupported Graphics API!");
+            return ImVec2{0.0f, 0.0f};
+        }
+    }
+
+    // Render viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("Viewport");
+    ImGui::Begin(title.c_str());
+    // Size and Resize handling
     auto size = ImGui::GetContentRegionAvail();
     if (state.previousSize.x != size.x || state.previousSize.y != size.y) {
         state.previousSize = size;
         RenderingSystem::GetCurrentRenderer().requestViewportResize(glm::vec2(size.x, size.y));
     }
-    const auto &tex = dynamic_cast<const VulkanTexture &>(framebuffer.getAttachmentTexture(
-            Renderer::AttachmentType::Color, 0));
-    // TODO Reuse (Currently this breaks after ~ 1000 allocations
-    auto x = ImGui_ImplVulkan_AddTexture(tex.getSampler(), tex.getImageView(), tex.getImageLayout());
-    ImGui::Image(x, ImVec2(framebuffer.getWidth(), framebuffer.getHeight()));
+
+    ImGui::Image(state.sceneImageGPUHandles[state.currentFrame],
+                 ImVec2(framebuffer.getWidth(), framebuffer.getHeight()));
+
     ImGui::End();
     ImGui::PopStyleVar();
 
+    state.currentFrame = (state.currentFrame < GraphicsContext::maxFramesInFlight) ?
+                         state.currentFrame + 1 : 0;
     return state.previousSize;
 }

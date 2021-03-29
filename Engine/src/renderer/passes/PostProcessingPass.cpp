@@ -88,10 +88,10 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(
             VulkanDescriptorPoolBuilder(context.getDevice())
-                    .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType, VulkanContext::maxFramesInFlight)
+                    .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType, GraphicsContext::maxFramesInFlight)
                     .addDescriptor(descriptorSetLayout->getBinding(1).descriptorType,
-                                   VulkanContext::maxFramesInFlight * 2)
-                    .setMaxSets(VulkanContext::maxFramesInFlight * 3)
+                                   GraphicsContext::maxFramesInFlight * 2)
+                    .setMaxSets(GraphicsContext::maxFramesInFlight * 3)
                     .build());
 
     perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(context.getMemory().createUniformBuffer(

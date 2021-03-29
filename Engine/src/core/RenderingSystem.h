@@ -20,10 +20,13 @@ public:
 
     void createRenderer(Renderer::RendererType rendererType);
 
-    static Renderer::GraphicsContext &GetContext() { return *Context; }
+    static Renderer::GraphicsContext &GetContext() {
+        assert("Context MUST not be empty!" && Context != nullptr);
+        return *Context;
+    }
 
     static Renderer::RendererAPI &GetCurrentRenderer() {
-        assert("Context Must not be empty" && Renderer != nullptr);
+        assert("Renderer MUST not be empty!" && Renderer != nullptr);
         return *Renderer;
     }
 

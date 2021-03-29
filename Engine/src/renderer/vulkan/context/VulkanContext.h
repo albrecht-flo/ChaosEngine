@@ -21,8 +21,6 @@
  */
 class VulkanContext : public Renderer::GraphicsContext {
 public:
-    static constexpr uint32_t maxFramesInFlight = 2;
-public:
     explicit VulkanContext(Window &window);
 
     ~VulkanContext() override;

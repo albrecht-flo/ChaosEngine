@@ -6,7 +6,8 @@
 
 /* TODOs:
  *
- * TODO(Current): - Change Material at Runtime
+ * TODO(Current):
+ *       - Memory management (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
  *       - Delete Entity at Runtime
  *       - Create Entity at Runtime
 
@@ -20,15 +21,12 @@
 			- Shaders
         - use precompiled header
 		- Migrate to Vulkan C++ headers
-		- Memory management
-			- https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
-        - Textures
+
 		- Swap chain
 			- Creation -> Parameters
 
 	Features:
 		General:
-        - Proper logging
 		- Resource management
 			- Model loading
 			- Texture loading
