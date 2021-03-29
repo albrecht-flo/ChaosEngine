@@ -1,5 +1,6 @@
 #include "VulkanRenderer2D.h"
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "Engine/src/renderer/data/Mesh.h"
 #include "Engine/src/renderer/data/ModelLoader.h"
@@ -11,12 +12,14 @@
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
 std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext) {
+    bool renderingSceneToSwapchain = false;
     auto &context = dynamic_cast<VulkanContext &>(graphicsContext);
     auto spriteRenderingPass = SpriteRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                            context.getSwapChain().getHeight());
 
 
-    auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getFramebuffer(), false,
+    auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getFramebuffer(),
+                                                         renderingSceneToSwapchain,
                                                          context.getSwapChain().getWidth(),
                                                          context.getSwapChain().getHeight());
 
@@ -24,7 +27,6 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     ImGuiContext *imGuiContext = ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;    // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
     ImGui::StyleColorsDark();
@@ -34,13 +36,15 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
 
     return std::unique_ptr<VulkanRenderer2D>(
             new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(postProcessingPass),
-                                 std::move(imGuiRenderingPass)));
+                                 std::move(imGuiRenderingPass), renderingSceneToSwapchain));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &&spriteRenderingPass,
-                                   PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass)
+                                   PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass,
+                                   bool renderingSceneToSwapchain)
         : context(context), spriteRenderingPass(std::move(spriteRenderingPass)),
-          postProcessingPass(std::move(postProcessingPass)), imGuiRenderingPass(std::move(imGuiRenderingPass)) {}
+          postProcessingPass(std::move(postProcessingPass)), imGuiRenderingPass(std::move(imGuiRenderingPass)),
+          renderingSceneToSwapchain(renderingSceneToSwapchain) {}
 
 
 // ------------------------------------ Lifecycle methods --------------------------------------------------------------
@@ -80,19 +84,35 @@ void VulkanRenderer2D::endScene() {
 }
 
 void VulkanRenderer2D::recreateSwapChain() {
-    std::cout << "Recreating SwapChain" << std::endl;
+    Logger::D("VulkanRenderer2D", "Recreating SwapChain");
     context.getDevice().waitIdle();
 
     // Update framebuffer attachments
-    spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+    if (renderingSceneToSwapchain) {
+        spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(),
+                                             context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+    }
     imGuiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-    postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer());
+}
+
+void VulkanRenderer2D::requestViewportResize(const glm::vec2 &viewportSize) {
+    assert("Can't resize scene viewport independently when rendering to swapchain!" && !renderingSceneToSwapchain);
+    assert("Invalid viewport size, MUST be greater than 0!" && viewportSize.x > 0 && viewportSize.y > 0);
+    sceneResize = {static_cast<uint32_t>(viewportSize.x), static_cast<uint32_t>(viewportSize.y)};
 }
 
 void VulkanRenderer2D::flush() {
     if (!context.flushCommands()) {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
+    }
+    if (sceneResize != glm::uvec2{0, 0}) {
+        Logger::D("VulkanRenderer2D", "Resizing scene viewport");
+        context.getDevice().waitIdle();
+        spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
+        sceneResize = {0, 0};
     }
 
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {

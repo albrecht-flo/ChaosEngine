@@ -59,7 +59,7 @@ private:
     void createAttachments(uint32_t width, uint32_t height);
 
     void updateUniformBuffer(const glm::mat4 &viewMat, const CameraComponent &camera,
-                             const glm::vec2 &viewportDimensions);
+                             const glm::uvec2 &viewportDimensions);
 
     void createStandardPipeline();
 
@@ -78,5 +78,8 @@ private:
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
     UniformBufferContent<CameraUbo> uboContent;
+
+    // State resources --------------------------------------------------------
+    glm::uvec2 viewportSize{0, 0};
 };
 

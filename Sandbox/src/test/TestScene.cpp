@@ -139,6 +139,8 @@ static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 
 #include <renderer/vulkan/image/VulkanTexture.h> // TODO Remove here
 
+static ImVec2 previousSize = ImVec2(0.0f, 0.0f);
+
 void TestScene::updateImGui() {
     ImGui::NewFrame();
     CustomImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
@@ -169,16 +171,26 @@ void TestScene::updateImGui() {
 
     CustomImGui::RenderLogWindow();
 
-    // NEXT Rework ImGui Texture allocation (update); Resizing
+    // NEXT Rework ImGui Texture allocation (update)
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("Viewport");
-//    auto size = ImGui::GetContentRegionMax();
-//    LOG_DEBUG("Current Viewport size ({0} x {1})", size.x, size.y);
-    // TODO Resize
+    auto size = ImGui::GetContentRegionAvail();
+    if (previousSize.x != size.x || previousSize.y != size.y) {
+        LOG_DEBUG("Requesting Resize Viewport to:{0} x {1}", size.x, size.y);
+        previousSize = size;
+        RenderingSystem::GetCurrentRenderer().requestViewportResize(glm::vec2(size.x, size.y));
+    }
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
     const auto &tex = dynamic_cast<const VulkanTexture &>(fb.getAttachmentTexture(Renderer::AttachmentType::Color, 0));
     // TODO Reuse (Currently this breaks after ~ 1000 allocations
     auto x = ImGui_ImplVulkan_AddTexture(tex.getSampler(), tex.getImageView(), tex.getImageLayout());
     // TODO(Idea): custom ImGui Function for
     ImGui::Image(x, ImVec2(fb.getWidth(), fb.getHeight()));
+    ImGui::End();
+    ImGui::PopStyleVar();
+
+    ImGui::Begin("Debug");
+    ImGui::Text("Viewport Size: %f x %f", size.x, size.y);
+    ImGui::Text("Framebuffer Size: %d x %d", fb.getWidth(), fb.getHeight());
     ImGui::End();
 }
