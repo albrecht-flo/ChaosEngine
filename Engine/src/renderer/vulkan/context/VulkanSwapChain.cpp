@@ -64,7 +64,7 @@ static VkExtent2D chooseSwapExtent(const Window &window, const VkSurfaceCapabili
 static std::tuple<VkSwapchainKHR, VkFormat, VkExtent2D>
 createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
     // Check for available swapchain
-    SwapChainSupportDetails swapChainSupport = device.querySwapChainSupport();
+    SwapChainSupportDetails swapChainSupport = device.querySwapChainSupport(surface);
     bool surfaceAvailable = device.checkSurfaceAvailability(surface);
     assert("Expect surface KHR to be supported" && surfaceAvailable);
 
@@ -95,7 +95,7 @@ createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR s
     createInfo.oldSwapchain = VK_NULL_HANDLE; // To speed up swapchain recreation
 
     // Determine how the images will be accessed by different queues
-    QueueFamilyIndices indices = device.findQueueFamilies();
+    QueueFamilyIndices indices = device.findQueueFamilies(surface);
     uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     if (indices.graphicsFamily != indices.presentFamily) { // two different queues for rendering and presentation
@@ -187,12 +187,13 @@ VulkanSwapChain::~VulkanSwapChain() {
 /* Stories frame buffers, image views and swap chain. */
 void VulkanSwapChain::destroy() {
     swapChainImageViews.clear();
-    if (swapChain != nullptr)
+    if (swapChain != nullptr) {
         vkDestroySwapchainKHR(device.vk(), swapChain, nullptr);
+        swapChain = nullptr;
+    }
 }
 
 void VulkanSwapChain::recreate(VkSurfaceKHR mSurface) {
-    destroy();
     surface = mSurface;
     auto[mSwapChain, mSwapChainImageFormat, mSwapChainExtent] = createSwapChain(window, device, surface);
     swapChain = mSwapChain;

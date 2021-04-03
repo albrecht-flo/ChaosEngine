@@ -21,6 +21,7 @@ public:
     VulkanSurface &operator=(VulkanSurface &&o) noexcept {
         if (&o == this)
             return *this;
+        destroy();
         surface = std::exchange(o.surface, nullptr);
         return *this;
     }

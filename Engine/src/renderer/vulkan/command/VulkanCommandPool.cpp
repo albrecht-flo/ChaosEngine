@@ -7,12 +7,10 @@
 
 /// Creates command pool to contain command buffers
 static VkCommandPool createCommandPool(const VulkanDevice &device) {
-    QueueFamilyIndices queueFamilyIndices = device.findQueueFamilies();
-
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // We want the buffers to be able to reset them
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.queueFamilyIndex = device.getQueueFamilyIndices().graphicsFamily.value();
 
     VkCommandPool commandPool{};
     if (vkCreateCommandPool(device.vk(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {

@@ -92,6 +92,12 @@ void VulkanRenderer2D::recreateSwapChain() {
         spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(),
                                              context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+    } else if (sceneResize != glm::uvec2{0, 0}) {
+        Logger::D("VulkanRenderer2D", "Resizing scene viewport during swapchain recreation");
+        spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
+        sceneResize = {0, 0};
+
     }
     imGuiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
 }

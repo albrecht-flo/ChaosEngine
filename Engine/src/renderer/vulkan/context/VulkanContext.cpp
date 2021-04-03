@@ -51,6 +51,7 @@ void VulkanContext::beginFrame() const {
 }
 
 void VulkanContext::recreateSwapChain() {
+    swapChain.destroy();
     surface = VulkanSurface(instance, window.createSurface(instance.vk()));
     swapChain.recreate(surface.vk());
 }
@@ -60,10 +61,12 @@ bool VulkanContext::flushCommands() {
     if (!swapChainOk) {
         device.waitIdle();
         recreateSwapChain();
+        currentSwapChainImage = 0;
+    } else {
+        currentSwapChainImage = (currentSwapChainImage < swapChain.size() - 1) ?
+                                currentSwapChainImage + 1 : 0;
     }
     currentFrame = (currentFrame < maxFramesInFlight - 1) ? currentFrame + 1 : 0;
-    currentSwapChainImage = (currentSwapChainImage < swapChain.size() - 1) ? currentSwapChainImage + 1
-                                                                           : 0;
     return swapChainOk;
 }
 

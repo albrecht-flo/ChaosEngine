@@ -24,6 +24,8 @@ struct SwapChainSupportDetails {
 
 class VulkanInstance;
 
+class VulkanSurface;
+
 /**
  * This class is a wrapper for the vulkan logical device and also handles the creation of it for a physical device.
  */
@@ -32,7 +34,7 @@ public:
     static const std::vector<const char *> deviceExtensions;
 
 private:
-    VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
+    VulkanDevice(VkPhysicalDevice physicalDevice,
                  VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
                  VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
                  VkPhysicalDeviceProperties properties);
@@ -69,12 +71,14 @@ public:
 
     [[nodiscard]] inline uint32_t getPresentQueueFamily() const { return presentQueueFamily; }
 
+    [[nodiscard]] inline QueueFamilyIndices getQueueFamilyIndices() const { return queueFamilyIndices; }
+
     // Wrapper for external calls
     [[nodiscard]] bool checkDeviceExtensionSupport() const;
 
-    [[nodiscard]] QueueFamilyIndices findQueueFamilies() const;
+    [[nodiscard]] QueueFamilyIndices findQueueFamilies(VkSurfaceKHR surface) const;
 
-    [[nodiscard]] SwapChainSupportDetails querySwapChainSupport() const;
+    [[nodiscard]] SwapChainSupportDetails querySwapChainSupport(VkSurfaceKHR surface) const;
 
     [[nodiscard]] VkFormat
     findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
@@ -83,8 +87,6 @@ public:
     [[nodiscard]] bool checkSurfaceAvailability(VkSurfaceKHR newSurface) const;
 
 private:
-    VkSurfaceKHR surface;
-
     VkPhysicalDevice physicalDevice;
 
     VkDevice device;

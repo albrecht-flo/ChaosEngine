@@ -19,10 +19,11 @@ static std::vector<VkFence> createFence(const VulkanContext &context, uint32_t a
         if (vkCreateFence(context.getDevice().vk(), &fenceInfo, nullptr, &fences[i]) != VK_SUCCESS) {
             throw std::runtime_error("[VULKAN] Failed to create fence!");
         }
+#ifndef NDEBUG
         char t[] = "Frame Fence 0";
         t[12] = static_cast<char>('0' + (char) i);
-
         context.setDebugName(VK_OBJECT_TYPE_FENCE, (uint64_t) fences[i], t);
+#endif
     }
 
     return std::move(fences);
