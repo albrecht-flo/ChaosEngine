@@ -2,6 +2,7 @@
 
 #include "Engine/src/core/Utils/Logger.h"
 #include "VulkanInstance.h"
+#include "VulkanSurface.h"
 
 #include <set>
 #include <stdexcept>
@@ -258,22 +259,21 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
     auto[graphicsQueue, graphicsQueueFamily] = ::getGraphicsQueue(device, indices);
     auto[presentQueue, presentQueueFamily] = ::getPresentQueue(device, indices);
 
-    return VulkanDevice{surface, physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
+    return VulkanDevice{physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
                         graphicsQueue, presentQueue, indices, deviceProperties};
 }
 
-VulkanDevice::VulkanDevice(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice,
+VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice,
                            VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
                            VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
                            VkPhysicalDeviceProperties properties)
-        : surface(surface), physicalDevice(physicalDevice), device(device),
+        : physicalDevice(physicalDevice), device(device),
           graphicsQueueFamily(graphicsQueueFamily), presentQueueFamily(presentQueueFamily),
           graphicsQueue(graphicsQueue), presentQueue(presentQueue), queueFamilyIndices(queueFamilyIndices),
           properties(properties) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
-        : surface(std::exchange(o.surface, nullptr)),
-          physicalDevice(std::exchange(o.physicalDevice, nullptr)),
+        : physicalDevice(std::exchange(o.physicalDevice, nullptr)),
           device(std::exchange(o.device, nullptr)),
           graphicsQueueFamily(o.graphicsQueueFamily), presentQueueFamily(o.presentQueueFamily),
           graphicsQueue(std::exchange(o.graphicsQueue, nullptr)),
@@ -300,11 +300,11 @@ bool VulkanDevice::checkDeviceExtensionSupport() const {
     return ::checkDeviceExtensionSupport(physicalDevice, VulkanDevice::deviceExtensions);
 }
 
-QueueFamilyIndices VulkanDevice::findQueueFamilies() const {
+QueueFamilyIndices VulkanDevice::findQueueFamilies(VkSurfaceKHR surface) const {
     return ::findQueueFamilies(physicalDevice, surface);
 }
 
-SwapChainSupportDetails VulkanDevice::querySwapChainSupport() const {
+SwapChainSupportDetails VulkanDevice::querySwapChainSupport(VkSurfaceKHR surface) const {
     return ::querySwapChainSupport(physicalDevice, surface);
 }
 

@@ -91,7 +91,8 @@ void VulkanRenderPass::destroy() {
 
 VulkanFramebuffer
 VulkanRenderPass::createFrameBuffer(const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
-                                    uint32_t width, uint32_t height, const std::optional<std::string> &debugName) const {
+                                    uint32_t width, uint32_t height,
+                                    const std::optional<std::string> &debugName) const {
     assert("Missing Attachment info when creating framebuffer!" && infos.size() == attachmentCount);
     return VulkanFramebuffer::Create(context, renderPass, infos, width, height, debugName);
 }
