@@ -135,10 +135,29 @@ void TestScene::imGuiMainMenu() {
 }
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
+static bool showImGuiDebugger = false;
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
     CustomImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
+
+    CustomImGui::RenderLogWindow();
+
+    const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
+    auto size = CustomImGui::RenderSceneViewport(fb);
+
+    ImGui::Begin("Info");
+    ImGuiIO &io = ImGui::GetIO();
+    // Basic info
+    ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::Text("Viewport Size: %f x %f", size.x, size.y);
+    ImGui::Separator();
+    if (ImGui::Button("Show ImGui Debugger")) {
+        showImGuiDebugger = true;
+    }
+    ImGui::End();
+    if (showImGuiDebugger) ImGui::ShowMetricsWindow(&showImGuiDebugger);
+
     if (cameraControllerActive) {
         if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
             ImGui::Text("Camera Controller");
@@ -156,7 +175,6 @@ void TestScene::updateImGui() {
             ImGui::Separator();
             ImGui::ColorEdit4("Color", &(editTintColor.r));
             if (ImGui::Button("Apply")) {
-                std::cout << "Apply new color" << std::endl;
                 texturedQuad.setComponent<RenderComponent>(
                         texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}));
             }
@@ -164,13 +182,4 @@ void TestScene::updateImGui() {
         ImGui::End();
     }
 
-    CustomImGui::RenderLogWindow();
-
-    const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    auto size = CustomImGui::RenderSceneViewport(fb);
-
-    ImGui::Begin("Debug");
-    ImGui::Text("Viewport Size: %f x %f", size.x, size.y);
-    ImGui::Text("Framebuffer Size: %d x %d", fb.getWidth(), fb.getHeight());
-    ImGui::End();
 }
