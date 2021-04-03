@@ -24,14 +24,11 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
     VkImage image{};
 
     // Staging buffer to contain data for transfer
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
     // Creates buffer with usage=transfer_src, host visible and coherent meaning the cpu has access to the memory and changes are immediately known to the driver which will transfer the memmory before the next vkQueueSubmit
-    vulkanMemory.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                              VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
-                              stagingBufferMemory);
+    auto stagingBuffer = vulkanMemory.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                                                   VMA_MEMORY_USAGE_CPU_TO_GPU);
     // Copy the image to the staging buffer
-    vulkanMemory.copyDataToBuffer(stagingBuffer, stagingBufferMemory, pixels, imageSize, 0);
+    vulkanMemory.copyDataToBuffer(stagingBuffer, pixels, imageSize, 0);
     stbi_image_free(pixels); // no longer needed
 
     // Create the image and its memory
@@ -50,10 +47,6 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
     // Transfer the image layout to the fragment shader read layout
     transitionImageLayout(vulkanMemory, image, VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    // Staging buffer is no longer needed
-    vkDestroyBuffer(device.vk(), stagingBuffer, nullptr);
-    vkFreeMemory(device.vk(), stagingBufferMemory, nullptr);
 
     return VulkanImage(device, image, imageMemory, texWidth, texHeight);
 }
@@ -129,7 +122,7 @@ VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanM
     allocInfo.memoryTypeIndex = vulkanMemory.findMemoryType(imageMemoryRequirements.memoryTypeBits, properties);
 
     if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to allocation image memmory!");
+        throw std::runtime_error("[Vulkan] Failed to allocation image memory!");
     }
 
     // Bind image to memory

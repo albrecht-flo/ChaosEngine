@@ -84,7 +84,7 @@ void PostRenderPass::init() {
 
 
     // TODO: Remove when reimplementation of 3D is finished
-    backgroundTexture = VulkanTexture::createTexture(device, vulkanMemory, "textures/sky.jpg");
+    backgroundTexture = VulkanTexture::createTexture(device, "textures/sky.jpg", <#initializer#>);
 }
 
 void PostRenderPass::setImageBufferViews(VkImageView newFramebufferView,

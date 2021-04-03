@@ -7,14 +7,18 @@
 #include "VulkanImage.h"
 
 VulkanTexture
-VulkanTexture::createTexture(const VulkanDevice &device, const VulkanMemory &vulkanMemory,
-                             const std::string &filename) {
-    auto image = VulkanImage::createFromFile(device, vulkanMemory, filename);
-    VulkanImageView imageView = VulkanImageView::Create(device, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
+VulkanTexture::createTexture(const VulkanContext &context, const std::string &filename,
+                             const std::optional<std::string> &debugName) {
+    auto image = VulkanImage::createFromFile(context.getDevice(), context.getMemory(), filename);
+    VulkanImageView imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                                                         VK_IMAGE_ASPECT_COLOR_BIT);
-    VulkanSampler sampler = VulkanSampler::create(device);
+#ifndef NDEBUG
+    if(debugName)
+        context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView.vk(), *debugName);
+#endif
+    VulkanSampler sampler = VulkanSampler::create(context.getDevice());
 
-    return VulkanTexture{device, std::make_shared<VulkanImage>(std::move(image)),
+    return VulkanTexture{context.getDevice(), std::make_shared<VulkanImage>(std::move(image)),
                          VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, std::move(imageView), std::move(sampler)};
 }
 

@@ -1,18 +1,21 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
-#include <Engine/src/renderer/vulkan/command/VulkanCommandPool.h>
+#include <vk_mem_alloc.h>
 
 #include "VulkanBuffer.h"
 
+class VulkanInstance;
+
 class VulkanDevice;
 
-// TODO: This class needs to be refactored as soon as the Khronos Vulkan memory manager is added
+class VulkanCommandPool;
+
 class VulkanMemory {
 public:
-    VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool);
+    VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool, VmaAllocator allocator);
 
-    ~VulkanMemory() = default;
+    ~VulkanMemory() { if (allocator != nullptr) vmaDestroyAllocator(allocator); };
 
     VulkanMemory(const VulkanMemory &o) = delete;
 
@@ -22,26 +25,29 @@ public:
 
     VulkanMemory &operator=(VulkanMemory &&o) = delete;
 
-    void destroy(VulkanBuffer buffer) const;
+    static VulkanMemory
+    Create(const VulkanDevice &context, const VulkanInstance &instance, const VulkanCommandPool &commandPool);
 
     VulkanBuffer createInputBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const;
 
-    [[nodiscard]] const VulkanUniformBuffer
-    createUniformBuffer(uint32_t elementSize, VkBufferCreateFlags flags, uint32_t count = 1, bool aligned = false) const;
+    [[nodiscard]] VulkanUniformBuffer
+    createUniformBuffer(uint32_t elementSize, uint32_t count, bool aligned) const;
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                      VkDeviceMemory &bufferMemory) const;
+    [[nodiscard]] VulkanBuffer
+    createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage) const;
 
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
+    void
+    copyDataToBuffer(const VulkanBuffer &buffer, const void *data, size_t size, size_t offset = 0) const;
 
-    void copyDataToBuffer(VkBuffer buffer, VkDeviceMemory memory, const void *data, size_t size, size_t offset = 0) const;
+    void copyBufferToImage(const VulkanBuffer &buffer, VkImage image, uint32_t width, uint32_t height) const;
 
-    void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) const;
-
-//private: for now
+//private:  // TODO: Move Image creation here as well
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
 
-    // TOBE moved
+private:
+    void copyBuffer(const VulkanBuffer &srcBuffer, const VulkanBuffer &dstBuffer, VkDeviceSize size) const;
+
+public:  // TODO: Move single time commands to other class
     VkCommandBuffer beginSingleTimeCommands() const;
 
     void endSingleTimeCommands(VkCommandBuffer &commandBuffer) const;
@@ -49,5 +55,6 @@ public:
 private:
     const VulkanDevice &device;
     const VulkanCommandPool &commandPool;
+    VmaAllocator allocator;
 };
 

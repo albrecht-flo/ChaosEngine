@@ -94,8 +94,19 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
 
 ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title) {
     using namespace Renderer;
-    if (state.sceneImageGPUHandles.empty())
-        state.sceneImageGPUHandles = std::vector<void *>(GraphicsContext::maxFramesInFlight + 1, nullptr);
+    if (state.sceneImageGPUHandles.empty()) {
+        uint32_t sceneImageGPUHandleCount = 0;
+        switch (GraphicsContext::currentAPI) {
+            case Renderer::GraphicsAPI::Vulkan:
+                sceneImageGPUHandleCount = dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext())
+                        .getSwapChain().size();
+                break;
+            default:
+                sceneImageGPUHandleCount = 1;
+                break;
+        }
+        state.sceneImageGPUHandles = std::vector<void *>(sceneImageGPUHandleCount, nullptr);
+    }
 
     // Get attachment texture
     switch (GraphicsContext::currentAPI) {
@@ -134,7 +145,6 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
     ImGui::End();
     ImGui::PopStyleVar();
 
-    state.currentFrame = (state.currentFrame < GraphicsContext::maxFramesInFlight) ?
-                         state.currentFrame + 1 : 0;
+    state.currentFrame = (state.currentFrame < state.sceneImageGPUHandles.size() - 1) ? state.currentFrame + 1 : 0;
     return state.previousSize;
 }

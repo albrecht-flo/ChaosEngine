@@ -105,7 +105,6 @@ void MainSceneRenderPass::createUniformBuffers() {
     for (size_t i = 0; i < swapChain.size(); i++) {
         uniformBuffers[i] = vulkanMemory.createUniformBuffer(
                 sizeof(UniformBufferObject),
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 1, false);
     }
 
@@ -144,15 +143,11 @@ void MainSceneRenderPass::createLightStructures() {
 
     // Create Light descriptor sets
     lightUniformBuffers[0] = vulkanMemory.createUniformBuffer(
-            sizeof(UniformLightsObject),
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
+            sizeof(UniformLightsObject), 0, false);
     lightsUBContent[0] = UniformBufferContent<UniformLightsObject>(1);
     // Create buffer for this descriptor set
     lightUniformBuffers[1] = vulkanMemory.createUniformBuffer(
-            sizeof(UniformLightsObject),
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-    );
+            sizeof(UniformLightsObject), 0, false);
     lightsUBContent[1] = UniformBufferContent<UniformLightsObject>(1);
 
     UniformLightsObject *lights1 = lightsUBContent[0].at();
@@ -303,14 +298,12 @@ void MainSceneRenderPass::destroy() {
 OldMaterialRef MainSceneRenderPass::createMaterial(const TexturePhongMaterial &material) {
     // Load texture // TODO: Remove when reimplementation of 3D is finished
     const VulkanTexture &texture = textures.emplace(material.textureFile, VulkanTexture::createTexture(
-            device, vulkanMemory, "textures/" + material.textureFile)).first->second;
+            device, "textures/" + material.textureFile, <#initializer#>)).first->second;
 
     // Create and fill material buffer
     // TODO, should not be host visible -> staging
     VulkanUniformBuffer materialBuffer = vulkanMemory.createUniformBuffer(
-            sizeof(UniformMaterialObject),
-            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
-    );
+            sizeof(UniformMaterialObject), 0, false);
     materialUniformBuffers.emplace_back(materialBuffer);
     materialUBContent.emplace_back(
             UniformBufferContent<UniformMaterialObject>(1)

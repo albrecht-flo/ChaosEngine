@@ -8,6 +8,7 @@
 #include <cstring>
 #include <utility>
 #include <set>
+#include <optional>
 
 /* Checks if the driver supports validation layers. */
 static bool checkValidationLayerSupport(const std::vector<const char *> &validationLayers) {
@@ -214,12 +215,15 @@ void VulkanInstance::destroy() {
 
 #ifndef NDEBUG
 
-void VulkanInstance::setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const {
+void VulkanInstance::setDebugName(VkDevice device, VkObjectType type, uint64_t handle,
+                                  const std::optional<std::string> &name) const {
+    if (!name)
+        return;
     VkDebugUtilsObjectNameInfoEXT fenceDgbInfo = {};
     fenceDgbInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
     fenceDgbInfo.objectType = type;
     fenceDgbInfo.objectHandle = handle;
-    fenceDgbInfo.pObjectName = name.c_str();
+    fenceDgbInfo.pObjectName = name->c_str();
     setDebugUtilsObjectNameEXT(device, &fenceDgbInfo);
 }
 

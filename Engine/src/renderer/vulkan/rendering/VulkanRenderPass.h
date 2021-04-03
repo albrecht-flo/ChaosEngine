@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] VulkanFramebuffer
     createFrameBuffer(const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
-                      uint32_t width, uint32_t height) const;
+                      uint32_t width, uint32_t height, const std::optional<std::string> &debugName) const;
 
 private:
     const VulkanContext &context;

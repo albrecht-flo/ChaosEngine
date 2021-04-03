@@ -23,20 +23,6 @@ struct RenderMesh {
     VulkanBuffer vertexBuffer;
     VulkanBuffer indexBuffer;
     uint32_t indexCount;
-    uint32_t id = ids++;
-public: // public needed for MSVC
-    static uint32_t ids;
-};
-
-struct RenderObject {
-    RenderMesh *mesh;
-    glm::mat4 modelMat;
-    OldMaterialRef material;
-};
-
-struct TexturePhongMaterial {
-    const std::string textureFile;
-    float shininess;
 };
 
 struct LightObject {
