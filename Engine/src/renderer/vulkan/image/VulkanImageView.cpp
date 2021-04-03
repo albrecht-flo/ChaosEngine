@@ -24,8 +24,9 @@ VulkanImageView::Create(const VulkanDevice &device, VkImage image, VkFormat form
 
     VkImageView imageView = {};
     if (vkCreateImageView(device.vk(), &createInfo, nullptr, &imageView) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create image views!");
+        throw std::runtime_error("[VULKAN] Failed to create image views!");
     }
+
     return VulkanImageView{device, imageView};
 }
 

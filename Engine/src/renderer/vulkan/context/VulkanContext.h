@@ -68,7 +68,7 @@ public:
 
     // Debug members
 
-    inline void setDebugName(VkObjectType type, uint64_t handle, const std::string &name) const {
+    inline void setDebugName(VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const {
         instance.setDebugName(device.vk(), type, handle, name);
     }
 

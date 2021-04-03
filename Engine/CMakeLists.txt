@@ -1,5 +1,6 @@
 set(ENGINE_SOURCES
         #       External vendor files
+        src/vendor/vulkan/vk_mem_allocator.cpp
         src/vendor/imgui/imgui.cpp
         #       Core classes
         src/core/Engine.cpp
@@ -52,12 +53,14 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
         src/renderer/vulkan/api/VulkanMaterial.cpp
+
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm
         ../dep/glfw/include
         ../dep/vulkan
+        ../dep/VulkanMemoryAllocator/src
         ../dep/imgui
         ../dep/entt/src
         ../dep/tinyply/source

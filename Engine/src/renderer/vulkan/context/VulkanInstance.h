@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 class VulkanInstance {
 private:
@@ -37,7 +38,8 @@ public:
     // Debug calls
 #ifndef NDEBUG
 public:
-    void setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const;
+    void
+    setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const;
 
 private:
     inline void setDebugUtilsObjectNameEXT(VkDevice device, VkDebugUtilsObjectNameInfoEXT *objectNameInfo) const {
@@ -48,8 +50,9 @@ private:
 
 #else
     public:
-
-        void setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::string &name) const {}
+        void
+        setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::optional<std::string>& name) const
+        {}
 
 #endif
 

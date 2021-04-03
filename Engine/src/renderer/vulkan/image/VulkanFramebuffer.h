@@ -44,7 +44,8 @@ public:
      */
     static VulkanFramebuffer Create(const VulkanContext &context, VkRenderPass renderPass,
                                     const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
-                                    uint32_t width, uint32_t height);
+                                    uint32_t width, uint32_t height,
+                                    const std::optional<std::string> &debugName);
 
     // ------------------------------------ Class Members --------------------------------------------------------------
 

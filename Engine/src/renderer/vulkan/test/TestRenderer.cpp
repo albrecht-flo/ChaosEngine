@@ -129,15 +129,13 @@ void TestRenderer::createFramebuffers() {
             device,
             {offscreenImageView.vk(), depthBuffer.getImageView().vk()},
             mainGraphicsPass.vk(),
-            swapChain.getExtent().width, swapChain.getExtent().height
-    );
+            swapChain.getExtent().width, swapChain.getExtent().height, <#initializer#>);
     // Create offscreen ImGui framebuffer
     imGuiFramebuffer = VulkanFramebuffer::Create(
             device,
             {imGuiImageView.vk()},
             imGuiRenderPass.vk(),
-            swapChain.getExtent().width, swapChain.getExtent().height
-    );
+            swapChain.getExtent().width, swapChain.getExtent().height, <#initializer#>);
 
     // Create framebuffers for swap chain
     swapChainFramebuffers.clear();
@@ -147,8 +145,7 @@ void TestRenderer::createFramebuffers() {
                 device,
                 {swapChain.getImageViews()[i].vk()},
                 postRenderPass.vk(),
-                swapChain.getExtent().width, swapChain.getExtent().height
-        ));
+                swapChain.getExtent().width, swapChain.getExtent().height, <#initializer#>));
     }
 }
 

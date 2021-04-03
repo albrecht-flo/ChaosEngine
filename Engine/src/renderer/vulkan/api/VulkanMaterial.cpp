@@ -113,7 +113,6 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
     if (set1 && materialBufferSize > 0) {
         materialBuffer = std::make_unique<VulkanUniformBuffer>(vulkanContext.getMemory().createUniformBuffer(
                 sizeWithUboPadding(vulkanContext, materialBufferSize),
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 info.set1ExpectedCount, false));
     }
 
@@ -134,11 +133,11 @@ VulkanMaterial::instantiate(std::shared_ptr<Material> &materialPtr, const void *
 
     // Upload uniform data
     if (materialData != nullptr) {
-        if (currentOffset >= materialBuffer->size)
+        if (currentOffset >= materialBuffer->getSize())
             throw std::runtime_error("Uniform buffer is already full");
 
         // Copy the data to the uniform buffer
-        vulkanContext.getMemory().copyDataToBuffer(materialBuffer->buffer, materialBuffer->memory, materialData,
+        vulkanContext.getMemory().copyDataToBuffer(materialBuffer->getBuffer(), materialData,
                                                    size, currentOffset);
     }
 
@@ -149,7 +148,7 @@ VulkanMaterial::instantiate(std::shared_ptr<Material> &materialPtr, const void *
         auto binding = info.set1.value()[i];
         switch (binding.type) {
             case ShaderBindingType::UniformBuffer:
-                writer.writeBuffer(i, materialBuffer->buffer, currentOffset,
+                writer.writeBuffer(i, materialBuffer->getBuffer().vk(), currentOffset,
                                    materialBufferSize);
                 break;
             case ShaderBindingType::TextureSampler:

@@ -21,8 +21,8 @@ static VkFormat getVkFormat(const VulkanContext &context, Renderer::AttachmentFo
 }
 
 static VulkanImageBuffer
-createAttachment(const VulkanContext &context, const Renderer::FramebufferAttachmentInfo &info,
-                 uint32_t width, uint32_t height) {
+createAttachment(const VulkanContext &context, const Renderer::FramebufferAttachmentInfo &info, uint32_t width,
+                 uint32_t height, const std::optional<std::string> &debugName) {
     assert("Can not create image buffer for swapchain!" && info.type != Renderer::AttachmentType::SwapChain);
     std::unique_ptr<VulkanImage> image = nullptr;
     std::unique_ptr<VulkanImageView> imageView = nullptr;
@@ -37,6 +37,9 @@ createAttachment(const VulkanContext &context, const Renderer::FramebufferAttach
             imageView = std::make_unique<VulkanImageView>(VulkanImageView::
                                                           Create(context.getDevice(), image->vk(), format,
                                                                  VK_IMAGE_ASPECT_COLOR_BIT));
+            if (debugName)
+                context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView->vk(),
+                                     "Color Attachment View " + *debugName);
             break;
         case Renderer::AttachmentType::Depth:
             image = std::make_unique<VulkanImage>(VulkanImage::
@@ -45,6 +48,9 @@ createAttachment(const VulkanContext &context, const Renderer::FramebufferAttach
             imageView = std::make_unique<VulkanImageView>(VulkanImageView::
                                                           Create(context.getDevice(), image->vk(), format,
                                                                  VK_IMAGE_ASPECT_DEPTH_BIT));
+            if (debugName)
+                context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView->vk(),
+                                     "Depth Attachment View " + *debugName);
             break;
     }
 
@@ -56,7 +62,8 @@ createAttachment(const VulkanContext &context, const Renderer::FramebufferAttach
 
 VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRenderPass renderPass,
                                             const std::initializer_list<Renderer::FramebufferAttachmentInfo> &infos,
-                                            uint32_t width, uint32_t height) {
+                                            uint32_t width, uint32_t height,
+                                            const std::optional<std::string> &debugName) {
     bool swapchain = std::any_of(infos.begin(), infos.end(),
                                  [](auto info) { return info.type == Renderer::AttachmentType::SwapChain; });
     int depthAttachment = std::count_if(infos.begin(), infos.end(),
@@ -72,7 +79,7 @@ VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRend
         assert("Depth attachment needs to be the LAST Attachment!" &&
                info.type != Renderer::AttachmentType::Depth || &info == infos.end() - 1);
         if (info.type != Renderer::AttachmentType::SwapChain) {
-            attachments.emplace_back(createAttachment(context, info, width, height));
+            attachments.emplace_back(createAttachment(context, info, width, height, debugName));
         }
     }
 

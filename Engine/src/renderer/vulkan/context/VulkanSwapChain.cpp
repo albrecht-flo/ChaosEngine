@@ -212,7 +212,7 @@ std::vector<VulkanFramebuffer> VulkanSwapChain::createFramebuffers(const VulkanR
         swapChainFramebuffers.emplace_back(
                 renderPass.createFrameBuffer(
                         {FramebufferAttachmentInfo{AttachmentType::SwapChain, AttachmentFormat::SwapChain, i}},
-                        getWidth(), getHeight())
+                        getWidth(), getHeight(), "Swapchain" + std::to_string(i))
         );
     }
     return std::move(swapChainFramebuffers);

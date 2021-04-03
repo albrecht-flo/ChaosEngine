@@ -77,7 +77,7 @@ private:
     // Per Frame resources ----------------------------------------------------
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
-    UniformBufferContent<CameraUbo> uboContent;
+    std::unique_ptr<UniformBufferContent<CameraUbo>> uboContent;
 
     // State resources --------------------------------------------------------
     glm::uvec2 viewportSize{0, 0};

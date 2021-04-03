@@ -33,7 +33,7 @@ VulkanContext::VulkanContext(Window &window)
           device(VulkanDevice::Create(instance, surface.vk())),
           commandPool(VulkanCommandPool::Create(device)),
           swapChain(VulkanSwapChain::Create(window, device, surface.vk())),
-          memory(device, commandPool),
+          memory(VulkanMemory::Create(device, instance, commandPool)),
           primaryCommandBuffers(createPrimaryCommandBuffers(instance, device, commandPool, maxFramesInFlight)),
           frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {
     Logger::I("VulkanContext", "Created Vulkan Context");

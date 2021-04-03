@@ -80,7 +80,7 @@ private:
 
     std::unique_ptr<VulkanDescriptorSet> perFrameDescriptorSet;
     std::unique_ptr<VulkanUniformBuffer> perFrameUniformBuffer;
-    UniformBufferContent<ShaderConfig> uboContent;
+    std::unique_ptr<UniformBufferContent<ShaderConfig>> uboContent;
 
     // State resources --------------------------------------------------------
     glm::uvec2 viewportSize{0, 0};

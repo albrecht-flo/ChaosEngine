@@ -36,7 +36,7 @@ void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
     framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
             {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8},
              FramebufferAttachmentInfo{AttachmentType::Depth, AttachmentFormat::Auto_Depth}},
-            width, height));
+            width, height, "Sprite Pass"));
     viewportSize = {width, height};
 }
 
@@ -71,19 +71,19 @@ void SpriteRenderingPass::createStandardPipeline() {
                                                                     .build());
 
 
-    perFrameUniformBuffers.resize(GraphicsContext::maxFramesInFlight);
+    perFrameUniformBuffers.reserve(GraphicsContext::maxFramesInFlight);
     for (size_t i = 0; i < perFrameUniformBuffers.capacity(); i++) {
-        perFrameUniformBuffers[i] = context.getMemory().createUniformBuffer(
-                sizeof(CameraUbo),
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                1, false);
+        perFrameUniformBuffers.emplace_back(std::move(
+                context.getMemory().createUniformBuffer(sizeof(CameraUbo), 1, false)));
     }
-    uboContent = UniformBufferContent<CameraUbo>(1);
+    uboContent = std::make_unique<UniformBufferContent<CameraUbo>>(1);
 
     perFrameDescriptorSets.reserve(GraphicsContext::maxFramesInFlight);
     for (size_t i = 0; i < perFrameDescriptorSets.capacity(); i++) {
         perFrameDescriptorSets.emplace_back(descriptorPool->allocate(*cameraDescriptorLayout));
-        perFrameDescriptorSets[i].startWriting().writeBuffer(0, perFrameUniformBuffers[i].buffer).commit();
+        perFrameDescriptorSets[i].startWriting()
+                .writeBuffer(0, perFrameUniformBuffers[i].getBuffer().vk())
+                .commit();
     }
 
 }
@@ -104,7 +104,7 @@ void SpriteRenderingPass::init(uint32_t width, uint32_t height) {
 void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const CameraComponent &camera,
                                               const glm::uvec2 &viewportDimensions) {
 
-    CameraUbo *ubo = uboContent.at(context.getCurrentFrame());
+    CameraUbo *ubo = uboContent->at(context.getCurrentFrame());
     ubo->view = viewMat;
     if (viewportDimensions.x > viewportDimensions.y) {
         float aspect = static_cast<float>(viewportDimensions.x) / static_cast<float>(viewportDimensions.y);
@@ -118,9 +118,8 @@ void SpriteRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Ca
     ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be flipped
 
     // Copy that data to the uniform buffer
-    context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].buffer,
-                                         perFrameUniformBuffers[context.getCurrentFrame()].memory,
-                                         uboContent.data(), uboContent.size(), 0);
+    context.getMemory().copyDataToBuffer(perFrameUniformBuffers[context.getCurrentFrame()].getBuffer(),
+                                         uboContent->data(), uboContent->size(), 0);
 }
 
 void SpriteRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
@@ -212,11 +211,10 @@ SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 
     vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
 
-    VkBuffer vertexBuffers[]{renderObject.vertexBuffer.buffer};
+    VkBuffer vertexBuffers[]{renderObject.vertexBuffer.vk()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer.vk(), 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer.vk(), renderObject.indexBuffer.buffer, 0,
-                         VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer.vk(), renderObject.indexBuffer.vk(), 0, VK_INDEX_TYPE_UINT32);
     // Draw a fullscreen quad and composite the final image
     vkCmdDrawIndexed(commandBuffer.vk(), renderObject.indexCount, 1, 0, 0, 0);
 }

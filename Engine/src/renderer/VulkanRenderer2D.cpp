@@ -59,8 +59,8 @@ void VulkanRenderer2D::setup() {
             quad.indices.size() * sizeof(quad.indices[0]), reinterpret_cast<const char *>(quad.indices.data()),
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-    quadMesh = {.vertexBuffer=vertexBuffer, .indexBuffer=indexBuffer,
-            .indexCount=static_cast<uint32_t>(quad.indices.size())};
+    quadMesh = std::make_unique<RenderMesh>(
+            std::move(vertexBuffer), std::move(indexBuffer), static_cast<uint32_t>(quad.indices.size()));
 }
 
 
@@ -107,6 +107,12 @@ void VulkanRenderer2D::flush() {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
     }
+
+    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+
     if (sceneResize != glm::uvec2{0, 0}) {
         Logger::D("VulkanRenderer2D", "Resizing scene viewport");
         context.getDevice().waitIdle();
@@ -114,15 +120,10 @@ void VulkanRenderer2D::flush() {
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
     }
-
-    if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-    }
 }
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
-    spriteRenderingPass.drawSprite(quadMesh, modelMat,
+    spriteRenderingPass.drawSprite(*quadMesh, modelMat,
                                    dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance)));
 }
 

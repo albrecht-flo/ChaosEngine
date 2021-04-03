@@ -30,10 +30,11 @@ public:
     VulkanTexture &operator=(VulkanTexture &&o) noexcept;
 
     static VulkanTexture
-    createTexture(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename);
+    createTexture(const VulkanContext &device, const std::string &filename,
+                  const std::optional<std::string> &debugName = std::nullopt);
 
     static VulkanTexture Create(const VulkanContext &context, const std::string &filename) {
-        return createTexture(context.getDevice(), context.getMemory(), filename);
+        return createTexture(context, filename, filename);
     }
 
     inline VkImageView getImageView() const { return imageView ? imageView->vk() : *imageViewVk; }

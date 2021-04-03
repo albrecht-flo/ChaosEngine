@@ -82,7 +82,7 @@ private:
     glm::uvec2 sceneResize{0, 0};
 
     // TEMP
-    RenderMesh quadMesh;
+    std::unique_ptr<RenderMesh> quadMesh;
 
 };
 

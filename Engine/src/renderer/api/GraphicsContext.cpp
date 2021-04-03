@@ -13,8 +13,9 @@ namespace Renderer {
             case GraphicsAPI::Vulkan:
                 return std::make_unique<VulkanContext>(window);
             case GraphicsAPI::None:
-                throw std::runtime_error("GraphicsAPI wasn't specified correctly");
+                assert("GraphicsAPI wasn't specified correctly");
+            default:
+                assert("Unsupported Graphics API");
         }
-        assert(("Unsupported Graphics API", false));
     }
 }

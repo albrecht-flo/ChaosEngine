@@ -88,22 +88,21 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(
             VulkanDescriptorPoolBuilder(context.getDevice())
-                    .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType, GraphicsContext::maxFramesInFlight)
+                    .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType,
+                                   GraphicsContext::maxFramesInFlight)
                     .addDescriptor(descriptorSetLayout->getBinding(1).descriptorType,
                                    GraphicsContext::maxFramesInFlight * 2)
                     .setMaxSets(GraphicsContext::maxFramesInFlight * 3)
                     .build());
 
-    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(context.getMemory().createUniformBuffer(
-            sizeof(ShaderConfig),
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            1, false));
-    uboContent = UniformBufferContent<ShaderConfig>(1);
-    uboContent.at(0)->cameraNear = ShaderConfig{}.cameraNear;
-    uboContent.at(0)->cameraFar = ShaderConfig{}.cameraFar;
+    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(std::move(
+            context.getMemory().createUniformBuffer(sizeof(ShaderConfig), 1, false)));
+    uboContent = std::make_unique<UniformBufferContent<ShaderConfig>>(1);
+    uboContent->at(0)->cameraNear = ShaderConfig{}.cameraNear;
+    uboContent->at(0)->cameraFar = ShaderConfig{}.cameraFar;
 
     perFrameDescriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
-    perFrameDescriptorSet->startWriting().writeBuffer(0, perFrameUniformBuffer->buffer).commit();
+    perFrameDescriptorSet->startWriting().writeBuffer(0, perFrameUniformBuffer->getBuffer().vk()).commit();
     writeDescriptorSet(previousPassFb);
 }
 
@@ -113,7 +112,8 @@ void PostProcessingPass::createAttachments(uint32_t width, uint32_t height) {
         viewportSize = {context.getSwapChain().getWidth(), context.getSwapChain().getHeight()};
     } else {
         auto fb = renderPass->createFrameBuffer(
-                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height);
+                {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8}}, width, height,
+                "Post Processing");
         if (swapChainFrameBuffers.empty())
             swapChainFrameBuffers.emplace_back(std::move(fb));
         else
@@ -137,8 +137,8 @@ void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPas
 
 void PostProcessingPass::draw() {
     assert("No postprocessing configured" &&
-           !(static_cast<ShaderConfig *>(uboContent.at(0))->cameraNear == 0.0f &&
-             static_cast<ShaderConfig *>(uboContent.at(0))->cameraFar == 0.0f));
+           !(static_cast<ShaderConfig *>(uboContent->at(0))->cameraNear == 0.0f &&
+             static_cast<ShaderConfig *>(uboContent->at(0))->cameraFar == 0.0f));
 
     auto cmdBuf = context.getCurrentPrimaryCommandBuffer().vk();
 
@@ -186,7 +186,7 @@ void PostProcessingPass::draw() {
                             postprocessingPipeline->getPipelineLayout(),
                             0, 1, &desc, 0, nullptr);
 
-    VkBuffer vertexBuffers[]{quadBuffer->buffer};
+    VkBuffer vertexBuffers[]{quadBuffer->vk()};
     VkDeviceSize offsets[]{0};
     vkCmdBindVertexBuffers(cmdBuf, 0, 1, vertexBuffers, offsets);
     // Draw a fullscreen quad and composite the final image
@@ -204,11 +204,10 @@ void PostProcessingPass::resizeAttachments(const VulkanFramebuffer &framebuffer,
 }
 
 void PostProcessingPass::updateConfiguration(const PostProcessingPass::PostProcessingConfiguration &configuration) {
-    ShaderConfig *ubo = uboContent.at(0);
+    ShaderConfig *ubo = uboContent->at(0);
 
     ubo->cameraNear = configuration.camera.near;
     ubo->cameraFar = configuration.camera.far;
     // Copy that data to the uniform buffer
-    context.getMemory().copyDataToBuffer(perFrameUniformBuffer->buffer, perFrameUniformBuffer->memory,
-                                         uboContent.data(), uboContent.size(), 0);
+    context.getMemory().copyDataToBuffer(perFrameUniformBuffer->getBuffer(), uboContent->data(), uboContent->size(), 0);
 }
