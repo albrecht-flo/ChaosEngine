@@ -69,9 +69,11 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
     if (ImGui::Button("Toggle auto scroll"))
         state.followLog = !state.followLog;
     std::vector<std::string> logger = Logger::GetLogBuffer();
+
+    ImGui::Separator();
     if (ImGui::BeginListBox("##LogList", ImVec2{-FLT_MIN, -FLT_MIN})) {
         for (const auto &str: logger) {
-            ImGui::Selectable(str.c_str());
+            ImGui::TextUnformatted(str.c_str(), &str.back());
         }
 
         auto left_up = ImGui::GetWindowPos();
