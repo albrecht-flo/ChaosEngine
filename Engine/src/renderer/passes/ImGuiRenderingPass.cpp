@@ -20,8 +20,7 @@ static void check_imgui_vk_result(VkResult result) {
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 ImGuiRenderingPass
-ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, uint32_t width, uint32_t height,
-                           ImGuiContext *imGuiContext) {
+ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, ImGuiContext *imGuiContext) {
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), Renderer::AttachmentType::Color)

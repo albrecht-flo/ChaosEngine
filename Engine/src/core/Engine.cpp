@@ -7,9 +7,9 @@
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Test Engine")),
+          renderingSys(window),
           deltaTimer(std::chrono::high_resolution_clock::now()),
-          frameCounter(0), fpsDelta(0),
-          renderingSys(window) {
+          frameCounter(0), fpsDelta(0) {
     assert("A Scene is required" && scene != nullptr);
     Logger::I("Engine", "Loading Scene");
     loadScene(std::move(scene));

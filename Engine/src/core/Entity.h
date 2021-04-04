@@ -13,7 +13,7 @@ private:
             : registry(registry), entity(entity) {}
 
 public:
-    Entity() : entity(entt::null), registry(nullptr) {}
+    Entity() : registry(nullptr), entity(entt::null) {}
 
     ~Entity() = default;
 
@@ -47,8 +47,8 @@ public:
     }
 
 private:
-    entt::entity entity;
     entt::registry *registry;
+    entt::entity entity;
 };
 
 

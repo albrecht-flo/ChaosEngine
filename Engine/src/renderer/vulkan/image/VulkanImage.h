@@ -6,12 +6,15 @@
 
 #include <string>
 
-// TODO: refactor image creation [Part of VulkanMemory refactoring]
 class VulkanImage {
+    friend class VulkanMemory;
+
     friend class VulkanFramebuffer;
+
 private:
-    VulkanImage(const VulkanDevice &device, VkImage image, VkDeviceMemory imageMemory, uint32_t width, uint32_t height)
-            : device(device), image(image), imageMemory(imageMemory), width(width), height(height) {}
+    VulkanImage(const VulkanMemory &memory, VkImage image, VmaAllocation imageAllocation,
+                uint32_t width, uint32_t height)
+            : memory(memory), image(image), imageAllocation(imageAllocation), width(width), height(height) {}
 
 public:
     ~VulkanImage() { destroy(); }
@@ -21,8 +24,8 @@ public:
     VulkanImage &operator=(const VulkanImage &o) = delete;
 
     VulkanImage(VulkanImage &&o) noexcept
-            : device(o.device), image(std::exchange(o.image, nullptr)),
-              imageMemory(std::exchange(o.imageMemory, nullptr)),
+            : memory(o.memory), image(std::exchange(o.image, nullptr)),
+              imageAllocation(std::exchange(o.imageAllocation, nullptr)),
               width(o.width), height(o.height) {}
 
     VulkanImage &operator=(VulkanImage &&o) noexcept {
@@ -30,7 +33,7 @@ public:
             return *this;
         destroy();
         image = std::exchange(o.image, nullptr);
-        imageMemory = std::exchange(o.imageMemory, nullptr);
+        imageAllocation = std::exchange(o.imageAllocation, nullptr);
         width = o.width;
         height = o.height;
         return *this;
@@ -44,24 +47,18 @@ public:
 
 public:
     static VulkanImage
-    createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename);
+    createFromFile(const VulkanMemory &vulkanMemory, const std::string &filename);
 
     static VulkanImage
-    createRawImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
-                   VkFormat format);
+    createRawImage(const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height, VkFormat format);
 
     static VulkanImage
-    createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t width,
-                           uint32_t height, VkFormat depthFormat);
+    createDepthBufferImage(const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+                           VkFormat depthFormat);
 
     static VkFormat getDepthFormat(const VulkanDevice &device);
 
 private:
-    static void
-    createImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
-                VkFormat format,
-                VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage &image,
-                VkDeviceMemory &imageMemory);
 
     static void
     transitionImageLayout(const VulkanMemory &vulkanMemory, VkImage image, VkFormat format, VkImageLayout oldLayout,
@@ -71,16 +68,14 @@ private:
 
 private:
     void destroy() {
-        if (image != nullptr) {
-            vkDestroyImage(device.vk(), image, nullptr);
-            vkFreeMemory(device.vk(), imageMemory, nullptr);
-        }
+        if (image != nullptr)
+            memory.destroyImage(image, imageAllocation);
     }
 
 private:
-    const VulkanDevice &device;
+    const VulkanMemory &memory;
     VkImage image;
-    VkDeviceMemory imageMemory;
+    VmaAllocation imageAllocation;
     uint32_t width;
     uint32_t height;
 };

@@ -14,7 +14,7 @@ CustomImGui::CustomImGuiState CustomImGui::state{};
 // Source: https://gist.github.com/Pikachuxxxx/a3796bb193ca0aaed4ad4f591b2dab07
 void CustomImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallback) {
     static bool opt_fullscreen = true;
-    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+    static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
 
     // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
     // because it would be confusing to have two docking targets within each others.
@@ -30,12 +30,12 @@ void CustomImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallba
                         ImGuiWindowFlags_NoMove;
         window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     } else {
-        dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+        dockspaceFlags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
     }
 
     // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
     // and handle the pass-thru hole, so we ask Begin() to not render a background.
-    if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+    if (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
         window_flags |= ImGuiWindowFlags_NoBackground;
 
     // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
@@ -54,7 +54,7 @@ void CustomImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallba
     ImGuiIO &io = ImGui::GetIO();
     if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspaceFlags);
     } else {
         Logger::E("ImGui", "Cannot Dock Windows");
     }
@@ -97,7 +97,7 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
 ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title) {
     using namespace Renderer;
     if (state.sceneImageGPUHandles.empty()) {
-        uint32_t sceneImageGPUHandleCount = 0;
+        uint32_t sceneImageGPUHandleCount;
         switch (GraphicsContext::currentAPI) {
             case Renderer::GraphicsAPI::Vulkan:
                 sceneImageGPUHandleCount = dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext())

@@ -216,5 +216,5 @@ std::vector<VulkanFramebuffer> VulkanSwapChain::createFramebuffers(const VulkanR
                         getWidth(), getHeight(), "Swapchain" + std::to_string(i))
         );
     }
-    return std::move(swapChainFramebuffers);
+    return swapChainFramebuffers;
 }

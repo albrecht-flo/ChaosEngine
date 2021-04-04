@@ -7,12 +7,13 @@ using namespace VulkanPipelineUtility;
 using namespace Renderer;
 
 VulkanDescriptorSetLayoutBuilder &
-VulkanDescriptorSetLayoutBuilder::addBinding(uint32_t binding, Renderer::ShaderBindingType type, ShaderStage stage, uint32_t size) {
-    assert(("Bindings must have different binding indices!",
-            std::find_if(descriptorBindings.begin(), descriptorBindings.end(),
-                         [&](VkDescriptorSetLayoutBinding b) { return b.binding == binding; }) ==
-            descriptorBindings.end()));
-    assert(("Descriptor count needs to be > 0", size > 0));
+VulkanDescriptorSetLayoutBuilder::addBinding(uint32_t binding, Renderer::ShaderBindingType type, ShaderStage stage,
+                                             uint32_t size) {
+    assert("Bindings must have different binding indices!" &&
+           std::find_if(descriptorBindings.begin(), descriptorBindings.end(),
+                        [&](VkDescriptorSetLayoutBinding b) { return b.binding == binding; }) ==
+           descriptorBindings.end());
+    assert("Descriptor count needs to be > 0" && size > 0);
 
     descriptorBindings.emplace_back(VkDescriptorSetLayoutBinding{
             .binding = binding,

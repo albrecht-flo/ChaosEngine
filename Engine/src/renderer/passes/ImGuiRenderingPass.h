@@ -30,8 +30,7 @@ public:
 
 
     static ImGuiRenderingPass
-    Create(const VulkanContext &context, const Window &window, uint32_t width, uint32_t height,
-           ImGuiContext *imGuiContext);
+    Create(const VulkanContext &context, const Window &window, ImGuiContext *imGuiContext);
 
     void draw();
 

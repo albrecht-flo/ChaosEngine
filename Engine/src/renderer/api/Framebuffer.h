@@ -20,9 +20,9 @@ namespace Renderer {
         /**
          * Swapchain Attachment: Identifies the swapchain buffer (Swaphchain is always bound to attachment 0)
          * Depth Attachment: Ignored
-         * Color Attachment: attachment index (+1 in shader if swapchain attachment present in framebuffer
+         * Color Attachment: attachment index (+1 in shader if swapchain attachment present in framebuffer)
          */
-        uint32_t index;
+        uint32_t index = 0xffffffff;
     };
 
     class Framebuffer {

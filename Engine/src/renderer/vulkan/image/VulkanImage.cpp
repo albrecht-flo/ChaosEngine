@@ -1,15 +1,13 @@
 #include "VulkanImage.h"
-
-#include <stdexcept>
-
-#define STB_IMAGE_IMPLEMENTATION
+#include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 
 #include <stb_image.h>
 
+#include <stdexcept>
 
 /* Creates an image for use as a texture from a file. */
 VulkanImage
-VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulkanMemory, const std::string &filename) {
+VulkanImage::createFromFile(const VulkanMemory &vulkanMemory, const std::string &filename) {
     int texWidth, texHeight, texChannels;
 
     stbi_uc *pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -20,9 +18,6 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
         throw std::runtime_error("STBI: Failed to load " + filename);
     }
 
-    VkDeviceMemory imageMemory{};
-    VkImage image{};
-
     // Staging buffer to contain data for transfer
     // Creates buffer with usage=transfer_src, host visible and coherent meaning the cpu has access to the memory and changes are immediately known to the driver which will transfer the memmory before the next vkQueueSubmit
     auto stagingBuffer = vulkanMemory.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -32,102 +27,46 @@ VulkanImage::createFromFile(const VulkanDevice &device, const VulkanMemory &vulk
     stbi_image_free(pixels); // no longer needed
 
     // Create the image and its memory
-    createImage(device, vulkanMemory, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),
+    auto image = vulkanMemory.createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),
                 VK_FORMAT_R8G8B8A8_UNORM,
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, imageMemory);
+                VMA_MEMORY_USAGE_GPU_ONLY);
 
     // Transition the image to the transfer destination layout
-    transitionImageLayout(vulkanMemory, image, VK_FORMAT_R8G8B8A8_UNORM,
+    transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     // Copy image data into image from buffer
     vulkanMemory.copyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(texWidth),
                                    static_cast<uint32_t>(texHeight));
     // Transfer the image layout to the fragment shader read layout
-    transitionImageLayout(vulkanMemory, image, VK_FORMAT_R8G8B8A8_UNORM,
+    transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    return VulkanImage(device, image, imageMemory, texWidth, texHeight);
+    return image;
 }
 
 /* Creates an image for depth attachment and sample use. */
-VulkanImage VulkanImage::createDepthBufferImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory,
-                                                uint32_t width, uint32_t height, VkFormat depthFormat) {
-
-    VkDeviceMemory depthImageMemory{};
-    VkImage depthImage{};
-
-    createImage(device, vulkanMemory, width, height, depthFormat,
-                VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage,
-                depthImageMemory);
-
-    return VulkanImage(device, depthImage, depthImageMemory, width, height);
+VulkanImage VulkanImage::createDepthBufferImage(const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height,
+                                                VkFormat depthFormat) {
+    auto image = vulkanMemory.createImage(width, height, depthFormat,
+                                          VK_IMAGE_TILING_OPTIMAL,
+                                          VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                          VMA_MEMORY_USAGE_GPU_ONLY);
+    return image;
 }
 
 
 /* Creates an image for color attachment and sample use. */
-VulkanImage VulkanImage::createRawImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory,
-                                        uint32_t width, uint32_t height, VkFormat format) {
+VulkanImage
+VulkanImage::createRawImage(const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height, VkFormat format) {
 
-    VkDeviceMemory imageMemory{};
-    VkImage image{};
+    auto image = vulkanMemory.createImage(width, height, format,
+                                          VK_IMAGE_TILING_OPTIMAL,
+                                          VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                          VMA_MEMORY_USAGE_GPU_ONLY);
 
-    createImage(device, vulkanMemory, width, height, format,
-                VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image,
-                imageMemory);
-
-    return VulkanImage(device, image, imageMemory, width, height);
-}
-
-/* Creates an image, allocates its memory and binds the two together. */
-void
-VulkanImage::createImage(const VulkanDevice &device, const VulkanMemory &vulkanMemory, uint32_t widht, uint32_t height,
-                         VkFormat format,
-                         VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
-                         VkImage &image, VkDeviceMemory &imageMemory) {
-    // Create the image
-    VkImageCreateInfo imageInfo = {};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = static_cast<uint32_t>(widht);
-    imageInfo.extent.height = static_cast<uint32_t>(height);
-    imageInfo.extent.depth = 1; // 1 layer -> 2D
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = format; // must be corresponding to the data
-    imageInfo.tiling = tiling; // usage optimized layout
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = usage; // we need to copy to it and sample from the shader
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // only on graphcis queue
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // multisample
-    imageInfo.flags = 0;
-
-    if (vkCreateImage(device.vk(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to create image!");
-    }
-
-    // Get requirements
-    VkMemoryRequirements imageMemoryRequirements;
-    vkGetImageMemoryRequirements(device.vk(), image, &imageMemoryRequirements);
-
-    // Allocate image memory
-    VkMemoryAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = imageMemoryRequirements.size;
-    allocInfo.memoryTypeIndex = vulkanMemory.findMemoryType(imageMemoryRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(device.vk(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        throw std::runtime_error("[Vulkan] Failed to allocation image memory!");
-    }
-
-    // Bind image to memory
-    vkBindImageMemory(device.vk(), image, imageMemory, 0);
-
+    return image;
 }
 
 /* Transitions the image layout. */

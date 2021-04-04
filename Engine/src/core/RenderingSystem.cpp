@@ -35,7 +35,7 @@ void RenderingSystem::createRenderer(RendererType rendererType) {
     renderer->setup();
 }
 
-void RenderingSystem::updateComponents(ECS &ecs) {
+void RenderingSystem::updateComponents(ECS &/*ecs*/) {
     context->tickFrame();
 }
 

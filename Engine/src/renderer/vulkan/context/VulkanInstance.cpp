@@ -18,8 +18,8 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const auto &layerProperties : availableLayers) {
-    }
+//    for (const auto &layerProperties : availableLayers) {
+//    }
 
     for (const char *layerName : validationLayers) {
         bool layerFound = false;

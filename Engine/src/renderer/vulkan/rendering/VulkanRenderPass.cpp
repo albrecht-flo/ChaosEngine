@@ -15,7 +15,7 @@ VulkanRenderPass::Create(const VulkanContext &context,
 
     std::vector<VkAttachmentDescription> attachments;
 
-    for (int i = 0; i < attachmentDescriptions.size(); ++i) {
+    for (uint32_t i = 0; i < attachmentDescriptions.size(); ++i) {
         VkAttachmentReference attachmentRef = {};
         attachmentRef.attachment = i;
         attachmentRef.layout = attachmentDescriptions[i].attachmentLayout; // layout ~during~ subpass

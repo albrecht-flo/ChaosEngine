@@ -17,10 +17,10 @@ using namespace Renderer;
 PostProcessingPass PostProcessingPass::Create(const VulkanContext &context, const VulkanFramebuffer &previousPassFB,
                                               bool renderToSwapchain, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
-           renderToSwapchain || (width != 0 && height != 0));
+           (renderToSwapchain || (width != 0 && height != 0)));
     PostProcessingPass postProcessingPass(context, renderToSwapchain);
     postProcessingPass.init(width, height, previousPassFB);
-    return std::move(postProcessingPass);
+    return postProcessingPass;
 }
 
 PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
@@ -197,7 +197,7 @@ void PostProcessingPass::draw() {
 
 void PostProcessingPass::resizeAttachments(const VulkanFramebuffer &framebuffer, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
-           renderToSwapchain || (width != 0 && height != 0));
+           (renderToSwapchain || (width != 0 && height != 0)));
     createAttachments(width, height);
 
     writeDescriptorSet(framebuffer);

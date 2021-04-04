@@ -26,7 +26,7 @@ static std::vector<VkFence> createFence(const VulkanContext &context, uint32_t a
 #endif
     }
 
-    return std::move(fences);
+    return fences;
 }
 
 static std::vector<VkSemaphore> createSemaphore(VkDevice device, uint32_t amount) {
@@ -42,7 +42,7 @@ static std::vector<VkSemaphore> createSemaphore(VkDevice device, uint32_t amount
         }
     }
 
-    return std::move(semaphores);
+    return semaphores;
 }
 
 // ------------------------------------ Class members ------------------------------------------------------------------
@@ -70,7 +70,7 @@ VulkanFrame::VulkanFrame(Window &window, const VulkanContext &context,
 
 VulkanFrame::~VulkanFrame() {
     destroy();
-};
+}
 
 void VulkanFrame::destroy() {
     // Destroy the synchronization objects

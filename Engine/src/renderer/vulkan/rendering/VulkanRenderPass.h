@@ -46,5 +46,5 @@ public:
 private:
     const VulkanContext &context;
     VkRenderPass renderPass;
-    int attachmentCount;
+    uint32_t attachmentCount;
 };

@@ -89,10 +89,9 @@ void TestRenderer::createDepthResources() {
     VkFormat depthFormat = VulkanImage::getDepthFormat(device);
 
     VkDeviceMemory depthImageMemory{};
-    auto depthImage = VulkanImage::createDepthBufferImage(
-            device, vulkanMemory, swapChain.getExtent().width,
-            swapChain.getExtent().height,
-            depthFormat, depthImageMemory);
+    auto depthImage = VulkanImage::createDepthBufferImage(vulkanMemory, swapChain.getExtent().width,
+                                                          swapChain.getExtent().height,
+                                                          depthFormat);
     auto depthImageView = VulkanImageView::Create(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 
     depthBuffer = VulkanImageBuffer(device, std::move(depthImage), std::move(depthImageMemory),
@@ -103,20 +102,18 @@ void TestRenderer::createDepthResources() {
 void TestRenderer::createImageBuffers() {
     // Offscreen main scene rendering
     offscreenImage =
-            VulkanImage::createRawImage(device,
-                                        vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
-                                        VK_FORMAT_R8G8B8A8_UNORM,
-                                        offscreenImageMemory);
+            VulkanImage::createRawImage(
+                    vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
+                    VK_FORMAT_R8G8B8A8_UNORM);
     offscreenImageView =
             VulkanImageView::Create(device,
                                     offscreenImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 
     // Offscreen ImGui rendering
     imGuiImage =
-            VulkanImage::createRawImage(device,
-                                        vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
-                                        VK_FORMAT_R8G8B8A8_UNORM,
-                                        imGuiImageMemory);
+            VulkanImage::createRawImage(
+                    vulkanMemory, swapChain.getExtent().width, swapChain.getExtent().height,
+                    VK_FORMAT_R8G8B8A8_UNORM);
     imGuiImageView =
             VulkanImageView::Create(device,
                                     imGuiImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
