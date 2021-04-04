@@ -19,8 +19,8 @@ static void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
     w->setScrollDelta(delta);
 }
 
-static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+static void keyCallback(GLFWwindow */*window*/, int /*key*/, int /*scancode*/, int /*action*/, int /*mods*/) {
+//    auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
 }
 
 // ------------------------------------ Class members ------------------------------------------------------------------

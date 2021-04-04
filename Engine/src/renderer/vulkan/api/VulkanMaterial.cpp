@@ -96,13 +96,13 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
     // Build descriptor pool
     auto descriptorPoolBuilder = VulkanDescriptorPoolBuilder(vulkanContext.getDevice());
     if (set0) {
-        for (int i = 0; i < info.set0->size(); ++i) {
+        for (uint32_t i = 0; i < info.set0->size(); ++i) {
             descriptorPoolBuilder.addDescriptor(set0.value()->getBinding(i).descriptorType, info.set0ExpectedCount);
         }
     }
     if (set1) {
         assert("Set1 is defined but expected to be empty" && info.set1ExpectedCount > 0);
-        for (int i = 0; i < info.set1->size(); ++i) {
+        for (uint32_t i = 0; i < info.set1->size(); ++i) {
             descriptorPoolBuilder.addDescriptor(set1.value()->getBinding(i).descriptorType, info.set1ExpectedCount);
         }
     }

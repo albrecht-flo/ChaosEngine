@@ -3,13 +3,19 @@
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
 
-#include "VulkanBuffer.h"
 
-class VulkanInstance;
+class VulkanContext;
 
 class VulkanDevice;
 
+class VulkanInstance;
+
 class VulkanCommandPool;
+
+class VulkanBuffer;
+class VulkanUniformBuffer;
+
+class VulkanImage;
 
 class VulkanMemory {
 public:
@@ -28,6 +34,8 @@ public:
     static VulkanMemory
     Create(const VulkanDevice &context, const VulkanInstance &instance, const VulkanCommandPool &commandPool);
 
+// ------------------------------------ Creation Methods ---------------------------------------------------------------
+
     VulkanBuffer createInputBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const;
 
     [[nodiscard]] VulkanUniformBuffer
@@ -36,13 +44,21 @@ public:
     [[nodiscard]] VulkanBuffer
     createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage) const;
 
+    [[nodiscard]] VulkanImage
+    createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                VkImageUsageFlags usage, VmaMemoryUsage memoryUsage) const;
+
+// ------------------------------------ Update Methods -----------------------------------------------------------------
     void
     copyDataToBuffer(const VulkanBuffer &buffer, const void *data, size_t size, size_t offset = 0) const;
 
-    void copyBufferToImage(const VulkanBuffer &buffer, VkImage image, uint32_t width, uint32_t height) const;
+    void copyBufferToImage(const VulkanBuffer &buffer, const VulkanImage &image, uint32_t width, uint32_t height) const;
 
-//private:  // TODO: Move Image creation here as well
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+// ---------------------------------- Destruction Methods --------------------------------------------------------------
+
+    void destroyImage(VkImage image, VmaAllocation imageAllocation) const;
+
+    void destroyBuffer(VkBuffer buffer, VmaAllocation bufferAllocation) const;
 
 private:
     void copyBuffer(const VulkanBuffer &srcBuffer, const VulkanBuffer &dstBuffer, VkDeviceSize size) const;

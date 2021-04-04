@@ -34,7 +34,7 @@ SpriteRenderingPass::SpriteRenderingPass(SpriteRenderingPass &&o) noexcept:
 
 void SpriteRenderingPass::createAttachments(uint32_t width, uint32_t height) {
     framebuffer = std::make_unique<VulkanFramebuffer>(opaquePass->createFrameBuffer(
-            {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8},
+            {FramebufferAttachmentInfo{AttachmentType::Color, AttachmentFormat::U_R8G8B8A8, 0},
              FramebufferAttachmentInfo{AttachmentType::Depth, AttachmentFormat::Auto_Depth}},
             width, height, "Sprite Pass"));
     viewportSize = {width, height};

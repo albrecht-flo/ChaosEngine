@@ -5,17 +5,13 @@
 
 #include <memory>
 
-/*
- * TODO: refactor, [Part of VulkanMemory refactoring]
- * Known: Memory Leak
- */
+#include "VulkanMemory.h"
 
 class VulkanBuffer {
     friend class VulkanMemory;
-
 public:
-    VulkanBuffer(VmaAllocator allocator, VkBuffer buffer, VmaAllocation allocation)
-            : allocator(allocator), buffer(buffer), allocation(allocation) {}
+    VulkanBuffer(const VulkanMemory &memory, VkBuffer buffer, VmaAllocation allocation)
+            : memory(memory), buffer(buffer), allocation(allocation) {}
 
     virtual ~VulkanBuffer() { destroy(); }
 
@@ -24,13 +20,12 @@ public:
     VulkanBuffer &operator=(const VulkanBuffer &o) = delete;
 
     VulkanBuffer(VulkanBuffer &&o) noexcept
-            : allocator(std::exchange(o.allocator, nullptr)), buffer(std::exchange(o.buffer, nullptr)),
+            : memory(o.memory), buffer(std::exchange(o.buffer, nullptr)),
               allocation(std::exchange(o.allocation, nullptr)) {}
 
     VulkanBuffer &operator=(VulkanBuffer &&o) noexcept {
         if (&o == this)
             return *this;
-        allocator = std::exchange(o.allocator, nullptr);
         buffer = std::exchange(o.buffer, nullptr);
         allocation = std::exchange(o.allocation, nullptr);
         return *this;
@@ -40,17 +35,16 @@ public:
 
 private:
     void destroy() {
-        if (allocator != nullptr)
-            vmaDestroyBuffer(allocator, buffer, allocation);
+        memory.destroyBuffer(buffer, allocation);
     }
 
 private:
-    VmaAllocator allocator;
+    const VulkanMemory &memory;
     VkBuffer buffer;
     VmaAllocation allocation;
 };
 
-struct VulkanUniformBuffer {
+class VulkanUniformBuffer {
 public:
     VulkanUniformBuffer(VulkanBuffer &&buffer, uint64_t size, uint64_t alignment)
             : buffer(std::move(buffer)), size(size), alignment(alignment) {}
@@ -83,6 +77,8 @@ private:
     uint64_t alignment;
 };
 
+
+// TODO: Move into main buffer abstraction
 template<typename T>
 class UniformBufferContent {
 public:

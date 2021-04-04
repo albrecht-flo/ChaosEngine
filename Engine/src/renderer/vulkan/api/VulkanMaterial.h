@@ -1,17 +1,18 @@
 #pragma once
 
-#include <Engine/src/renderer/data/Mesh.h>
-#include <Engine/src/renderer/vulkan/context/VulkanContext.h>
-#include <Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h>
-#include <Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayout.h>
-#include <Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPool.h>
-#include <Engine/src/renderer/vulkan/pipeline/VulkanPipeline.h>
-#include <Engine/src/renderer/vulkan/image/VulkanTexture.h>
-#include <Engine/src/core/RenderingSystem.h>
-
-#include <utility>
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/data/Mesh.h"
+#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
+#include "Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h"
+#include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayout.h"
+#include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPool.h"
+#include "Engine/src/renderer/vulkan/pipeline/VulkanPipeline.h"
+#include "Engine/src/renderer/vulkan/image/VulkanTexture.h"
+#include "Engine/src/core/RenderingSystem.h"
+
+#include <utility>
 
 class VulkanMaterialInstance;
 

@@ -1,6 +1,8 @@
 #include "VulkanMemory.h"
 
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "VulkanBuffer.h"
+#include "Engine/src/renderer/vulkan/image/VulkanImage.h"
 
 #include <stdexcept>
 #include <cstring>
@@ -33,7 +35,8 @@ VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
 VulkanBuffer
 VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage) const {
     // Create buffer
-    VkBufferCreateInfo bufferInfo = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    VkBufferCreateInfo bufferInfo = {};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = bufferUsage;
 
@@ -46,7 +49,7 @@ VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage,
         throw std::runtime_error("[VMA] Failed to create buffer!");
     }
 
-    return VulkanBuffer{allocator, buffer, allocation};
+    return VulkanBuffer{*this, buffer, allocation};
 }
 
 /* Copies the contents of a source buffer to a destination buffer on the GPU. */
@@ -72,7 +75,8 @@ void VulkanMemory::copyDataToBuffer(const VulkanBuffer &buffer, const void *data
     vmaUnmapMemory(allocator, buffer.allocation);
 }
 
-void VulkanMemory::copyBufferToImage(const VulkanBuffer &buffer, VkImage image, uint32_t width, uint32_t height) const {
+void VulkanMemory::copyBufferToImage(const VulkanBuffer &buffer, const VulkanImage &image, uint32_t width,
+                                     uint32_t height) const {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
     VkBufferImageCopy region = {};
@@ -88,8 +92,8 @@ void VulkanMemory::copyBufferToImage(const VulkanBuffer &buffer, VkImage image, 
     region.imageOffset = {0, 0, 0};
     region.imageExtent = {width, height, 1};
 
-    vkCmdCopyBufferToImage(commandBuffer, buffer.vk(), image,
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+    vkCmdCopyBufferToImage(commandBuffer, buffer.vk(), image.vk(),
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region); // TODO: test image transition
 
     endSingleTimeCommands(commandBuffer);
 }
@@ -139,21 +143,6 @@ void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) const {
     vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &commandBuffer);
 }
 
-/* Finds apropriate memory type if the physical device */
-uint32_t VulkanMemory::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(device.getPhysicalDevice(), &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-        // check if the memory support the required features
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-            return i;
-        }
-    }
-
-    throw std::runtime_error("[Vulkan] Failed to find suitable memory type!");
-}
-
 VulkanUniformBuffer
 VulkanMemory::createUniformBuffer(uint32_t elementSize, uint32_t count, bool aligned) const {
     VkDeviceSize uboSize = (long) elementSize * count;
@@ -178,7 +167,7 @@ VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, const void *data
     // Staging buffer to contain data for transfer
     // Creates buffer with usage=transfer_src, host visible and coherent meaning the cpu has access to the memory and
     // changes are immediately known to the driver which will transfer the memmory before the next vkQueueSubmit
-    VulkanBuffer stagingBuffer = createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    VulkanBuffer stagingBuffer = createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
     copyDataToBuffer(stagingBuffer, data, size, 0);
 
@@ -193,4 +182,49 @@ VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, const void *data
     copyBuffer(stagingBuffer, inputBuffer, size);
 
     return inputBuffer;
+}
+
+VulkanImage VulkanMemory::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
+                                      VkImageUsageFlags usage, VmaMemoryUsage memoryUsage) const {
+    // NEXT
+    // - Image Transitions (Layouts)
+    // - Staging buffer refactor (dedicated Function)
+    // - Dedicated transfer queue
+    //    - async
+
+    // Create the image
+    VkImageCreateInfo imageInfo = {};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1; // 1 layer -> 2D
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format; // must be corresponding to the data
+    imageInfo.tiling = tiling; // usage optimized layout
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage; // we need to copy to it and sample from the shader
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // only on graphcis queue
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // multisample
+    imageInfo.flags = 0;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = memoryUsage;
+
+    VkImage image{};
+    VmaAllocation allocation{};
+    if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error("[VMA] Failed to create Image!");
+    }
+
+    return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+}
+
+void VulkanMemory::destroyImage(VkImage image, VmaAllocation imageAllocation) const {
+    vmaDestroyImage(allocator, image, imageAllocation);
+}
+
+void VulkanMemory::destroyBuffer(VkBuffer buffer, VmaAllocation bufferAllocation) const {
+    vmaDestroyBuffer(allocator, buffer, bufferAllocation);
 }

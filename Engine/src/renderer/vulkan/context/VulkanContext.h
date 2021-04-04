@@ -12,6 +12,7 @@
 
 #include <deque>
 
+
 /**
  * This class holds all vulkan context that is constant for the whole execution of the application.
  * Because this is referenced throughout the application it **must** not be moved,

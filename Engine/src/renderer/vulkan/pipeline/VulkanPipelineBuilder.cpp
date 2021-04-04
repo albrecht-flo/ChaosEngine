@@ -41,13 +41,13 @@ static std::vector<char> readFile(const std::string &filename) {
 
     file.close();
 
-    return std::move(buffer);
+    return buffer;
 }
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 VulkanPipeline VulkanPipelineBuilder::build() {
-    assert(("The Layout was moved and no new one was provided.", layoutValid));
+    assert("The Layout was moved and no new one was provided." && layoutValid);
     assert(!vertexShaderName.empty());
     assert(!fragmentShaderName.empty());
 

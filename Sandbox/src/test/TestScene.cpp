@@ -17,6 +17,11 @@ SceneConfiguration TestScene::configure(Window &pWindow) {
 
 void TestScene::load() {
     using namespace Renderer;
+    // Load meshes
+    // NEXT:
+    // auto baseSpriteMesh = Mesh::CreateRaw(data);
+    // auto specialMesh = Mesh::CreateFromFile("sth.obj");
+
     // Load Materials
     coloredMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,

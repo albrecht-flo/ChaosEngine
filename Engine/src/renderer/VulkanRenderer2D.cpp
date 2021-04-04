@@ -30,9 +30,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
     ImGui::StyleColorsDark();
-    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow(),
-                                                         context.getSwapChain().getWidth(),
-                                                         context.getSwapChain().getHeight(), imGuiContext);
+    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow(), imGuiContext);
 
     return std::unique_ptr<VulkanRenderer2D>(
             new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(postProcessingPass),

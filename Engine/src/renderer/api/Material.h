@@ -53,6 +53,9 @@ namespace Renderer {
                 return sizeof(glm::vec4);
             case ShaderValueType::Mat4:
                 return sizeof(glm::mat4);
+            default:
+                assert("Unknown Shader Value Type!");
+                return 0;
         }
     }
 
@@ -70,7 +73,7 @@ namespace Renderer {
         ShaderBindingType type;
         ShaderStage stage;
         std::string name;
-        std::optional<std::vector<ShaderBindingLayout>> layout;
+        std::optional<std::vector<ShaderBindingLayout>> layout = std::nullopt;
     };
 
 // --------------------------------- Material Configuration ------------------------------------------------------------
