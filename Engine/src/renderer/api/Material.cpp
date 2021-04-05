@@ -27,7 +27,8 @@ std::vector<ShaderPushConstantLayout> Material::StandardOpaquePushConstants = st
 MaterialRef Material::Create(const MaterialCreateInfo &info) {
     switch (GraphicsContext::currentAPI) {
         case GraphicsAPI::Vulkan:
-            return MaterialRef(VulkanMaterial::Create(RenderingSystem::GetContext(), RenderingSystem::GetCurrentRenderer(), info));
+            return MaterialRef(
+                    VulkanMaterial::Create(RenderingSystem::GetContext(), RenderingSystem::GetCurrentRenderer(), info));
         default:
             assert("Invalid Graphics API" && false);
     }

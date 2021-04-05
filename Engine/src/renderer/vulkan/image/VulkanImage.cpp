@@ -28,10 +28,10 @@ VulkanImage::createFromFile(const VulkanMemory &vulkanMemory, const std::string 
 
     // Create the image and its memory
     auto image = vulkanMemory.createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),
-                VK_FORMAT_R8G8B8A8_UNORM,
-                VK_IMAGE_TILING_OPTIMAL,
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                VMA_MEMORY_USAGE_GPU_ONLY);
+                                          VK_FORMAT_R8G8B8A8_UNORM,
+                                          VK_IMAGE_TILING_OPTIMAL,
+                                          VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                                          VMA_MEMORY_USAGE_GPU_ONLY);
 
     // Transition the image to the transfer destination layout
     transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,

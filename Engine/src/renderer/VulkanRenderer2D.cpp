@@ -127,8 +127,8 @@ void VulkanRenderer2D::flush() {
 }
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
-    const auto& mesh = dynamic_cast<const VulkanRenderMesh&>(*(renderComponent.mesh));
-    const auto& material = dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance));
+    const auto &mesh = dynamic_cast<const VulkanRenderMesh &>(*(renderComponent.mesh));
+    const auto &material = dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance));
     spriteRenderingPass.drawSprite(mesh, modelMat, material);
 }
 

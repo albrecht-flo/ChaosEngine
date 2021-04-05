@@ -97,7 +97,8 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                     .setMaxSets(GraphicsContext::maxFramesInFlight * 3)
                     .build());
 
-    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>( context.getMemory().createUniformBuffer(sizeof(ShaderConfig), 1, false));
+    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(
+            context.getMemory().createUniformBuffer(sizeof(ShaderConfig), 1, false));
     uboContent = std::make_unique<UniformBufferContent<ShaderConfig>>(1);
     uboContent->at(0)->cameraNear = ShaderConfig{}.cameraNear;
     uboContent->at(0)->cameraFar = ShaderConfig{}.cameraFar;

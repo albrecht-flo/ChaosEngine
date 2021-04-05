@@ -33,6 +33,6 @@ VulkanSampler VulkanSampler::create(const VulkanDevice &device, VkFilter filter)
 }
 
 void VulkanSampler::destroy() {
-    if(sampler != nullptr)
+    if (sampler != nullptr)
         vkDestroySampler(device.vk(), sampler, nullptr);
 }
