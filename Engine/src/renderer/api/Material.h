@@ -54,7 +54,7 @@ namespace Renderer {
             case ShaderValueType::Mat4:
                 return sizeof(glm::mat4);
             default:
-                assert("Unknown Shader Value Type!");
+                assert("Unknown Shader Value Type!" && false);
                 return 0;
         }
     }

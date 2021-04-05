@@ -31,7 +31,7 @@
 #include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 
 #include "Engine/src/renderer/data/Mesh.h"
-#include "Engine/src/renderer/data/RenderObject.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/vulkan/image/VulkanTexture.h"
 
 #define MAX_FRAMES_IN_FLIGHT 2

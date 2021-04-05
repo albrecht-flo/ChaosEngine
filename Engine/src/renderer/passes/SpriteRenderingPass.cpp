@@ -1,12 +1,11 @@
 #include "SpriteRenderingPass.h"
 #include "Engine/src/core/Utils/Logger.h"
-#include "Engine/src/renderer/data/Mesh.h"
-#include "Engine/src/renderer/vulkan/api/VulkanMaterial.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "Engine/src/renderer/vulkan/api/VulkanRenderMesh.h"
 
 using namespace Renderer;
 
@@ -53,7 +52,7 @@ void SpriteRenderingPass::createStandardPipeline() {
 
     pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(context.getDevice(), *opaquePass,
                                                                       std::move(pipelineLayout),
-                                                                      VulkanMaterial::vertex_3P_3C_3N_2U,
+                                                                      VulkanRenderMesh::vertex_3P_3C_3N_2U,
                                                                       "2DBase")
                                                         .setFragmentShader("2DBase")
                                                         .setTopology(Renderer::Topology::TriangleList)
@@ -73,8 +72,7 @@ void SpriteRenderingPass::createStandardPipeline() {
 
     perFrameUniformBuffers.reserve(GraphicsContext::maxFramesInFlight);
     for (size_t i = 0; i < perFrameUniformBuffers.capacity(); i++) {
-        perFrameUniformBuffers.emplace_back(std::move(
-                context.getMemory().createUniformBuffer(sizeof(CameraUbo), 1, false)));
+        perFrameUniformBuffers.emplace_back(context.getMemory().createUniformBuffer(sizeof(CameraUbo), 1, false));
     }
     uboContent = std::make_unique<UniformBufferContent<CameraUbo>>(1);
 
@@ -182,7 +180,7 @@ void SpriteRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 }
 
 void
-SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
+SpriteRenderingPass::drawSprite(const VulkanRenderMesh &renderMesh, const glm::mat4 &modelMat,
                                 const VulkanMaterialInstance &material) {
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
 
@@ -211,10 +209,10 @@ SpriteRenderingPass::drawSprite(const RenderMesh &renderObject, const glm::mat4 
     vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
 
-    VkBuffer vertexBuffers[]{renderObject.vertexBuffer.vk()};
+    VkBuffer vertexBuffers[]{renderMesh.getVertexBuffer().vk()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer.vk(), 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer.vk(), renderObject.indexBuffer.vk(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(commandBuffer.vk(), renderMesh.getIndexBuffer().vk(), 0, VK_INDEX_TYPE_UINT32);
     // Draw a fullscreen quad and composite the final image
-    vkCmdDrawIndexed(commandBuffer.vk(), renderObject.indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer.vk(), renderMesh.getIndexCount(), 1, 0, 0, 0);
 }

@@ -24,6 +24,7 @@ private:
 
 private:
     Window *window;
+    std::shared_ptr<Renderer::RenderMesh> quadROB;
     Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
     std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;

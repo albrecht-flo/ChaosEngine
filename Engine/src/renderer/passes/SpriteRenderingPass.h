@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/src/core/Components.h"
-#include "Engine/src/renderer/data/RenderObject.h"
+#include "Engine/src/renderer/vulkan/api/VulkanRenderMesh.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "Engine/src/renderer/vulkan/image/VulkanFramebuffer.h"
@@ -48,7 +48,7 @@ public:
 
     void resizeAttachments(uint32_t width, uint32_t height);
 
-    void drawSprite(const RenderMesh &renderObject, const glm::mat4 &modelMat,
+    void drawSprite(const VulkanRenderMesh &renderMesh, const glm::mat4 &modelMat,
                     const VulkanMaterialInstance &material);
 
     inline const VulkanRenderPass &getOpaquePass() const { return *opaquePass; }
@@ -77,7 +77,7 @@ private:
     // Per Frame resources ----------------------------------------------------
     std::vector<VulkanDescriptorSet> perFrameDescriptorSets;
     std::vector<VulkanUniformBuffer> perFrameUniformBuffers;
-    std::unique_ptr<UniformBufferContent<CameraUbo>> uboContent;
+    std::unique_ptr<Renderer::UniformBufferContent<CameraUbo>> uboContent;
 
     // State resources --------------------------------------------------------
     glm::uvec2 viewportSize{0, 0};

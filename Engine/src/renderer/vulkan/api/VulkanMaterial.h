@@ -2,7 +2,6 @@
 
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
-#include "Engine/src/renderer/data/Mesh.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanVertexInput.h"
@@ -65,8 +64,6 @@ private:
     // Descriptor management
     uint32_t nextSetOffset = 0;
     std::vector<std::pair<uint32_t, VulkanDescriptorSet>> freeDescSets;
-public:
-    static const VulkanVertexInput vertex_3P_3C_3N_2U;
 };
 
 

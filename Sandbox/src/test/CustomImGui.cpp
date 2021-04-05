@@ -142,7 +142,7 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
     }
 
     ImGui::Image(state.sceneImageGPUHandles[state.currentFrame],
-                 ImVec2(framebuffer.getWidth(), framebuffer.getHeight()));
+                 ImVec2(static_cast<float>(framebuffer.getWidth()), static_cast<float>(framebuffer.getHeight())));
 
     ImGui::End();
     ImGui::PopStyleVar();

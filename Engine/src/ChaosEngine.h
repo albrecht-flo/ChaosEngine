@@ -4,6 +4,7 @@
 #include "core/Engine.h"
 #include "core/Scene.h"
 #include "core/RenderingSystem.h"
+#include "core/Components.h"
 
 // Rendering API --------------------------------------------------------------
 #include "renderer/api/GraphicsContext.h"

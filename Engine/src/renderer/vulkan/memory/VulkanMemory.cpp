@@ -221,10 +221,24 @@ VulkanImage VulkanMemory::createImage(uint32_t width, uint32_t height, VkFormat 
     return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 }
 
+// --------------------------------- Resource Destruction --------------------------------------------------------------
+
 void VulkanMemory::destroyImage(VkImage image, VmaAllocation imageAllocation) const {
     vmaDestroyImage(allocator, image, imageAllocation);
 }
 
 void VulkanMemory::destroyBuffer(VkBuffer buffer, VmaAllocation bufferAllocation) const {
     vmaDestroyBuffer(allocator, buffer, bufferAllocation);
+}
+
+// ------------------------------------- Helpers -----------------------------------------------------------------------
+
+uint32_t VulkanMemory::sizeWithUboPadding(size_t originalSize) const {
+    // Source https://github.com/SaschaWillems/Vulkan/tree/master/examples/dynamicuniformbuffer
+    size_t minUboAlignment = device.getProperties().limits.minUniformBufferOffsetAlignment;
+    size_t alignedSize = originalSize;
+    if (minUboAlignment > 0) {
+        alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
+    }
+    return static_cast<uint32_t>(alignedSize);
 }

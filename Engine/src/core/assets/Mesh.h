@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan usese 0 to 1
 #define GLM_ENABLE_EXPERIMENTAL
@@ -10,7 +8,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-#include <array>
 #include <vector>
 #include <unordered_map>
 
@@ -37,4 +34,9 @@ namespace std {
 struct Mesh {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
+};
+
+struct LightObject {
+    glm::vec4 lightPos; // w = lightRadius
+    glm::vec4 lightColor; // w = ambient ammount
 };

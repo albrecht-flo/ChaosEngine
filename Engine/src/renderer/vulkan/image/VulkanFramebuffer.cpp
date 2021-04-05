@@ -18,6 +18,7 @@ static VkFormat getVkFormat(const VulkanContext &context, Renderer::AttachmentFo
         default:
             assert(false);
     }
+    return VK_FORMAT_MAX_ENUM;
 }
 
 static VulkanImageBuffer
@@ -66,7 +67,7 @@ VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRend
                                             const std::optional<std::string> &debugName) {
     bool swapchain = std::any_of(infos.begin(), infos.end(),
                                  [](auto info) { return info.type == Renderer::AttachmentType::SwapChain; });
-    int depthAttachment = std::count_if(infos.begin(), infos.end(),
+    int64_t depthAttachment = std::count_if(infos.begin(), infos.end(),
                                         [](auto info) { return info.type == Renderer::AttachmentType::Depth; });
     assert("Swapchain attachment needs to be bound to attachment 0!" &&
            (!swapchain || infos.begin()->type == Renderer::AttachmentType::SwapChain));

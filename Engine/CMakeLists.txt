@@ -2,6 +2,7 @@ set(ENGINE_SOURCES
         #       External vendor files
         src/vendor/vk_mem_allocator.cpp
         src/vendor/imgui.cpp
+        src/vendor/std_image.cpp
         #       Core classes
         src/core/Engine.cpp
         src/core/Scene.cpp
@@ -9,24 +10,26 @@ set(ENGINE_SOURCES
         src/core/Entity.cpp
         src/core/RenderingSystem.cpp
         src/core/Utils/Logger.cpp
-        # Classes that need cleanup
-        src/renderer/window/Window.cpp
-        src/renderer/data/Mesh.cpp
-        src/renderer/data/ModelLoader.cpp
-        src/renderer/data/RenderObject.cpp
+        src/core/assets/Mesh.cpp
+        src/core/assets/ModelLoader.cpp
         #     Engine API classes
+        src/renderer/api/RenderMesh.cpp
+        src/renderer/api/Buffer.cpp
         src/renderer/api/Material.cpp
         src/renderer/api/RenderPass.cpp
         src/renderer/api/Texture.cpp
         src/renderer/api/BufferedGPUResource.cpp
         src/renderer/api/Framebuffer.cpp
         src/renderer/api/GraphicsContext.cpp
+        src/renderer/window/Window.cpp
         #       General Rendering files
         src/renderer/passes/SpriteRenderingPass.cpp
         src/renderer/passes/PostProcessingPass.cpp
         src/renderer/passes/ImGuiRenderingPass.cpp
         src/renderer/VulkanRenderer2D.cpp
         #       Vulkan Rendering files
+        src/renderer/vulkan/api/VulkanMaterial.cpp
+        src/renderer/vulkan/api/VulkanRenderMesh.cpp
         src/renderer/vulkan/rendering/VulkanFrame.cpp
         src/renderer/vulkan/rendering/VulkanRenderPass.cpp
         src/renderer/vulkan/rendering/VulkanAttachmentBuilder.cpp
@@ -35,6 +38,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/context/VulkanInstance.cpp
         src/renderer/vulkan/context/VulkanSwapChain.cpp
         src/renderer/vulkan/memory/VulkanMemory.cpp
+        src/renderer/vulkan/memory/VulkanBuffer.cpp
         src/renderer/vulkan/command/VulkanCommandBuffer.cpp
         src/renderer/vulkan/command/VulkanCommandPool.cpp
         src/renderer/vulkan/image/VulkanImage.cpp
@@ -52,9 +56,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        src/renderer/vulkan/api/VulkanMaterial.cpp
-
-        src/renderer/vulkan/memory/VulkanBuffer.cpp src/vendor/std_image.cpp)
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm

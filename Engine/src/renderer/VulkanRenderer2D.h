@@ -6,7 +6,7 @@
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
 #include "Engine/src/renderer/passes/ImGuiRenderingPass.h"
 #include "Engine/src/renderer/passes/PostProcessingPass.h"
-#include "Engine/src/renderer/data/RenderObject.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanFrame.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
@@ -80,9 +80,6 @@ private:
 
     bool renderingSceneToSwapchain;
     glm::uvec2 sceneResize{0, 0};
-
-    // TEMP
-    std::unique_ptr<RenderMesh> quadMesh;
 
 };
 

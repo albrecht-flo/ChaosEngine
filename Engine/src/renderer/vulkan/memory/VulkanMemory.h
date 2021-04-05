@@ -13,6 +13,7 @@ class VulkanInstance;
 class VulkanCommandPool;
 
 class VulkanBuffer;
+
 class VulkanUniformBuffer;
 
 class VulkanImage;
@@ -59,6 +60,11 @@ public:
     void destroyImage(VkImage image, VmaAllocation imageAllocation) const;
 
     void destroyBuffer(VkBuffer buffer, VmaAllocation bufferAllocation) const;
+
+// ------------------------------------- Helpers -----------------------------------------------------------------------
+
+    /// Calculates required size with alignment based on minimum device offset alignment
+    uint32_t sizeWithUboPadding(size_t originalSize) const;
 
 private:
     void copyBuffer(const VulkanBuffer &srcBuffer, const VulkanBuffer &dstBuffer, VkDeviceSize size) const;
