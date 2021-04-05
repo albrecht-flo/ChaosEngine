@@ -16,6 +16,7 @@ class VulkanTexture : public Renderer::Texture {
 public:
     VulkanTexture(const VulkanDevice &device, std::shared_ptr<VulkanImage> image, VkImageLayout imageLayout,
                   VulkanImageView &&imageView, VulkanSampler &&sampler);
+
     VulkanTexture(const VulkanDevice &device, std::shared_ptr<VulkanImage> image, VkImageLayout imageLayout,
                   VkImageView imageView, VulkanSampler &&sampler);
 

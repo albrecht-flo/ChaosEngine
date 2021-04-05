@@ -8,7 +8,7 @@ namespace Renderer {
     public:
         virtual ~Texture() = default;
 
-        static std::unique_ptr<Texture> Create(const std::string& filename);
+        static std::unique_ptr<Texture> Create(const std::string &filename);
     };
 }
 

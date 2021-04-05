@@ -11,6 +11,7 @@
 
 class VulkanBuffer : public Renderer::Buffer {
     friend class VulkanMemory;
+
 public:
     VulkanBuffer(const VulkanMemory &memory, VkBuffer buffer, VmaAllocation allocation)
             : Renderer::Buffer(), memory(memory), buffer(buffer), allocation(allocation) {}
