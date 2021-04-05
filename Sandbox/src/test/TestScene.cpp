@@ -1,17 +1,9 @@
 #include "TestScene.h"
 
-#include "Engine/src/core/Utils/Logger.h"
-#include "Engine/src/core/assets/ModelLoader.h"
-#include "Engine/src/core/assets/Mesh.h"
-#include "Engine/src/renderer/api/Buffer.h"
-#include "Engine/src/renderer/api/RenderMesh.h"
-#include "Engine/src/renderer/api/Material.h"
-#include <renderer/VulkanRenderer2D.h>
 #include "CustomImGui.h"
 
 #include <imgui.h>
 
-#include <iostream>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
@@ -20,10 +12,10 @@ SceneConfiguration TestScene::configure(Window &pWindow) {
     };
 }
 
+
 void TestScene::load() {
     using namespace Renderer;
     // Load meshes
-    // NEXT:
     auto quadAsset = ModelLoader::getQuad();
     auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(Vertex),
                                        BufferType::Vertex);
@@ -31,9 +23,37 @@ void TestScene::load() {
                                       BufferType::Index);
     quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
 
+
+    auto hexAsset = ModelLoader::getHexagon();
+    auto hexVertexBuffer = Buffer::Create(hexAsset.vertices.data(), hexAsset.vertices.size() * sizeof(Vertex),
+                                          BufferType::Vertex);
+    auto hexIndexBuffer = Buffer::Create(hexAsset.indices.data(), hexAsset.indices.size() * sizeof(Vertex),
+                                         BufferType::Index);
+    hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
+
+    // NEXT:
 //     auto specialMesh = ModelLoader::CreateFromFile("sth.obj");
 
     // Load Materials
+    debugMaterial = Material::Create(MaterialCreateInfo{
+            .stage = ShaderPassStage::Opaque,
+            .fixedFunction = FixedFunctionConfiguration{.topology = Topology::TriangleList, .polygonMode = PolygonMode::Line,
+                    .depthTest = true, .depthWrite = true},
+            .vertexShader = "2DDebug",
+            .fragmentShader = "2DStaticColoredSprite",
+            .pushConstant = Material::StandardOpaquePushConstants,
+            .set0 = Material::StandardOpaqueSet0,
+            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
+            .set1 = std::vector<ShaderBindings>(
+                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
+                            .layout=std::vector<ShaderBindingLayout>(
+                                    {
+                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
+                                    })
+                    }}),
+            .set1ExpectedCount = 64,
+
+    });
     coloredMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
@@ -89,8 +109,8 @@ void TestScene::loadEntities() {
 
     yellowQuad = registry.createEntity();
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
-    glm::vec4 yellowColor(1, 1, 0, 1);
-    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&yellowColor, sizeof(yellowColor), {}),
+    glm::vec4 greenColor(1, 1, 0, 1);
+    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
                                              quadROB);
 
     redQuad = registry.createEntity();
@@ -105,6 +125,12 @@ void TestScene::loadEntities() {
     texturedQuad.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
             quadROB);
+
+    hexagon = registry.createEntity();
+    hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+    glm::vec4 blueColor(0, 0, 1, 1);
+    hexagon.setComponent<RenderComponent>(
+            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}), hexROB);
 }
 
 // Test data

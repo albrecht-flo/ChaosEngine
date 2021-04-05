@@ -12,6 +12,7 @@
 
 #include "Mesh.h"
 
+// TODO: Cleanup
 class ModelLoader {
 public:
     ModelLoader() = default;
@@ -24,6 +25,10 @@ public:
 
     static std::optional<std::unique_ptr<Mesh>> loadMeshFromPLY(const std::string &filename);
 
+// ------------------------------------ Shapes -------------------------------------------------------------------------
+
     static Mesh getQuad();
+
+    static Mesh getHexagon();
 
 };

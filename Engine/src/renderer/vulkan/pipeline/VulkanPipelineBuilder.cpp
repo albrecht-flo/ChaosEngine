@@ -89,14 +89,16 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     inputAssembly.primitiveRestartEnable = primitiveRestart ? VK_TRUE : VK_FALSE;
 
     // Define dynamic state for viewport -------------------------------------------------------------------------------
-    VkDynamicState dynamicStates[] = {
+    std::vector<VkDynamicState> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR
     };
+    if (polygonMode == Renderer::PolygonMode::Point || polygonMode == Renderer::PolygonMode::Line)
+        dynamicStates.emplace_back(VK_DYNAMIC_STATE_LINE_WIDTH);
 
     VkPipelineDynamicStateCreateInfo dynamicState{};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = 2;
-    dynamicState.pDynamicStates = dynamicStates;
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicState.pDynamicStates = dynamicStates.data();
 
     VkViewport viewport = {};
     viewport.x = 0.0f;
