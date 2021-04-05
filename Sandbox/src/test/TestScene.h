@@ -25,6 +25,8 @@ private:
 private:
     Window *window;
     std::shared_ptr<Renderer::RenderMesh> quadROB;
+    std::shared_ptr<Renderer::RenderMesh> hexROB;
+    Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
     std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
@@ -32,6 +34,7 @@ private:
     Entity yellowQuad;
     Entity redQuad;
     Entity texturedQuad;
+    Entity hexagon;
 };
 
 

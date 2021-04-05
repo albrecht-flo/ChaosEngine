@@ -131,7 +131,8 @@ static bool isDeviceSuitable(VkPhysicalDevice phdevice, VkSurfaceKHR surface) {
     vkGetPhysicalDeviceFeatures(phdevice, &supportedDeviceFeatures);
 
     return indices.isComplete() && extensionsSupported && swapChainAdequate
-           && supportedDeviceFeatures.samplerAnisotropy;
+           && supportedDeviceFeatures.samplerAnisotropy &&
+           supportedDeviceFeatures.fillModeNonSolid;
 }
 
 /* Selects a physical device (GPU) which supports the required features. */
@@ -156,10 +157,11 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     }
 
     VkPhysicalDevice physicalDevice{};
-    for (const auto &device : devices) {
+    for (size_t i = 0; i < devices.size(); ++i) {
         // Take the first one that fits
-        if (isDeviceSuitable(device, surface)) {
-            physicalDevice = device;
+        if (isDeviceSuitable(devices[i], surface)) {
+            LOG_INFO("[Engine]: -- Using GPU {} --", i);
+            physicalDevice = devices[i];
             break;
         }
     }
@@ -196,6 +198,8 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
     // Required device features
     VkPhysicalDeviceFeatures deviceFeatures = {};
     deviceFeatures.samplerAnisotropy = VK_TRUE; // needed for texture filtering
+    deviceFeatures.fillModeNonSolid = VK_TRUE; // Enable Line and Point Primitives
+    deviceFeatures.wideLines = VK_TRUE; // Enable Line width > 1.0
 
     // Create the logical device
     VkDeviceCreateInfo createInfo = {};

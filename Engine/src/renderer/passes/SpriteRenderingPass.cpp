@@ -200,6 +200,10 @@ SpriteRenderingPass::drawSprite(const VulkanRenderMesh &renderMesh, const glm::m
     scissor.extent = {viewportSize.x, viewportSize.y};
     vkCmdSetScissor(commandBuffer.vk(), 0, 1, &scissor);
 
+    if(material.isNonSolid()) {
+        vkCmdSetLineWidth(commandBuffer.vk(), 3.0f);
+    }
+
     // Bind Material
     auto materialDescriptorSet = material.getDescriptorSet().vk();
     vkCmdBindDescriptorSets(commandBuffer.vk(), VK_PIPELINE_BIND_POINT_GRAPHICS, material.getPipelineLayout(), 1, 1,

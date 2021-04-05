@@ -9,7 +9,7 @@
 
 /* TODO:
  *  // Later
- *  - Shader loading from disk should be managed in ressource management.
+ *  - Shader loading from disk should be managed in resource management.
  */
 class VulkanPipelineBuilder;
 

@@ -1,10 +1,16 @@
 #pragma once
 
+#ifdef WIN32
+#pragma warning(push, 0)
 // This ignores all warnings raised inside External headers
 #include <spdlog/spdlog.h>
 // Fix WinDef.h defines
 #undef near
 #undef far
+#pragma warning(pop)
+#else
+#include <spdlog/spdlog.h>
+#endif
 
 enum class LogLevel {
     Trace, Debug, Info, Warn, Error

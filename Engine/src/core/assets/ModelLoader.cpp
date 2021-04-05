@@ -1,5 +1,7 @@
 #include "ModelLoader.h"
 
+#include "Engine/src/core/Utils/Logger.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 
 #include <tiny_obj_loader.h>
@@ -13,6 +15,10 @@
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
+
+#define _USE_MATH_DEFINES
+
+#include <math.h>
 
 // For debugging prints
 // #define M_DEBUG_MODELLOADER
@@ -279,14 +285,14 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
 
 Mesh ModelLoader::getQuad() {
     const std::vector<Vertex> vertices = {
-            Vertex{.pos = {-1.0f, -1.0f, +0.0f}, .color = {1.0f, 0.0f, 0.0f},
-                    .normal{0.0f, 0.0f, 1.0f}, .uv= {0.0f, 1.0f}},
-            Vertex{.pos={+1.0f, -1.0f, +0.0f}, .color= {0.0f, 1.0f, 0.0f},
-                    .normal {0.0f, 0.0f, 1.0f}, .uv {1.0f, 1.0f}},
-            Vertex{.pos={+1.0f, +1.0f, +0.0f}, .color= {0.0f, 0.0f, 1.0f},
-                    .normal {0.0f, 0.0f, 1.0f}, .uv {1.0f, 0.0f}},
-            Vertex{.pos={-1.0f, +1.0f, +0.0f}, .color= {1.0f, 1.0f, 1.0f},
-                    .normal {0.0f, 0.0f, 1.0f}, .uv {0.0f, 0.0f}},
+            Vertex{.pos{-1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+                    .normal{0.0f, 0.0f, 1.0f}, .uv{0.0f, 1.0f}},
+            Vertex{.pos{+1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+                    .normal{0.0f, 0.0f, 1.0f}, .uv{1.0f, 1.0f}},
+            Vertex{.pos{+1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+                    .normal{0.0f, 0.0f, 1.0f}, .uv{1.0f, 0.0f}},
+            Vertex{.pos{-1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+                    .normal{0.0f, 0.0f, 1.0f}, .uv{0.0f, 0.0f}},
     };
 
     const std::vector<uint32_t> indices = {
@@ -299,4 +305,28 @@ Mesh ModelLoader::getQuad() {
     m_quadMesh.indices = indices;
 
     return m_quadMesh;
+}
+
+Mesh ModelLoader::getHexagon() {
+    std::vector<Vertex> vertices;
+    vertices.reserve(6);
+
+    for (int i = 0; i < 6; ++i) {
+        float x = static_cast<double>(std::sin(-i * ((M_PI * 2.0) / 6)));
+        float y = static_cast<double>(std::cos(-i * ((M_PI * 2.0) / 6)));
+        vertices.push_back(Vertex{
+                .pos = {x, y, +0.0f}, .color{1.0f, 1.0f, 1.0f}, .normal{0.0f, 0.0f, 1.0f},
+                .uv={(x + 0.5f) / 2, (y + 0.5f) / 2}
+        });
+    }
+
+    std::vector<uint32_t> indices = {
+            0, 1, 5,
+            2, 3, 4,
+            1, 2, 4,
+            1, 4, 5,
+    };
+
+
+    return Mesh{std::move(vertices), std::move(indices)};
 }

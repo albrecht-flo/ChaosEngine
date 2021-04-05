@@ -1,5 +1,6 @@
 #include "VulkanMaterial.h"
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
@@ -16,6 +17,9 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
                                MaterialCreateInfo pInfo)
         : Material(pContext), info(std::move(pInfo)) {
     auto &vulkanContext = dynamic_cast<VulkanContext &>(pContext);
+
+    // Setup FixedFunction state indicators
+    nonSolid = (pInfo.fixedFunction.polygonMode == Renderer::PolygonMode::Line);
 
     // Build layout for set-0
     if (info.set0) {

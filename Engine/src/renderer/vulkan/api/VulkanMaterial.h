@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
@@ -33,7 +34,8 @@ public:
             : Material(o.context), info(o.info), set0(std::move(o.set0)), set1(std::move(o.set1)),
               materialBufferSize(o.materialBufferSize), pipeline(std::move(o.pipeline)),
               descriptorPool(std::move(o.descriptorPool)), materialBuffer(std::move(o.materialBuffer)),
-              nextSetOffset(o.nextSetOffset), freeDescSets(std::move(o.freeDescSets)) {}
+              nextSetOffset(o.nextSetOffset), freeDescSets(std::move(o.freeDescSets)),
+              nonSolid(o.nonSolid) {}
 
     VulkanMaterial &operator=(VulkanMaterial &&o) = delete;
 
@@ -53,6 +55,8 @@ public:
         freeDescSets.emplace_back(uniformBufferOffset, std::move(descriptorSet));
     }
 
+    inline bool isNonSolid() const { return nonSolid; }
+
 private:
     Renderer::MaterialCreateInfo info;
     std::optional<std::unique_ptr<VulkanDescriptorSetLayout>> set0 = std::nullopt;
@@ -64,6 +68,7 @@ private:
     // Descriptor management
     uint32_t nextSetOffset = 0;
     std::vector<std::pair<uint32_t, VulkanDescriptorSet>> freeDescSets;
+    bool nonSolid;
 };
 
 
@@ -82,7 +87,7 @@ private:
         VulkanMaterialInstanceBufferedDestroy(std::shared_ptr<Renderer::Material> &&material,
                                               VulkanDescriptorSet descriptorSet,
                                               uint32_t uniformBufferOffset)
-                : material(std::move(material)), descriptorSet(descriptorSet),
+                : material(std::move(material)), descriptorSet(std::move(descriptorSet)),
                   uniformBufferOffset(uniformBufferOffset) {}
 
         ~VulkanMaterialInstanceBufferedDestroy() override = default;
@@ -138,6 +143,10 @@ public:
     inline VkPipeline
     getPipeline() const { return dynamic_cast<VulkanMaterial *>(material.get())->pipeline->getPipeline(); }
 
+    inline bool isNonSolid() const {
+        bool ret = dynamic_cast<VulkanMaterial *>(material.get())->isNonSolid();
+        return ret;
+    }
 
 private:
     std::shared_ptr<Renderer::Material> material;
