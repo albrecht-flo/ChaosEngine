@@ -8,7 +8,7 @@
 #include "Engine/src/core/Components.h"
 #include "VulkanRenderPassOld.h"
 #include "Engine/src/renderer/data/Mesh.h"
-#include "Engine/src/renderer/data/RenderObject.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 #include "Engine/src/renderer/vulkan/context/VulkanSwapChain.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"

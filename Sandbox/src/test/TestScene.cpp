@@ -1,7 +1,12 @@
 #include "TestScene.h"
 
-#include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/assets/ModelLoader.h"
+#include "Engine/src/core/assets/Mesh.h"
+#include "Engine/src/renderer/api/Buffer.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
+#include "Engine/src/renderer/api/Material.h"
+#include <renderer/VulkanRenderer2D.h>
 #include "CustomImGui.h"
 
 #include <imgui.h>
@@ -19,8 +24,14 @@ void TestScene::load() {
     using namespace Renderer;
     // Load meshes
     // NEXT:
-    // auto baseSpriteMesh = Mesh::CreateRaw(data);
-    // auto specialMesh = Mesh::CreateFromFile("sth.obj");
+    auto quadAsset = ModelLoader::getQuad();
+    auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(Vertex),
+                                       BufferType::Vertex);
+    auto indexBuffer = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(Vertex),
+                                      BufferType::Index);
+    quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
+
+//     auto specialMesh = ModelLoader::CreateFromFile("sth.obj");
 
     // Load Materials
     coloredMaterial = Material::Create(MaterialCreateInfo{
@@ -79,18 +90,21 @@ void TestScene::loadEntities() {
     yellowQuad = registry.createEntity();
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 yellowColor(1, 1, 0, 1);
-    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&yellowColor, sizeof(yellowColor), {}));
+    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&yellowColor, sizeof(yellowColor), {}),
+                                             quadROB);
 
     redQuad = registry.createEntity();
-    redQuad.setComponent<Transform>(Transform{glm::vec3(2, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
-    glm::vec4 redColor(1, 0, 0, 1);
-    redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}));
+    redQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    glm::vec4 redColor(0, 1, 0, 1);
+    redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
+                                          quadROB);
 
     texturedQuad = registry.createEntity();
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
-            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}));
+            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
+            quadROB);
 }
 
 // Test data
@@ -181,7 +195,8 @@ void TestScene::updateImGui() {
             ImGui::ColorEdit4("Color", &(editTintColor.r));
             if (ImGui::Button("Apply")) {
                 texturedQuad.setComponent<RenderComponent>(
-                        texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}));
+                        texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}),
+                        quadROB);
             }
         }
         ImGui::End();

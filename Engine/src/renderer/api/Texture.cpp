@@ -13,7 +13,7 @@ std::unique_ptr<Renderer::Texture> Renderer::Texture::Create(const std::string &
                     VulkanTexture::Create(
                             dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext()),
                             "textures/" + filename));
-        case GraphicsAPI::None:
+        default:
             assert("Invalid Graphics API" && false);
     }
     return nullptr;

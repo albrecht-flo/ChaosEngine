@@ -5,30 +5,10 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
+#include "VulkanRenderMesh.h"
 
-#include <utility>
 
 using namespace Renderer;
-
-// TODO: Move to VulkanUniformBuffer
-static size_t sizeWithUboPadding(const VulkanContext &context, size_t originalSize) {
-    // Source https://github.com/SaschaWillems/Vulkan/tree/master/examples/dynamicuniformbuffer
-    // Calculate required alignment based on minimum device offset alignment
-    size_t minUboAlignment = context.getDevice().getProperties().limits.minUniformBufferOffsetAlignment;
-    size_t alignedSize = originalSize;
-    if (minUboAlignment > 0) {
-        alignedSize = (alignedSize + minUboAlignment - 1) & ~(minUboAlignment - 1);
-    }
-    return alignedSize;
-}
-
-// TODO: Move this to VulkanMesh
-const VulkanVertexInput VulkanMaterial::vertex_3P_3C_3N_2U =
-        VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
-                .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
-                .addAttribute(1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color))
-                .addAttribute(2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal))
-                .addAttribute(3, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build();
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
@@ -82,7 +62,8 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
 
     // Build Pipeline
     pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(vulkanContext.getDevice(), renderPass,
-                                                                      std::move(pipelineLayout), vertex_3P_3C_3N_2U,
+                                                                      std::move(pipelineLayout),
+                                                                      VulkanRenderMesh::vertex_3P_3C_3N_2U,
                                                                       "")
                                                         .setVertexShader(info.vertexShader)
                                                         .setFragmentShader(info.fragmentShader)
@@ -112,7 +93,7 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
     // Create material uniform buffer
     if (set1 && materialBufferSize > 0) {
         materialBuffer = std::make_unique<VulkanUniformBuffer>(vulkanContext.getMemory().createUniformBuffer(
-                sizeWithUboPadding(vulkanContext, materialBufferSize),
+                vulkanContext.getMemory().sizeWithUboPadding(materialBufferSize),
                 info.set1ExpectedCount, false));
     }
 
@@ -164,7 +145,7 @@ VulkanMaterial::instantiate(std::shared_ptr<Material> &materialPtr, const void *
     auto instance = std::make_unique<VulkanMaterialInstance>(materialPtr, std::move(descriptorSet), currentOffset);
 
     // Set offset data for the uniform buffer accordingly
-    auto paddedSize = sizeWithUboPadding(vulkanContext, materialBufferSize);
+    auto paddedSize = vulkanContext.getMemory().sizeWithUboPadding(materialBufferSize);
     if (currentOffset == nextSetOffset)
         nextSetOffset += paddedSize;
     return instance;

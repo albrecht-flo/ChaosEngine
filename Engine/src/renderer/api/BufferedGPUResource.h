@@ -10,6 +10,9 @@ public:
 };
 
 struct BufferedGPUResourceEntry {
+    BufferedGPUResourceEntry(std::unique_ptr<BufferedGPUResource> &&resource, uint32_t frameDeleted)
+            : resource(std::move(resource)), frameDeleted(frameDeleted) {}
+
     std::unique_ptr<BufferedGPUResource> resource;
     uint32_t frameDeleted;
 };

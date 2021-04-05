@@ -7,8 +7,10 @@
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "Engine/src/renderer/vulkan/image/VulkanTexture.h"
+#include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 
 #include <array>
+
 
 using namespace Renderer;
 
@@ -95,8 +97,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                     .setMaxSets(GraphicsContext::maxFramesInFlight * 3)
                     .build());
 
-    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>(std::move(
-            context.getMemory().createUniformBuffer(sizeof(ShaderConfig), 1, false)));
+    perFrameUniformBuffer = std::make_unique<VulkanUniformBuffer>( context.getMemory().createUniformBuffer(sizeof(ShaderConfig), 1, false));
     uboContent = std::make_unique<UniformBufferContent<ShaderConfig>>(1);
     uboContent->at(0)->cameraNear = ShaderConfig{}.cameraNear;
     uboContent->at(0)->cameraFar = ShaderConfig{}.cameraFar;

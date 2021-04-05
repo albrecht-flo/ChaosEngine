@@ -9,8 +9,10 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/quaternion.hpp>
+#include <utility>
 
 #include "Engine/src/renderer/api/Material.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
 
 struct Transform {
     glm::vec3 position;
@@ -25,12 +27,14 @@ struct Transform {
 };
 
 struct RenderComponent {
+    RenderComponent(std::shared_ptr<Renderer::MaterialInstance> materialInstance,
+                    std::shared_ptr<Renderer::RenderMesh> mesh)
+            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)) {}
+
     // The Material Instance can't be stored here because depending on the used Graphics API the storage of a Material
     // Instance might change. So we need to store a pointer for now.
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
-
-    // NEXT:
-    // std::shared_ptr<Renderer::Mesh> mesh;
+    std::shared_ptr<Renderer::RenderMesh> mesh;
 };
 
 struct CameraComponent {

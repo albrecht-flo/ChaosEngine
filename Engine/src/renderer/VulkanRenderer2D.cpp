@@ -2,8 +2,8 @@
 
 #include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/renderer/data/Mesh.h"
-#include "Engine/src/renderer/data/ModelLoader.h"
+#include "Engine/src/core/assets/Mesh.h"
+#include "Engine/src/core/assets/ModelLoader.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "Engine/src/renderer/api/Material.h"
 
@@ -48,17 +48,17 @@ VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &
 // ------------------------------------ Lifecycle methods --------------------------------------------------------------
 
 void VulkanRenderer2D::setup() {
-    auto quad = ModelLoader::getQuad();
-    VulkanBuffer vertexBuffer = context.getMemory().createInputBuffer(
-            quad.vertices.size() * sizeof(quad.vertices[0]), reinterpret_cast<const char *>(quad.vertices.data()),
-            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-
-    VulkanBuffer indexBuffer = context.getMemory().createInputBuffer(
-            quad.indices.size() * sizeof(quad.indices[0]), reinterpret_cast<const char *>(quad.indices.data()),
-            VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-
-    quadMesh = std::make_unique<RenderMesh>(
-            std::move(vertexBuffer), std::move(indexBuffer), static_cast<uint32_t>(quad.indices.size()));
+//    auto quad = ModelLoader::getQuad();
+//    VulkanBuffer vertexBuffer = context.getMemory().createInputBuffer(
+//            quad.vertices.size() * sizeof(quad.vertices[0]), reinterpret_cast<const char *>(quad.vertices.data()),
+//            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+//
+//    VulkanBuffer indexBuffer = context.getMemory().createInputBuffer(
+//            quad.indices.size() * sizeof(quad.indices[0]), reinterpret_cast<const char *>(quad.indices.data()),
+//            VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+//
+//    quadMesh = std::make_unique<RenderMesh>(
+//            std::move(vertexBuffer), std::move(indexBuffer), static_cast<uint32_t>(quad.indices.size()));
 }
 
 
@@ -127,8 +127,9 @@ void VulkanRenderer2D::flush() {
 }
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
-    spriteRenderingPass.drawSprite(*quadMesh, modelMat,
-                                   dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance)));
+    const auto& mesh = dynamic_cast<const VulkanRenderMesh&>(*(renderComponent.mesh));
+    const auto& material = dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance));
+    spriteRenderingPass.drawSprite(mesh, modelMat, material);
 }
 
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {

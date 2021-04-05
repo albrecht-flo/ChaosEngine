@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/src/core/Components.h"
-#include "Engine/src/renderer/data/RenderObject.h"
+#include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSet.h"
@@ -80,7 +80,7 @@ private:
 
     std::unique_ptr<VulkanDescriptorSet> perFrameDescriptorSet;
     std::unique_ptr<VulkanUniformBuffer> perFrameUniformBuffer;
-    std::unique_ptr<UniformBufferContent<ShaderConfig>> uboContent;
+    std::unique_ptr<Renderer::UniformBufferContent<ShaderConfig>> uboContent;
 
     // State resources --------------------------------------------------------
     glm::uvec2 viewportSize{0, 0};

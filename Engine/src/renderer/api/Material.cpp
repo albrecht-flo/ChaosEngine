@@ -28,7 +28,7 @@ MaterialRef Material::Create(const MaterialCreateInfo &info) {
     switch (GraphicsContext::currentAPI) {
         case GraphicsAPI::Vulkan:
             return MaterialRef(VulkanMaterial::Create(RenderingSystem::GetContext(), RenderingSystem::GetCurrentRenderer(), info));
-        case GraphicsAPI::None:
+        default:
             assert("Invalid Graphics API" && false);
     }
     return MaterialRef(nullptr);

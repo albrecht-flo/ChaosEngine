@@ -72,7 +72,7 @@ bool VulkanContext::flushCommands() {
 
 void VulkanContext::destroyBuffered(std::unique_ptr<BufferedGPUResource> resource) {
     bufferedResourceDestroyQueue.emplace_back(std::move(resource), currentFrameCounter);
-    LOG_DEBUG("Descriptor scheduled for destruction on frame {0}", currentFrameCounter);
+    LOG_DEBUG("Resource scheduled for destruction on frame {0}", currentFrameCounter);
 }
 
 void VulkanContext::tickFrame() {
