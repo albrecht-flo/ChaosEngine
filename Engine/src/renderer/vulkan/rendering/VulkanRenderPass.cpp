@@ -71,10 +71,10 @@ VulkanRenderPass::Create(const VulkanContext &context,
     if (!debugName.empty())
         context.setDebugName(VK_OBJECT_TYPE_RENDER_PASS, (uint64_t) renderPass, debugName);
 
-    return VulkanRenderPass(context, renderPass, attachments.size());
+    return VulkanRenderPass(context, renderPass, static_cast<uint32_t>(attachments.size()));
 }
 
-VulkanRenderPass::VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, int attachmentCount)
+VulkanRenderPass::VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, uint32_t attachmentCount)
         : context(context), renderPass(renderPass), attachmentCount(attachmentCount) {}
 
 VulkanRenderPass::VulkanRenderPass(VulkanRenderPass &&o) noexcept

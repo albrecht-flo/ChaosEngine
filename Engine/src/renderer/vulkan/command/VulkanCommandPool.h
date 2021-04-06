@@ -2,11 +2,13 @@
 
 #include <vulkan/vulkan.h>
 
+#include <functional>
+
 class VulkanDevice;
 
 class VulkanCommandPool {
 private:
-    VulkanCommandPool(const VulkanDevice &device, VkCommandPool commandPool);
+    VulkanCommandPool(const VulkanDevice &device, VkCommandPool commandPool, VkQueue queue);
 
 public:
     ~VulkanCommandPool();
@@ -19,9 +21,11 @@ public:
 
     VulkanCommandPool &operator=(VulkanCommandPool &&o) = delete;
 
-    static VulkanCommandPool Create(const VulkanDevice &device);
+    static VulkanCommandPool Create(const VulkanDevice &device, uint32_t queueFamilyIndex, VkQueue queue);
 
     [[nodiscard]] inline VkCommandPool vk() const { return commandPool; }
+
+    void runInSingeTimeCommandBuffer(std::function<void(VkCommandBuffer)> &&func) const;
 
 private:
     void destroy();
@@ -29,6 +33,7 @@ private:
 private:
     const VulkanDevice &device;
     VkCommandPool commandPool;
+    VkQueue queue;
 
 };
 

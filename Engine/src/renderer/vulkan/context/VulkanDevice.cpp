@@ -7,6 +7,7 @@
 #include <set>
 #include <stdexcept>
 #include <tuple>
+#include <bitset>
 
 /* Checks if a GPU supports all required extensions. */
 static bool checkDeviceExtensionSupport(VkPhysicalDevice phdevice, const std::vector<const char *> &deviceExtensions) {
@@ -40,6 +41,8 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
 
     int i = 0;
     for (const auto &queueFamily : queueFamilies) {
+        // LOG_DEBUG("Queue number: {}", std::to_string(queueFamily.queueCount));
+        // LOG_DEBUG("Queue flags: {}", std::bitset<32>(queueFamily.queueFlags).to_string());
         // Get graphics queue
         if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
@@ -48,17 +51,28 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
         // Get present queue
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(phdevice, i, surface, &presentSupport);
-
         if (queueFamily.queueCount > 0 && presentSupport) {
             indices.presentFamily = i;
         }
 
-        // If we have both we are done
+        // Get transfer queue
+        if (queueFamily.queueCount > 0 && (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) &&
+            !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+            indices.transferFamily = i;
+        }
+
+        // If we have all we are done
         if (indices.isComplete()) {
             break;
         }
 
         i++;
+    }
+
+    if (!indices.transferFamily) {
+        Logger::W("VulkanDevice",
+                  "No dedicated Transfer Queue present, reverting back to graphics Queue for transfers.");
+        indices.transferFamily = indices.graphicsFamily;
     }
     return indices;
 }
@@ -167,7 +181,7 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     }
 
     if (physicalDevice == VK_NULL_HANDLE) {
-        throw std::runtime_error("failed to find a suitable GPU!");
+        throw std::runtime_error("[Vulkan] Failed to find a suitable GPU!");
     }
 
     // Store the supported features
@@ -183,7 +197,7 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
 
     // Create the queues
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily, *indices.transferFamily};
 
     float queuePriority = 1.0f; // between 0.0 and 1.0
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -231,18 +245,26 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
 // Retrieve the graphics queue
 static std::tuple<VkQueue, uint32_t> getGraphicsQueue(VkDevice device, QueueFamilyIndices indices) {
     VkQueue graphicsQueue{};
-    vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    uint32_t graphicsQueueFamily = indices.graphicsFamily.value();
-    return std::make_tuple(graphicsQueue, graphicsQueueFamily);
+    vkGetDeviceQueue(device, *indices.graphicsFamily, 0, &graphicsQueue);
+    return std::make_tuple(graphicsQueue, *indices.graphicsFamily);
 }
 
 // Retrieve the present queue
 static std::tuple<VkQueue, uint32_t> getPresentQueue(VkDevice device, QueueFamilyIndices indices) {
     VkQueue presentQueue{};
-    // Retrieve queues
-    vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
-    uint32_t presentQueueFamily = indices.presentFamily.value();
-    return std::make_tuple(presentQueue, presentQueueFamily);
+    // Retrieve queue
+    vkGetDeviceQueue(device, *indices.presentFamily, 0, &presentQueue);
+    return std::make_tuple(presentQueue, *indices.presentFamily);
+}
+
+// Retrieve the present queue
+static std::tuple<VkQueue, uint32_t> getTransferQueue(VkDevice device, QueueFamilyIndices indices) {
+    VkQueue transferQueue{};
+    // Use a separate graphics queue for transfers
+    uint32_t index = (indices.transferFamily == indices.graphicsFamily) ? 1 : 0;
+    // Retrieve queue
+    vkGetDeviceQueue(device, *indices.transferFamily, index, &transferQueue);
+    return std::make_tuple(transferQueue, *indices.transferFamily);
 }
 
 // ------------------------------------ Class Methods ------------------------------------------------------------------
@@ -260,28 +282,36 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
     // Create the logical device for this GPU
     auto device = ::createLogicalDevice(physicalDevice, instance, indices);
 
-    auto[graphicsQueue, graphicsQueueFamily] = ::getGraphicsQueue(device, indices);
-    auto[presentQueue, presentQueueFamily] = ::getPresentQueue(device, indices);
+    auto[graphicsQueue, graphicsQueueFamilyIndex] = ::getGraphicsQueue(device, indices);
+    auto[presentQueue, presentQueueFamilyIndex] = ::getPresentQueue(device, indices);
+    auto[transferQueue, transferQueueFamilyIndex] = ::getTransferQueue(device, indices);
 
-    return VulkanDevice{physicalDevice, device, graphicsQueueFamily, presentQueueFamily,
-                        graphicsQueue, presentQueue, indices, deviceProperties};
+    assert("Missing required Queue" &&
+           (graphicsQueue != VK_NULL_HANDLE && presentQueue != VK_NULL_HANDLE && transferQueue != VK_NULL_HANDLE));
+    return VulkanDevice{physicalDevice, device,
+                        graphicsQueue, graphicsQueueFamilyIndex,
+                        presentQueue, presentQueueFamilyIndex,
+                        transferQueue, transferQueueFamilyIndex,
+                        indices, deviceProperties};
 }
 
-VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice,
-                           VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
-                           VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
-                           VkPhysicalDeviceProperties properties)
+VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device,
+                           VkQueue graphicsQueue, uint32_t graphicsQueueFamily,
+                           VkQueue presentQueue, uint32_t presentQueueFamily,
+                           VkQueue transferQueue, uint32_t transferQueueFamily,
+                           QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties)
         : physicalDevice(physicalDevice), device(device),
-          graphicsQueueFamily(graphicsQueueFamily), presentQueueFamily(presentQueueFamily),
-          graphicsQueue(graphicsQueue), presentQueue(presentQueue), queueFamilyIndices(queueFamilyIndices),
-          properties(properties) {}
+          graphicsQueue(graphicsQueue), graphicsQueueFamilyIndex(graphicsQueueFamily),
+          presentQueue(presentQueue), presentQueueFamilyIndex(presentQueueFamily),
+          transferQueue(transferQueue), transferQueueFamilyIndex(transferQueueFamily),
+          queueFamilyIndices(queueFamilyIndices), properties(properties) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
         : physicalDevice(std::exchange(o.physicalDevice, nullptr)),
           device(std::exchange(o.device, nullptr)),
-          graphicsQueueFamily(o.graphicsQueueFamily), presentQueueFamily(o.presentQueueFamily),
-          graphicsQueue(std::exchange(o.graphicsQueue, nullptr)),
-          presentQueue(std::exchange(o.presentQueue, nullptr)),
+          graphicsQueue(std::exchange(o.graphicsQueue, nullptr)), graphicsQueueFamilyIndex(o.graphicsQueueFamilyIndex),
+          presentQueue(std::exchange(o.presentQueue, nullptr)), presentQueueFamilyIndex(o.presentQueueFamilyIndex),
+          transferQueue(std::exchange(o.transferQueue, nullptr)), transferQueueFamilyIndex(o.transferQueueFamilyIndex),
           queueFamilyIndices(std::move(o.queueFamilyIndices)),
           properties(o.properties) {
 }
