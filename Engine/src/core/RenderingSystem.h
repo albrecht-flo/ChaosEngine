@@ -31,8 +31,6 @@ public:
     }
 
 private:
-    std::unique_ptr<Renderer::GraphicsContext> context;
-    std::unique_ptr<Renderer::RendererAPI> renderer;
-    static Renderer::GraphicsContext *Context;
-    static Renderer::RendererAPI *Renderer;
+    static std::unique_ptr<Renderer::GraphicsContext> Context;
+    static std::unique_ptr<Renderer::RendererAPI> Renderer;
 };

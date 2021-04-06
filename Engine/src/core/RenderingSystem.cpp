@@ -7,55 +7,53 @@
 
 using namespace Renderer;
 
-GraphicsContext *RenderingSystem::Context = nullptr;
-RendererAPI *RenderingSystem::Renderer = nullptr;
+std::unique_ptr<GraphicsContext> RenderingSystem::Context = nullptr;
+std::unique_ptr<RendererAPI> RenderingSystem::Renderer = nullptr;
 
 RenderingSystem::RenderingSystem(Window &window) {
-    context = Renderer::GraphicsContext::Create(window, GraphicsAPI::Vulkan);
-    Context = context.get();
+    Context = Renderer::GraphicsContext::Create(window, GraphicsAPI::Vulkan);
 }
 
 RenderingSystem::~RenderingSystem() {
     // Wait for renderer to finish
-    if (renderer != nullptr)
-        renderer->join();
-    Context = nullptr;
+    if (Renderer != nullptr)
+        Renderer->join();
     Renderer = nullptr;
+    Context = nullptr;
 }
 
 void RenderingSystem::createRenderer(RendererType rendererType) {
     switch (rendererType) {
         case Renderer::RendererType::RENDERER2D :
-            renderer = VulkanRenderer2D::Create(*context);
-            Renderer = renderer.get();
+            Renderer = VulkanRenderer2D::Create(*Context);
             break;
         default:
             assert("Unknown renderer" && false);
     }
-    renderer->setup();
+    Renderer->setup();
 }
 
 void RenderingSystem::updateComponents(ECS &/*ecs*/) {
-    context->tickFrame();
+    Context->tickFrame();
 }
 
 void RenderingSystem::renderEntities(ECS &ecs) {
-    assert("Renderer must be initialized" && renderer != nullptr);
+    assert("Renderer must be initialized" && Renderer != nullptr);
     auto view = ecs.getRegistry().view<const Transform, const RenderComponent>();
     auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
 
-    context->beginFrame();
+    Context->beginFrame();
 
     assert("There must be one active camera" && cameras.begin() != cameras.end());
     for (const auto&[entity, transform, camera] : cameras.each()) {
-        renderer->beginScene(transform.getModelMatrix(), camera);
+        Renderer->beginScene(transform.getModelMatrix(), camera);
         break;
     }
     for (const auto&[entity, transform, renderComp]: view.each()) {
-        renderer->draw(transform.getModelMatrix(), renderComp);
+        Renderer->draw(transform.getModelMatrix(), renderComp);
     }
-    renderer->endScene();
+    Renderer->endScene();
 
     // Push render commands to GPU
-    renderer->flush();
+    Renderer->flush();
 }
