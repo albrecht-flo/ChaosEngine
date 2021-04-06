@@ -52,7 +52,7 @@ void TestScene::load() {
                                     })
                     }}),
             .set1ExpectedCount = 64,
-
+            .name="DebugWireFrame",
     });
     coloredMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
@@ -70,7 +70,7 @@ void TestScene::load() {
                                     })
                     }}),
             .set1ExpectedCount = 64,
-
+            .name="ColoredSprite",
     });
     texturedMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
@@ -90,7 +90,7 @@ void TestScene::load() {
                      }
                     }),
             .set1ExpectedCount = 64,
-
+            .name="TexturedSprite",
     });
 
     fallbackTexture = Texture::Create("TestAtlas.jpg");

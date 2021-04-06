@@ -1,16 +1,42 @@
 #pragma once
 
 #include "Engine/src/renderer/api/Buffer.h"
+#include "Engine/src/renderer/api/BufferedGPUResource.h"
+#include "Engine/src/core/RenderingSystem.h"
 
-#include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
+#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "VulkanMemory.h"
 
 #include <memory>
 
-#include "VulkanMemory.h"
-
 class VulkanBuffer : public Renderer::Buffer {
     friend class VulkanMemory;
+
+    /**
+     * This class handles the buffered destruction of a VulkanBuffer.
+     */
+    class VulkanBufferBufferedDestroy : public BufferedGPUResource {
+    public:
+        VulkanBufferBufferedDestroy(const VulkanMemory &memory, VkBuffer buffer, VmaAllocation allocation)
+                : memory(memory), buffer(buffer), allocation(allocation) {}
+
+        ~VulkanBufferBufferedDestroy() override = default;
+
+        void destroy() override {
+            memory.destroyBuffer(buffer, allocation);
+        }
+
+        std::string toString() const override {
+            char str[17];
+            snprintf(str, sizeof(str), "%p", buffer);
+            return "VulkanBuffer " + std::string(str);
+        }
+
+    private:
+        const VulkanMemory &memory;
+        VkBuffer buffer;
+        VmaAllocation allocation;
+    };
 
 public:
     VulkanBuffer(const VulkanMemory &memory, VkBuffer buffer, VmaAllocation allocation)
@@ -29,16 +55,28 @@ public:
     VulkanBuffer &operator=(VulkanBuffer &&o) noexcept {
         if (&o == this)
             return *this;
+        destroy();
         buffer = std::exchange(o.buffer, nullptr);
         allocation = std::exchange(o.allocation, nullptr);
         return *this;
+    }
+
+    void destroyImmediately() {
+        memory.destroyBuffer(buffer, allocation);
+        buffer = nullptr;
+        allocation = nullptr;
     }
 
     [[nodiscard]] inline VkBuffer vk() const { return buffer; }
 
 private:
     void destroy() {
-        memory.destroyBuffer(buffer, allocation);
+        if (buffer != nullptr) {
+            auto &vulkanContext = dynamic_cast<VulkanContext &>(RenderingSystem::GetContext());
+            vulkanContext.destroyBuffered(std::make_unique<VulkanBufferBufferedDestroy>(memory, buffer, allocation));
+            buffer = nullptr;
+            allocation = nullptr;
+        }
     }
 
 private:
@@ -69,6 +107,9 @@ public:
         alignment = o.alignment;
         return *this;
     }
+
+
+    inline void destroyImmediately() { buffer.destroyImmediately(); }
 
     [[nodiscard]] inline const VulkanBuffer &getBuffer() const { return buffer; }
 

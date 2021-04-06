@@ -24,7 +24,10 @@ private:
                    Renderer::MaterialCreateInfo pInfo);
 
 public:
-    ~VulkanMaterial() override = default;
+    ~VulkanMaterial() override {
+        if (materialBuffer != nullptr) // Has not been moved
+            materialBuffer->destroyImmediately(); // Material its self is buffered destroyed
+    }
 
     VulkanMaterial(const VulkanMaterial &o) = delete;
 
@@ -56,6 +59,8 @@ public:
     }
 
     inline bool isNonSolid() const { return nonSolid; }
+
+    const std::string &getName() const override { return info.name; }
 
 private:
     Renderer::MaterialCreateInfo info;
@@ -97,6 +102,10 @@ private:
             dynamic_cast<VulkanMaterial *>(material.get())->
                     recycleInstance(std::move(descriptorSet), uniformBufferOffset);
             material = nullptr;
+        }
+
+        std::string toString() const override {
+            return "VulkanMaterialInstance " + material->getName();
         }
 
     private:

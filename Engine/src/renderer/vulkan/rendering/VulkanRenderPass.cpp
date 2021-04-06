@@ -32,7 +32,7 @@ VulkanRenderPass::Create(const VulkanContext &context,
     // For the moment we only have 1 subpass
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // graphics not compute
-    subpass.colorAttachmentCount = colorAttachmentRefs.size();
+    subpass.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentRefs.size());
     subpass.pColorAttachments = colorAttachmentRefs.data();
     if (depthAttachmentRefs.size() == 1) {
         subpass.pDepthStencilAttachment = depthAttachmentRefs.data();

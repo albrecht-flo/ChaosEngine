@@ -312,8 +312,8 @@ Mesh ModelLoader::getHexagon() {
     vertices.reserve(6);
 
     for (int i = 0; i < 6; ++i) {
-        float x = static_cast<double>(std::sin(-i * ((M_PI * 2.0) / 6)));
-        float y = static_cast<double>(std::cos(-i * ((M_PI * 2.0) / 6)));
+        float x = static_cast<float>(std::sin(-i * ((M_PI * 2.0) / 6)));
+        float y = static_cast<float>(std::cos(-i * ((M_PI * 2.0) / 6)));
         vertices.push_back(Vertex{
                 .pos = {x, y, +0.0f}, .color{1.0f, 1.0f, 1.0f}, .normal{0.0f, 0.0f, 1.0f},
                 .uv={(x + 0.5f) / 2, (y + 0.5f) / 2}

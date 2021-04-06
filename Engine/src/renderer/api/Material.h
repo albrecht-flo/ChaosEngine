@@ -88,6 +88,7 @@ namespace Renderer {
         uint32_t set0ExpectedCount;
         std::optional<std::vector<ShaderBindings>> set1;
         uint32_t set1ExpectedCount;
+        std::string name;
     };
 
 // ------------------------------------ Material classes ---------------------------------------------------------------
@@ -132,6 +133,8 @@ namespace Renderer {
                     const std::vector<const Texture *> &textures) = 0;
 
         GraphicsContext &getContext() { return context; }
+
+        virtual const std::string &getName() const = 0;
 
     protected:
         GraphicsContext &context;
