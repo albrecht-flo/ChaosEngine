@@ -8,6 +8,7 @@ public:
     virtual ~BufferedGPUResource() = default;
 
     virtual void destroy() = 0;
+
     virtual std::string toString() const = 0;
 };
 

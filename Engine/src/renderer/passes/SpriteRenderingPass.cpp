@@ -200,7 +200,7 @@ SpriteRenderingPass::drawSprite(const VulkanRenderMesh &renderMesh, const glm::m
     scissor.extent = {viewportSize.x, viewportSize.y};
     vkCmdSetScissor(commandBuffer.vk(), 0, 1, &scissor);
 
-    if(material.isNonSolid()) {
+    if (material.isNonSolid()) {
         vkCmdSetLineWidth(commandBuffer.vk(), 3.0f);
     }
 

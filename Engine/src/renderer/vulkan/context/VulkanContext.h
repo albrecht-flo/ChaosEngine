@@ -53,8 +53,6 @@ public:
 
     [[nodiscard]] inline VkSurfaceKHR getSurface() const { return surface.vk(); }
 
-    [[nodiscard]] inline const VulkanCommandPool &getCommandPool() const { return commandPool; }
-
     [[nodiscard]] inline const VulkanMemory &getMemory() const { return memory; }
 
     [[nodiscard]] inline const VulkanSwapChain &getSwapChain() const { return swapChain; }
@@ -66,21 +64,29 @@ public:
     [[nodiscard]] inline const VulkanCommandBuffer &
     getCurrentPrimaryCommandBuffer() const { return primaryCommandBuffers[currentFrame]; }
 
-    // Debug members
+    [[nodiscard]] const VulkanCommandPool &getTransferCommandPool() const { return transferCommandPool; }
+
+    [[nodiscard]] const VulkanCommandPool &getGraphicsCommandPool() const { return graphicsCommandPool; }
+
+// ------------------------------------ Debug members ------------------------------------------------------------------
 
     inline void setDebugName(VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const {
         instance.setDebugName(device.vk(), type, handle, name);
     }
 
 private:
+    // Context
     const Window &window;
     const VulkanInstance instance;
     VulkanSurface surface;
     const VulkanDevice device;
-    const VulkanCommandPool commandPool;
     VulkanSwapChain swapChain;
-    const VulkanMemory memory;
+    // Command management
+    const VulkanCommandPool graphicsCommandPool;
     const std::vector<VulkanCommandBuffer> primaryCommandBuffers;
+    const VulkanCommandPool transferCommandPool;
+    // Resources
+    const VulkanMemory memory;
     const VulkanFrame frame;
 
     uint32_t currentFrame = 0;

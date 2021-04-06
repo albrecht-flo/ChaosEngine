@@ -40,6 +40,19 @@ VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage,
     bufferInfo.size = size;
     bufferInfo.usage = bufferUsage;
 
+    std::array<uint32_t, 2> queueFamilyIndices = {
+            device.getGraphicsQueueFamilyIndex(),
+            device.getTransferQueueFamilyIndex()
+    };
+    if (device.getGraphicsQueueFamilyIndex() != device.getTransferQueueFamilyIndex()) {
+        // We copy on the transfer queue and use it on the graphics queue
+        bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+        bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+        bufferInfo.pQueueFamilyIndices = queueFamilyIndices.data();
+    } else {
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = memoryUsage;
 
@@ -54,16 +67,15 @@ VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage,
 
 /* Copies the contents of a source buffer to a destination buffer on the GPU. */
 void VulkanMemory::copyBuffer(const VulkanBuffer &srcBuffer, const VulkanBuffer &dstBuffer, VkDeviceSize size) const {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+    commandPool.runInSingeTimeCommandBuffer([&](VkCommandBuffer commandBuffer) {
+        // Put copy cmd
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = size;
+        // copyRegion.srcOffset = 0;
+        // copyRegion.dstOffset = 0;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer.buffer, dstBuffer.buffer, 1, &copyRegion);
+    });
 
-    // Put copy cmd
-    VkBufferCopy copyRegion = {};
-    copyRegion.size = size;
-//    copyRegion.srcOffset = 0;
-//    copyRegion.dstOffset = 0;
-    vkCmdCopyBuffer(commandBuffer, srcBuffer.buffer, dstBuffer.buffer, 1, &copyRegion);
-
-    endSingleTimeCommands(commandBuffer);
 
 }
 
@@ -77,70 +89,24 @@ void VulkanMemory::copyDataToBuffer(const VulkanBuffer &buffer, const void *data
 
 void VulkanMemory::copyBufferToImage(const VulkanBuffer &buffer, const VulkanImage &image, uint32_t width,
                                      uint32_t height) const {
-    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+    commandPool.runInSingeTimeCommandBuffer([&](VkCommandBuffer commandBuffer) {
+        VkBufferImageCopy region = {};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
 
-    VkBufferImageCopy region = {};
-    region.bufferOffset = 0;
-    region.bufferRowLength = 0;
-    region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
 
-    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    region.imageSubresource.mipLevel = 0;
-    region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = 1;
+        region.imageOffset = {0, 0, 0};
+        region.imageExtent = {width, height, 1};
 
-    region.imageOffset = {0, 0, 0};
-    region.imageExtent = {width, height, 1};
+        vkCmdCopyBufferToImage(commandBuffer, buffer.vk(), image.vk(),
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-    vkCmdCopyBufferToImage(commandBuffer, buffer.vk(), image.vk(),
-                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region); // TODO: test image transition
-
-    endSingleTimeCommands(commandBuffer);
-}
-
-/* Creates a new command buffer for single time use and begins recording it. 
-	TOBE moved
-	*/
-VkCommandBuffer VulkanMemory::beginSingleTimeCommands() const {
-    // Should be in its own command pool which has the VK_COMMAND_POOL_CREATE_TRANSIENT_BIT enabled during creation
-    VkCommandBufferAllocateInfo allocInfo = {};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = commandPool.vk();
-    allocInfo.commandBufferCount = 1; // we only need one
-
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(device.vk(), &allocInfo, &commandBuffer);
-
-    // Begin the command buffer
-    VkCommandBufferBeginInfo beginInfo = {};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // will be rerecorded after submit
-
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-    return commandBuffer;
-}
-
-/* Ends the command buffer, submits it to the queue, waits for it to finish and deletes the buffer.
-	TOBE moved
-	*/
-void VulkanMemory::endSingleTimeCommands(VkCommandBuffer &commandBuffer) const {
-    // Finish command buffer
-    vkEndCommandBuffer(commandBuffer);
-
-    // Submit this cmdbuffer to the queue
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    // Wait for it to finish
-    vkQueueWaitIdle(device.getGraphicsQueue());
-
-    // The cmdbuffer is no longer needed
-    vkFreeCommandBuffers(device.vk(), commandPool.vk(), 1, &commandBuffer);
+    });
 }
 
 VulkanUniformBuffer
@@ -185,13 +151,8 @@ VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, const void *data
 }
 
 VulkanImage VulkanMemory::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                                      VkImageUsageFlags usage, VmaMemoryUsage memoryUsage) const {
-    // NEXT
-    // - Image Transitions (Layouts)
-    // - Staging buffer refactor (dedicated Function)
-    // - Dedicated transfer queue
-    //    - async
-
+                                      VkImageUsageFlags usage, VmaMemoryUsage memoryUsage, bool dedicatedAllocation)
+const {
     // Create the image
     VkImageCreateInfo imageInfo = {};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -205,12 +166,26 @@ VulkanImage VulkanMemory::createImage(uint32_t width, uint32_t height, VkFormat 
     imageInfo.tiling = tiling; // usage optimized layout
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     imageInfo.usage = usage; // we need to copy to it and sample from the shader
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // only on graphcis queue
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT; // multisample
     imageInfo.flags = 0;
 
+    std::array<uint32_t, 2> queueFamilyIndices = {
+            device.getGraphicsQueueFamilyIndex(),
+            device.getTransferQueueFamilyIndex()
+    };
+    if (device.getGraphicsQueueFamilyIndex() != device.getTransferQueueFamilyIndex()) {
+        // We copy on the transfer queue and use it on the graphics queue
+        imageInfo.sharingMode = VK_SHARING_MODE_CONCURRENT;
+        imageInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilyIndices.size());
+        imageInfo.pQueueFamilyIndices = queueFamilyIndices.data();
+    } else {
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = memoryUsage;
+    if (dedicatedAllocation)
+        allocInfo.flags |= VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
 
     VkImage image{};
     VmaAllocation allocation{};

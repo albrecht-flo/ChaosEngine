@@ -21,7 +21,7 @@ private:
     void destroy();
 
 public:
-    VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, int attachmentCount);
+    VulkanRenderPass(const VulkanContext &context, VkRenderPass renderPass, uint32_t attachmentCount);
 
     ~VulkanRenderPass() override;
 

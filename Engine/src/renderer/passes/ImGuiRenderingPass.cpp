@@ -60,7 +60,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, I
     init_info.Instance = context.getInstance().vk();
     init_info.PhysicalDevice = context.getDevice().getPhysicalDevice();
     init_info.Device = context.getDevice().vk();
-    init_info.QueueFamily = context.getDevice().getPresentQueueFamily();
+    init_info.QueueFamily = context.getDevice().getPresentQueueFamilyIndex();
     init_info.Queue = context.getDevice().getPresentQueue();
     init_info.PipelineCache = VK_NULL_HANDLE;
     init_info.DescriptorPool = descriptorPool->vk();
@@ -71,9 +71,9 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, I
     ImGui_ImplVulkan_Init(&init_info, renderPass->vk());
 
     // Upload font texture
-    VkCommandBuffer cmdBuf = context.getMemory().beginSingleTimeCommands();
-    ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
-    context.getMemory().endSingleTimeCommands(cmdBuf);
+    context.getGraphicsCommandPool().runInSingeTimeCommandBuffer([&](VkCommandBuffer commandBuffer) {
+        ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+    });
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 

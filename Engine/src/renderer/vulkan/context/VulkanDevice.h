@@ -9,9 +9,10 @@
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
+    std::optional<uint32_t> transferFamily;
 
     bool isComplete() {
-        return graphicsFamily.has_value() && presentFamily.has_value();
+        return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
     }
 };
 
@@ -34,10 +35,11 @@ public:
     static const std::vector<const char *> deviceExtensions;
 
 private:
-    VulkanDevice(VkPhysicalDevice physicalDevice,
-                 VkDevice device, uint32_t graphicsQueueFamily, uint32_t presentQueueFamily,
-                 VkQueue graphicsQueue, VkQueue presentQueue, QueueFamilyIndices queueFamilyIndices,
-                 VkPhysicalDeviceProperties properties);
+    VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device,
+                 VkQueue graphicsQueue, uint32_t graphicsQueueFamily,
+                 VkQueue presentQueue, uint32_t presentQueueFamily,
+                 VkQueue transferQueue, uint32_t transferQueueFamily,
+                 QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties);
 
     void destroy();
 
@@ -59,19 +61,21 @@ public:
     // Getter
     [[nodiscard]] inline VkDevice vk() const { return device; }
 
-    [[nodiscard]] inline VkQueue getGraphicsQueue() const { return graphicsQueue; }
-
-    [[nodiscard]] inline VkQueue getPresentQueue() const { return presentQueue; }
-
     [[nodiscard]] inline VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
 
     [[nodiscard]] inline VkPhysicalDeviceProperties getProperties() const { return properties; }
 
-    [[nodiscard]] inline uint32_t getGraphicsQueueFamily() const { return graphicsQueueFamily; }
+    [[nodiscard]] inline VkQueue getGraphicsQueue() const { return graphicsQueue; }
 
-    [[nodiscard]] inline uint32_t getPresentQueueFamily() const { return presentQueueFamily; }
+    [[nodiscard]] inline VkQueue getPresentQueue() const { return presentQueue; }
 
-    [[nodiscard]] inline QueueFamilyIndices getQueueFamilyIndices() const { return queueFamilyIndices; }
+    [[nodiscard]] inline VkQueue getTransferQueue() const { return transferQueue; }
+
+    [[nodiscard]] inline uint32_t getGraphicsQueueFamilyIndex() const { return graphicsQueueFamilyIndex; }
+
+    [[nodiscard]] inline uint32_t getPresentQueueFamilyIndex() const { return presentQueueFamilyIndex; }
+
+    [[nodiscard]] inline uint32_t getTransferQueueFamilyIndex() const { return transferQueueFamilyIndex; }
 
     // Wrapper for external calls
     [[nodiscard]] bool checkDeviceExtensionSupport() const;
@@ -91,11 +95,13 @@ private:
 
     VkDevice device;
 
-    uint32_t graphicsQueueFamily;
-    uint32_t presentQueueFamily;
-
+    // Queues
     VkQueue graphicsQueue;
+    uint32_t graphicsQueueFamilyIndex;
     VkQueue presentQueue;
+    uint32_t presentQueueFamilyIndex;
+    VkQueue transferQueue;
+    uint32_t transferQueueFamilyIndex;
     QueueFamilyIndices queueFamilyIndices;
 
     VkPhysicalDeviceProperties properties;

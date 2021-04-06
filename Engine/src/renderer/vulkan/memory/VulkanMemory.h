@@ -47,7 +47,7 @@ public:
 
     [[nodiscard]] VulkanImage
     createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                VkImageUsageFlags usage, VmaMemoryUsage memoryUsage) const;
+                VkImageUsageFlags usage, VmaMemoryUsage memoryUsage, bool dedicatedAllocation = false) const;
 
 // ------------------------------------ Update Methods -----------------------------------------------------------------
     void
@@ -64,15 +64,12 @@ public:
 // ------------------------------------- Helpers -----------------------------------------------------------------------
 
     /// Calculates required size with alignment based on minimum device offset alignment
-    uint32_t sizeWithUboPadding(size_t originalSize) const;
+    [[nodiscard]] uint32_t sizeWithUboPadding(size_t originalSize) const;
+
+    [[nodiscard]] const VulkanCommandPool &getTransferCommandPool() const { return commandPool; }
 
 private:
     void copyBuffer(const VulkanBuffer &srcBuffer, const VulkanBuffer &dstBuffer, VkDeviceSize size) const;
-
-public:  // TODO: Move single time commands to other class
-    VkCommandBuffer beginSingleTimeCommands() const;
-
-    void endSingleTimeCommands(VkCommandBuffer &commandBuffer) const;
 
 private:
     const VulkanDevice &device;

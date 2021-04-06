@@ -31,10 +31,13 @@ VulkanContext::VulkanContext(Window &window)
                   "Hello Triangle", "Foo Bar")),
           surface(instance, window.createSurface(instance.vk())),
           device(VulkanDevice::Create(instance, surface.vk())),
-          commandPool(VulkanCommandPool::Create(device)),
           swapChain(VulkanSwapChain::Create(window, device, surface.vk())),
-          memory(VulkanMemory::Create(device, instance, commandPool)),
-          primaryCommandBuffers(createPrimaryCommandBuffers(instance, device, commandPool, maxFramesInFlight)),
+          graphicsCommandPool(VulkanCommandPool::Create(device, device.getGraphicsQueueFamilyIndex(),
+                                                        device.getGraphicsQueue())),
+          primaryCommandBuffers(createPrimaryCommandBuffers(instance, device, graphicsCommandPool, maxFramesInFlight)),
+          transferCommandPool(VulkanCommandPool::Create(device, device.getTransferQueueFamilyIndex(),
+                                                        device.getTransferQueue())),
+          memory(VulkanMemory::Create(device, instance, transferCommandPool)),
           frame(VulkanFrame::Create(window, *this, maxFramesInFlight)) {
     Logger::I("VulkanContext", "Created Vulkan Context");
 }
