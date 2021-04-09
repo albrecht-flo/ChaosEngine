@@ -31,9 +31,6 @@ void TestScene::load() {
                                          BufferType::Index);
     hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
 
-    // NEXT:
-//     auto specialMesh = ModelLoader::CreateFromFile("sth.obj");
-
     // Load Materials
     debugMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,

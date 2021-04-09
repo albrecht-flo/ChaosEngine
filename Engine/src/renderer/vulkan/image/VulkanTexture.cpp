@@ -7,15 +7,13 @@
 #include "VulkanImage.h"
 
 VulkanTexture
-VulkanTexture::createTexture(const VulkanContext &context, const std::string &filename,
-                             const std::optional<std::string> &debugName) {
-    auto image = VulkanImage::createFromFile(context.getMemory(), filename);
+VulkanTexture::Create(const VulkanContext &context, const ChaosEngine::RawImage &rawImage,
+                      const std::optional<std::string> &debugName) {
+    auto image = VulkanImage::Create(context.getMemory(), rawImage);
     VulkanImageView imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                                                         VK_IMAGE_ASPECT_COLOR_BIT);
-#ifndef NDEBUG
-    if (debugName)
-        context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView.vk(), *debugName);
-#endif
+    context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView.vk(), debugName);
+
     VulkanSampler sampler = VulkanSampler::create(context.getDevice());
 
     return VulkanTexture{context.getDevice(), std::make_shared<VulkanImage>(std::move(image)),

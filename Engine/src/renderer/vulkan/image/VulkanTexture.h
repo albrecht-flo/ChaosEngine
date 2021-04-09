@@ -11,6 +11,7 @@
 
 class VulkanDevice;
 
+// NEXT Expose Format; Cleanup
 // TODO: [Part of VulkanMemory refactoring]
 class VulkanTexture : public Renderer::Texture {
 public:
@@ -31,12 +32,9 @@ public:
     VulkanTexture &operator=(VulkanTexture &&o) noexcept;
 
     static VulkanTexture
-    createTexture(const VulkanContext &device, const std::string &filename,
-                  const std::optional<std::string> &debugName = std::nullopt);
+    Create(const VulkanContext &context, const ChaosEngine::RawImage &rawImage,
+           const std::optional<std::string> &debugName = std::nullopt);
 
-    static VulkanTexture Create(const VulkanContext &context, const std::string &filename) {
-        return createTexture(context, filename, filename);
-    }
 
     inline VkImageView getImageView() const { return imageView ? imageView->vk() : *imageViewVk; }
 
