@@ -15,3 +15,7 @@ These are the sources I used the most
 - [vulkan-tutorial](https://vulkan-tutorial.com)
 - [Sascha Willems Vulkan examples](https://github.com/SaschaWillems/Vulkan/)
 - [GPU Open](https://gpuopen.com/page/2/?s=Vulkan)
+
+
+## Art ressources
+- [kenney.nl](https://kenney.nl/) CC0 1.0 Universal Licensed Amazing Art

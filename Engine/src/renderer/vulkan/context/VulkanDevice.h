@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VulkanInstance.h"
+
 #include <vulkan/vulkan.h>
 
 #include <optional>
@@ -23,8 +25,6 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-class VulkanInstance;
-
 class VulkanSurface;
 
 /**
@@ -39,7 +39,8 @@ private:
                  VkQueue graphicsQueue, uint32_t graphicsQueueFamily,
                  VkQueue presentQueue, uint32_t presentQueueFamily,
                  VkQueue transferQueue, uint32_t transferQueueFamily,
-                 QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties);
+                 QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties,
+                 const VulkanInstance &instance);
 
     void destroy();
 
@@ -90,7 +91,14 @@ public:
 
     [[nodiscard]] bool checkSurfaceAvailability(VkSurfaceKHR newSurface) const;
 
+// ------------------------------------ Debug Members ------------------------------------------------------------------
+
+    inline void setDebugName(VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const {
+        instance.setDebugName(device, type, handle, name);
+    }
+
 private:
+    const VulkanInstance &instance;
     VkPhysicalDevice physicalDevice;
 
     VkDevice device;

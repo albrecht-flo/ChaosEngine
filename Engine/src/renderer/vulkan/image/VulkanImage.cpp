@@ -1,33 +1,23 @@
 #include "VulkanImage.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 
-#include <stb_image.h>
 
 #include <stdexcept>
 
 /* Creates an image for use as a texture from a file. */
 VulkanImage
-VulkanImage::createFromFile(const VulkanMemory &vulkanMemory, const std::string &filename) {
-    int texWidth, texHeight, texChannels;
-
-    stbi_uc *pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-    VkDeviceSize imageSize = (long) texWidth * texHeight * 4;
-
-    if (!pixels) {
-        throw std::runtime_error("STBI: Failed to load " + filename);
-    }
+VulkanImage::Create(const VulkanMemory &vulkanMemory, const ChaosEngine::RawImage &rawImage) {
 
     // Staging buffer to contain data for transfer
     // Creates buffer with usage=transfer_src, host visible and coherent meaning the cpu has access to the memory and changes are immediately known to the driver which will transfer the memmory before the next vkQueueSubmit
-    auto stagingBuffer = vulkanMemory.createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+    auto stagingBuffer = vulkanMemory.createBuffer(rawImage.getSize(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                                    VMA_MEMORY_USAGE_CPU_TO_GPU);
     // Copy the image to the staging buffer
-    vulkanMemory.copyDataToBuffer(stagingBuffer, pixels, imageSize, 0);
-    stbi_image_free(pixels); // no longer needed
+    vulkanMemory.copyDataToBuffer(stagingBuffer, rawImage.getPixels(), rawImage.getSize(), 0);
+
 
     // Create the image and its memory
-    auto image = vulkanMemory.createImage(static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),
+    auto image = vulkanMemory.createImage(rawImage.getWidth(), rawImage.getHeight(),
                                           VK_FORMAT_R8G8B8A8_UNORM,
                                           VK_IMAGE_TILING_OPTIMAL,
                                           VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -37,12 +27,13 @@ VulkanImage::createFromFile(const VulkanMemory &vulkanMemory, const std::string 
     transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     // Copy image data into image from buffer
-    vulkanMemory.copyBufferToImage(stagingBuffer, image, static_cast<uint32_t>(texWidth),
-                                   static_cast<uint32_t>(texHeight));
+    vulkanMemory.copyBufferToImage(stagingBuffer, image, rawImage.getWidth(), rawImage.getHeight());
     // Transfer the image layout to the fragment shader read layout
     transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+    assert("Raw Image and Texture Image differ in dimensions!" &&
+           rawImage.getWidth() == image.getWidth() && rawImage.getHeight() == image.getHeight());
     return image;
 }
 

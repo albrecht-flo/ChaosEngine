@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Engine/src/core/assets/RawImage.h"
+
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanMemory.h"
 #include "VulkanImageView.h"
@@ -47,7 +49,7 @@ public:
 
 public:
     static VulkanImage
-    createFromFile(const VulkanMemory &vulkanMemory, const std::string &filename);
+    Create(const VulkanMemory &vulkanMemory, const ChaosEngine::RawImage &image);
 
     static VulkanImage
     createRawImage(const VulkanMemory &vulkanMemory, uint32_t width, uint32_t height, VkFormat format);

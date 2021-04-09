@@ -11,7 +11,8 @@
 using namespace Renderer;
 
 /* Create shader module form byte code */
-static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code) {
+static VkShaderModule createShaderModule(const VulkanDevice &device, const std::vector<char> &code,
+                                         const std::string &debugName) {
     VkShaderModuleCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
@@ -21,6 +22,7 @@ static VkShaderModule createShaderModule(const VulkanDevice &device, const std::
     if (vkCreateShaderModule(device.vk(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         throw std::runtime_error("[Vulkan] Failed to create shader module!");
     }
+    device.setDebugName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t) shaderModule, debugName);
 
     return shaderModule;
 }
@@ -53,11 +55,13 @@ VulkanPipeline VulkanPipelineBuilder::build() {
 
     // Create shader objects -------------------------------------------------------------------------------------------
     // TODO: Load from asset manager
-    auto vertShaderCode = readFile("shaders/" + vertexShaderName + ".vert.spv");
-    auto fragShaderCode = readFile("shaders/" + fragmentShaderName + ".frag.spv");
+    std::string vShaderName = "shaders/" + vertexShaderName + ".vert.spv";
+    std::string fShaderName = "shaders/" + fragmentShaderName + ".frag.spv";
+    auto vertShaderCode = readFile(vShaderName);
+    auto fragShaderCode = readFile(fShaderName);
 
-    VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode);
-    VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode);
+    VkShaderModule vertShaderModule = createShaderModule(device, vertShaderCode, vShaderName);
+    VkShaderModule fragShaderModule = createShaderModule(device, fragShaderCode, fShaderName);
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

@@ -56,7 +56,7 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        )
+        src/core/assets/RawImage.cpp src/core/assets/RawImage.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm

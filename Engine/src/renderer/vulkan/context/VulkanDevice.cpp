@@ -292,19 +292,20 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
                         graphicsQueue, graphicsQueueFamilyIndex,
                         presentQueue, presentQueueFamilyIndex,
                         transferQueue, transferQueueFamilyIndex,
-                        indices, deviceProperties};
+                        indices, deviceProperties, instance};
 }
 
-VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device,
-                           VkQueue graphicsQueue, uint32_t graphicsQueueFamily,
-                           VkQueue presentQueue, uint32_t presentQueueFamily,
-                           VkQueue transferQueue, uint32_t transferQueueFamily,
-                           QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties)
+VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device, VkQueue graphicsQueue,
+                           uint32_t graphicsQueueFamily,
+                           VkQueue presentQueue, uint32_t presentQueueFamily, VkQueue transferQueue,
+                           uint32_t transferQueueFamily,
+                           QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties,
+                           const VulkanInstance &instance)
         : physicalDevice(physicalDevice), device(device),
           graphicsQueue(graphicsQueue), graphicsQueueFamilyIndex(graphicsQueueFamily),
           presentQueue(presentQueue), presentQueueFamilyIndex(presentQueueFamily),
           transferQueue(transferQueue), transferQueueFamilyIndex(transferQueueFamily),
-          queueFamilyIndices(queueFamilyIndices), properties(properties) {}
+          queueFamilyIndices(queueFamilyIndices), properties(properties), instance(instance) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
         : physicalDevice(std::exchange(o.physicalDevice, nullptr)),
@@ -313,7 +314,7 @@ VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
           presentQueue(std::exchange(o.presentQueue, nullptr)), presentQueueFamilyIndex(o.presentQueueFamilyIndex),
           transferQueue(std::exchange(o.transferQueue, nullptr)), transferQueueFamilyIndex(o.transferQueueFamilyIndex),
           queueFamilyIndices(std::move(o.queueFamilyIndices)),
-          properties(o.properties) {
+          properties(o.properties), instance(o.instance) {
 }
 
 VulkanDevice::~VulkanDevice() { destroy(); }
