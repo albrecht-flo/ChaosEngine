@@ -84,7 +84,7 @@ void VulkanMemory::copyDataToBuffer(const VulkanBuffer &buffer, const void *data
                                     size_t offset) const {
     void *bufferData;
     vmaMapMemory(allocator, buffer.allocation, &bufferData);
-    memcpy(&(reinterpret_cast<char *>(bufferData)[offset]), data, (size_t) size);
+    memcpy(&(reinterpret_cast<char *>(bufferData)[offset]), data, size);
     vmaUnmapMemory(allocator, buffer.allocation);
 }
 
