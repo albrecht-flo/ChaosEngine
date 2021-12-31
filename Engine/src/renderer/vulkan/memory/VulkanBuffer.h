@@ -26,9 +26,9 @@ class VulkanBuffer : public Renderer::Buffer {
             memory.destroyBuffer(buffer, allocation);
         }
 
-        std::string toString() const override {
+        [[nodiscard]] std::string toString() const override {
             char str[17];
-            snprintf(str, sizeof(str), "%p", buffer);
+            snprintf(str, sizeof(str), "%p", (void*)buffer);
             return "VulkanBuffer " + std::string(str);
         }
 

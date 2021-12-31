@@ -11,8 +11,9 @@ namespace Renderer {
     public:
         virtual ~Texture() = default;
 
-        static std::unique_ptr<Texture> Create(const std::string &filename) {
-            ChaosEngine::RawImage image = ChaosEngine::RawImage::readImage("textures/" + filename);
+        static std::unique_ptr<Texture> Create(const std::string &filename) {// NEXT: Format handling
+            ChaosEngine::RawImage image = ChaosEngine::RawImage::readImage("textures/" + filename,
+                                                                           ChaosEngine::ImageFormat::R8G8B8A8);
             return Create(image, "textures/" + filename);
         }
 

@@ -32,7 +32,8 @@ class VulkanSurface;
  */
 class VulkanDevice {
 public:
-    static const std::vector<const char *> deviceExtensions;
+    static const std::vector<const char *> requiredDeviceExtensions;
+    static const std::vector<VkFormat> requiredTextureFormats;
 
 private:
     VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device,
@@ -90,6 +91,8 @@ public:
                         VkFormatFeatureFlags features) const;
 
     [[nodiscard]] bool checkSurfaceAvailability(VkSurfaceKHR newSurface) const;
+
+    [[nodiscard]] bool isTextureFormatSupported(VkFormat format) const;
 
 // ------------------------------------ Debug Members ------------------------------------------------------------------
 

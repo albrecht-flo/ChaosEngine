@@ -18,10 +18,11 @@ static bool checkDeviceExtensionSupport(VkPhysicalDevice phdevice, const std::ve
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);
     vkEnumerateDeviceExtensionProperties(phdevice, nullptr, &extensionCount, availableExtensions.data());
 
-    // 'deviceExtensions' is defined in the header and contains all required extensions
+    // 'requiredDeviceExtensions' is defined in the header and contains all required extensions
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for (const auto &extension : availableExtensions) {
+    for (const auto &extension: availableExtensions) {
+//        LOG_DEBUG("[Vulkan Device] Found device extension {}", extension.extensionName);
         requiredExtensions.erase(extension.extensionName);
     }
 
@@ -40,9 +41,9 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
     vkGetPhysicalDeviceQueueFamilyProperties(phdevice, &queueFamilyCount, queueFamilies.data());
 
     int i = 0;
-    for (const auto &queueFamily : queueFamilies) {
-        // LOG_DEBUG("Queue number: {}", std::to_string(queueFamily.queueCount));
-        // LOG_DEBUG("Queue flags: {}", std::bitset<32>(queueFamily.queueFlags).to_string());
+    for (const auto &queueFamily: queueFamilies) {
+        LOG_DEBUG("[Vulkan Device] Queue number: {}", std::to_string(queueFamily.queueCount));
+        LOG_DEBUG("[Vulkan Device] Queue flags: {}", std::bitset<32>(queueFamily.queueFlags).to_string());
         // Get graphics queue
         if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
@@ -72,7 +73,6 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
     if (!indices.transferFamily) {
         Logger::W("VulkanDevice",
                   "No dedicated Transfer Queue present, reverting back to graphics Queue for transfers.");
-        indices.transferFamily = indices.graphicsFamily;
     }
     return indices;
 }
@@ -109,7 +109,7 @@ static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice phdevice, 
 static VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice,
                                     const std::vector<VkFormat> &candidates, VkImageTiling tiling,
                                     VkFormatFeatureFlags features) {
-    for (VkFormat format : candidates) {
+    for (VkFormat format: candidates) {
         VkFormatProperties props;
         vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
@@ -125,28 +125,67 @@ static VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice,
     throw std::runtime_error("[Vulkan] Failed to find supported format!");
 }
 
+static bool isTextureFormatSupported(VkPhysicalDevice phDevice, VkFormat format) {
+    VkFormatProperties props{};
+    vkGetPhysicalDeviceFormatProperties(phDevice, format, &props);
+    return props.linearTilingFeatures != 0 && props.optimalTilingFeatures != 0;
+}
+
+static bool areRequiredTextureSupported(VkPhysicalDevice phdevice, const std::vector<VkFormat> &formats) {
+    for (const auto &format: formats) {
+        if (!::isTextureFormatSupported(phdevice, format)) {
+            LOG_DEBUG("[Vulkan Device] Missing texture format {}", format);
+            return false;
+        }
+    }
+    return true;
+}
+
+
 /* Checks if a GPU is suitable for this application. */
 static bool isDeviceSuitable(VkPhysicalDevice phdevice, VkSurfaceKHR surface) {
+    LOG_DEBUG("[Vulkan Device] Checking device capabilities of device: {}", (void *) phdevice);
     // Get all available queue families (Graphics, Compute, Copy, etc.)
     QueueFamilyIndices indices = findQueueFamilies(phdevice, surface);
+    if (!indices.isComplete()) {
+        LOG_DEBUG("[Vulkan Device] Missing queues");
+        return false;
+    }
 
     // Check if the extensions are supported
-    bool extensionsSupported = checkDeviceExtensionSupport(phdevice, VulkanDevice::deviceExtensions);
+    bool extensionsSupported = checkDeviceExtensionSupport(phdevice, VulkanDevice::requiredDeviceExtensions);
+    if (!extensionsSupported) {
+        LOG_DEBUG("[Vulkan Device] Missing extensions");
+        return false;
+    }
 
     // Check if there is a suitable swap chain available
     bool swapChainAdequate = false;
-    if (extensionsSupported) {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(phdevice, surface);
-        swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    SwapChainSupportDetails swapChainSupport = querySwapChainSupport(phdevice, surface);
+    swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+    if (!swapChainAdequate) {
+        LOG_DEBUG("[Vulkan Device] No suitable swap chain was found");
+        return false;
     }
 
     // Get available device features
     VkPhysicalDeviceFeatures supportedDeviceFeatures;
     vkGetPhysicalDeviceFeatures(phdevice, &supportedDeviceFeatures);
+    bool requiredDeviceFeaturesPresent = supportedDeviceFeatures.samplerAnisotropy &&
+                                         supportedDeviceFeatures.fillModeNonSolid;
+    if (!requiredDeviceFeaturesPresent) {
+        LOG_DEBUG("[Vulkan Device] Missing device features");
+        return false;
+    }
 
-    return indices.isComplete() && extensionsSupported && swapChainAdequate
-           && supportedDeviceFeatures.samplerAnisotropy &&
-           supportedDeviceFeatures.fillModeNonSolid;
+    // Check if our required Texture format are supported
+
+    bool texturesSupported = areRequiredTextureSupported(phdevice, VulkanDevice::requiredTextureFormats);
+    if (!texturesSupported) {
+        LOG_DEBUG("[Vulkan Device] Missing required textures");
+        return false;
+    }
+    return true;
 }
 
 /* Selects a physical device (GPU) which supports the required features. */
@@ -200,7 +239,7 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
     std::set<uint32_t> uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily, *indices.transferFamily};
 
     float queuePriority = 1.0f; // between 0.0 and 1.0
-    for (uint32_t queueFamily : uniqueQueueFamilies) {
+    for (uint32_t queueFamily: uniqueQueueFamilies) {
         VkDeviceQueueCreateInfo queueCreateInfo = {};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -224,8 +263,8 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
     // Specify device features
     createInfo.pEnabledFeatures = &deviceFeatures;
     // Specify extensions
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(VulkanDevice::deviceExtensions.size());
-    createInfo.ppEnabledExtensionNames = VulkanDevice::deviceExtensions.data();
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(VulkanDevice::requiredDeviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = VulkanDevice::requiredDeviceExtensions.data();
     // If required specify validation layers
     if (!instance.getValidationLayers().empty()) {
         createInfo.enabledLayerCount = static_cast<uint32_t>(instance.getValidationLayers().size());
@@ -269,8 +308,15 @@ static std::tuple<VkQueue, uint32_t> getTransferQueue(VkDevice device, QueueFami
 
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
-const std::vector<const char *> VulkanDevice::deviceExtensions = {
+const std::vector<const char *> VulkanDevice::requiredDeviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+const std::vector<VkFormat> VulkanDevice::requiredTextureFormats = {
+        VK_FORMAT_R8_UNORM,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        VK_FORMAT_R32_SFLOAT,
+        VK_FORMAT_R32G32B32A32_SFLOAT,
 };
 
 VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR surface) {
@@ -301,20 +347,20 @@ VulkanDevice::VulkanDevice(VkPhysicalDevice physicalDevice, VkDevice device, VkQ
                            uint32_t transferQueueFamily,
                            QueueFamilyIndices queueFamilyIndices, VkPhysicalDeviceProperties properties,
                            const VulkanInstance &instance)
-        : physicalDevice(physicalDevice), device(device),
+        : instance(instance), physicalDevice(physicalDevice), device(device),
           graphicsQueue(graphicsQueue), graphicsQueueFamilyIndex(graphicsQueueFamily),
           presentQueue(presentQueue), presentQueueFamilyIndex(presentQueueFamily),
           transferQueue(transferQueue), transferQueueFamilyIndex(transferQueueFamily),
-          queueFamilyIndices(queueFamilyIndices), properties(properties), instance(instance) {}
+          queueFamilyIndices(queueFamilyIndices), properties(properties) {}
 
 VulkanDevice::VulkanDevice(VulkanDevice &&o) noexcept
-        : physicalDevice(std::exchange(o.physicalDevice, nullptr)),
+        : instance(o.instance),
+          physicalDevice(std::exchange(o.physicalDevice, nullptr)),
           device(std::exchange(o.device, nullptr)),
           graphicsQueue(std::exchange(o.graphicsQueue, nullptr)), graphicsQueueFamilyIndex(o.graphicsQueueFamilyIndex),
           presentQueue(std::exchange(o.presentQueue, nullptr)), presentQueueFamilyIndex(o.presentQueueFamilyIndex),
           transferQueue(std::exchange(o.transferQueue, nullptr)), transferQueueFamilyIndex(o.transferQueueFamilyIndex),
-          queueFamilyIndices(std::move(o.queueFamilyIndices)),
-          properties(o.properties), instance(o.instance) {
+          queueFamilyIndices(std::move(o.queueFamilyIndices)), properties(o.properties) {
 }
 
 VulkanDevice::~VulkanDevice() { destroy(); }
@@ -332,7 +378,7 @@ void VulkanDevice::waitIdle() const {
 // wrapper for external calls
 
 bool VulkanDevice::checkDeviceExtensionSupport() const {
-    return ::checkDeviceExtensionSupport(physicalDevice, VulkanDevice::deviceExtensions);
+    return ::checkDeviceExtensionSupport(physicalDevice, VulkanDevice::requiredDeviceExtensions);
 }
 
 QueueFamilyIndices VulkanDevice::findQueueFamilies(VkSurfaceKHR surface) const {
@@ -353,4 +399,8 @@ bool VulkanDevice::checkSurfaceAvailability(VkSurfaceKHR newSurface) const {
     vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, *queueFamilyIndices.graphicsFamily, newSurface,
                                          &presentSupport);
     return presentSupport;
+}
+
+bool VulkanDevice::isTextureFormatSupported(VkFormat format) const {
+    return ::isTextureFormatSupported(physicalDevice, format);
 }
