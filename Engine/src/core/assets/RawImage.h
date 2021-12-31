@@ -13,7 +13,7 @@ namespace ChaosEngine {
 
     class RawImage {
     public:
-        RawImage(std::unique_ptr<unsigned char> pixels, uint32_t width, uint32_t height, uint64_t size,
+        RawImage(std::unique_ptr<unsigned char[]> pixels, uint32_t width, uint32_t height, uint64_t size,
                  ImageFormat format);
 
         ~RawImage();
@@ -51,7 +51,7 @@ namespace ChaosEngine {
         [[nodiscard]] uint64_t getSize() const { return size; }
 
     private:
-        std::unique_ptr<unsigned char> pixels;
+        std::unique_ptr<unsigned char[]> pixels;
         uint32_t width;
         uint32_t height;
         uint64_t size;

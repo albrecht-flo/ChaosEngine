@@ -45,19 +45,19 @@ namespace ChaosEngine {
         }
 
         // Conversion of bytes to floats if necessary
-        std::unique_ptr<unsigned char> finalPixels = nullptr;
+        std::unique_ptr<unsigned char[]> finalPixels = nullptr;
         uint64_t size = 0;
         if (desiredFormat == ImageFormat::Rf32 || desiredFormat == ImageFormat::Rf32Gf32Bf32Af32) {
             size = width * height * sizeof(float) *
                    getStbiFormat(desiredFormat); // STBI Format corresponds to the amount of channels
-            finalPixels = std::unique_ptr<unsigned char>(new unsigned char[size]);
+            finalPixels = std::make_unique<unsigned char[]>(size);
             auto *temp = reinterpret_cast<float *>(finalPixels.get());
             for (int64_t i = 0; i < width * height * getStbiFormat(desiredFormat); ++i) {
                 temp[i] = static_cast<float>(pixels[i]) / 255.0f;
             }
         } else if (desiredFormat == ImageFormat::R8 || desiredFormat == ImageFormat::R8G8B8A8) {
             size = width * height * getStbiFormat(desiredFormat); // STBI Format corresponds to the amount of channels
-            finalPixels = std::unique_ptr<unsigned char>(new unsigned char[size]);
+            finalPixels = std::make_unique<unsigned char[]>(size);
             std::memcpy(finalPixels.get(), pixels, size);
         } else {
             assert("Unsupported Image Format!");
@@ -69,7 +69,7 @@ namespace ChaosEngine {
                         desiredFormat};
     }
 
-    RawImage::RawImage(std::unique_ptr<unsigned char> pixels, uint32_t width, uint32_t height, uint64_t size,
+    RawImage::RawImage(std::unique_ptr<unsigned char[]> pixels, uint32_t width, uint32_t height, uint64_t size,
                        ImageFormat format)
             : pixels(std::move(pixels)), width(width), height(height), size(size), format(format) {
         assert("Pixels MUST not be NULL!" && RawImage::pixels != nullptr);
