@@ -15,8 +15,8 @@ class VulkanImage {
 
 private:
     VulkanImage(const VulkanMemory &memory, VkImage image, VmaAllocation imageAllocation,
-                uint32_t width, uint32_t height)
-            : memory(memory), image(image), imageAllocation(imageAllocation), width(width), height(height) {}
+                uint32_t width, uint32_t height, VkFormat format)
+            : memory(memory), image(image), imageAllocation(imageAllocation), width(width), height(height), format(format) {}
 
 public:
     ~VulkanImage() { destroy(); }
@@ -28,7 +28,7 @@ public:
     VulkanImage(VulkanImage &&o) noexcept
             : memory(o.memory), image(std::exchange(o.image, nullptr)),
               imageAllocation(std::exchange(o.imageAllocation, nullptr)),
-              width(o.width), height(o.height) {}
+              width(o.width), height(o.height), format(o.format) {}
 
     VulkanImage &operator=(VulkanImage &&o) noexcept {
         if (&o == this)
@@ -38,6 +38,7 @@ public:
         imageAllocation = std::exchange(o.imageAllocation, nullptr);
         width = o.width;
         height = o.height;
+        format = o.format;
         return *this;
     }
 
@@ -46,6 +47,8 @@ public:
     [[nodiscard]] inline uint32_t getWidth() const { return width; }
 
     [[nodiscard]] inline uint32_t getHeight() const { return height; }
+
+    [[nodiscard]] inline VkFormat getFormat() const { return format; }
 
 public:
     static VulkanImage
@@ -68,6 +71,8 @@ private:
 
     static bool hasStencilComponent(VkFormat format);
 
+    static VkFormat getVkFormat(ChaosEngine::ImageFormat format);
+
 private:
     void destroy() {
         if (image != nullptr)
@@ -80,6 +85,7 @@ private:
     VmaAllocation imageAllocation;
     uint32_t width;
     uint32_t height;
+    VkFormat format;
 };
 
 

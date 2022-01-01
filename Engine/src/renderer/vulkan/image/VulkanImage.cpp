@@ -1,8 +1,26 @@
 #include "VulkanImage.h"
 #include "Engine/src/renderer/vulkan/memory/VulkanBuffer.h"
 
-
 #include <stdexcept>
+
+using namespace ChaosEngine;
+
+VkFormat VulkanImage::getVkFormat(ImageFormat format) {
+    switch (format) {
+        case ImageFormat::R8:
+            return VK_FORMAT_R8_UNORM;
+        case ImageFormat::R8G8B8A8:
+            return VK_FORMAT_R8G8B8A8_UNORM;
+        case ImageFormat::Rf32:
+            return VK_FORMAT_R32_SFLOAT;
+        case ImageFormat::Rf32Gf32Bf32Af32:
+            return VK_FORMAT_R32G32B32A32_SFLOAT;
+        default:
+            assert("Unknown image format");
+            return VK_FORMAT_R8G8B8A8_UNORM;
+
+    }
+}
 
 /* Creates an image for use as a texture from a file. */
 VulkanImage
@@ -15,21 +33,21 @@ VulkanImage::Create(const VulkanMemory &vulkanMemory, const ChaosEngine::RawImag
     // Copy the image to the staging buffer
     vulkanMemory.copyDataToBuffer(stagingBuffer, rawImage.getPixels(), rawImage.getSize(), 0);
 
-
+    const auto imageFormat = getVkFormat(rawImage.getFormat());
     // Create the image and its memory
     auto image = vulkanMemory.createImage(rawImage.getWidth(), rawImage.getHeight(),
-                                          VK_FORMAT_R8G8B8A8_UNORM,
+                                          imageFormat,
                                           VK_IMAGE_TILING_OPTIMAL,
                                           VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                                           VMA_MEMORY_USAGE_GPU_ONLY);
 
     // Transition the image to the transfer destination layout
-    transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
+    transitionImageLayout(vulkanMemory, image.vk(), imageFormat,
                           VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     // Copy image data into image from buffer
     vulkanMemory.copyBufferToImage(stagingBuffer, image, rawImage.getWidth(), rawImage.getHeight());
     // Transfer the image layout to the fragment shader read layout
-    transitionImageLayout(vulkanMemory, image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
+    transitionImageLayout(vulkanMemory, image.vk(), imageFormat,
                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     assert("Raw Image and Texture Image differ in dimensions!" &&

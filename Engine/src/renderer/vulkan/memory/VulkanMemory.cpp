@@ -193,7 +193,7 @@ const {
         throw std::runtime_error("[VMA] Failed to create Image!");
     }
 
-    return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+    return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height), format};
 }
 
 // --------------------------------- Resource Destruction --------------------------------------------------------------

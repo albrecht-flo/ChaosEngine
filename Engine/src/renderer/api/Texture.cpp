@@ -8,6 +8,13 @@
 
 using namespace Renderer;
 
+std::unique_ptr<Texture>
+Texture::Create(const std::string &filename, const ChaosEngine::ImageFormat desiredFormat) {
+    ChaosEngine::RawImage image = ChaosEngine::RawImage::readImage("textures/" + filename, desiredFormat);
+    return Create(image, "textures/" + filename);
+}
+
+
 std::unique_ptr<Texture> Texture::Create(const ChaosEngine::RawImage &rawImage,
                                          const std::optional<std::string> &debugName) {
     switch (GraphicsContext::currentAPI) {

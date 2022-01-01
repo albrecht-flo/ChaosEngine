@@ -3,7 +3,6 @@
 #include <stdexcept>
 
 VulkanSampler VulkanSampler::create(const VulkanDevice &device, VkFilter filter) {
-    // NEXT Deal with different image formats
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     // Configure filtering
