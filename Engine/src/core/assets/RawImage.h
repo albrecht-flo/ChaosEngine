@@ -50,6 +50,8 @@ namespace ChaosEngine {
 
         [[nodiscard]] uint64_t getSize() const { return size; }
 
+        [[nodiscard]] ImageFormat getFormat() const { return format; }
+
     private:
         std::unique_ptr<unsigned char[]> pixels;
         uint32_t width;

@@ -9,9 +9,8 @@
 VulkanTexture
 VulkanTexture::Create(const VulkanContext &context, const ChaosEngine::RawImage &rawImage,
                       const std::optional<std::string> &debugName) {
-    // NEXT: Format handling
     auto image = VulkanImage::Create(context.getMemory(), rawImage);
-    VulkanImageView imageView = VulkanImageView::Create(context.getDevice(), image.vk(), VK_FORMAT_R8G8B8A8_UNORM,
+    VulkanImageView imageView = VulkanImageView::Create(context.getDevice(), image.vk(), image.getFormat(),
                                                         VK_IMAGE_ASPECT_COLOR_BIT);
     context.setDebugName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t) imageView.vk(), debugName);
 

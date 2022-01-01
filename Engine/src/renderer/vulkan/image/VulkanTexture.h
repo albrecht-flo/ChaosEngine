@@ -11,8 +11,6 @@
 
 class VulkanDevice;
 
-// NEXT Expose Format; Cleanup
-// TODO: [Part of VulkanMemory refactoring]
 class VulkanTexture : public Renderer::Texture {
 public:
     VulkanTexture(const VulkanDevice &device, std::shared_ptr<VulkanImage> image, VkImageLayout imageLayout,
