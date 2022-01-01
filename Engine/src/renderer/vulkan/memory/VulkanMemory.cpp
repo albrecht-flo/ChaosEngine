@@ -3,7 +3,6 @@
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 #include "VulkanBuffer.h"
 #include "Engine/src/renderer/vulkan/image/VulkanImage.h"
-#include "Engine/src/core/Utils/Logger.h"
 
 #include <stdexcept>
 #include <cstring>
