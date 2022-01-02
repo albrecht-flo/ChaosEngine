@@ -1,8 +1,9 @@
 #include "ImGuiRenderingPass.h"
 
-#include "Engine/src/renderer/vulkan/image/VulkanImageView.h"
-#include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
-#include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
+#include "renderer/vulkan/image/VulkanImageView.h"
+#include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
+#include "core/Utils/Logger.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>
@@ -20,7 +21,7 @@ static void check_imgui_vk_result(VkResult result) {
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 ImGuiRenderingPass
-ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, ImGuiContext *imGuiContext) {
+ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window) {
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), Renderer::AttachmentType::Color)
@@ -33,6 +34,14 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, I
             VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 
     auto swapChainFrameBuffers = context.getSwapChain().createFramebuffers(*renderPass);
+
+    IMGUI_CHECKVERSION();
+    ImGuiContext *imGuiContext = ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
+    ImGui::StyleColorsDark();
 
     // Create descriptor pool for ImGui
     auto descriptorPool = std::make_unique<VulkanDescriptorPool>(
@@ -52,6 +61,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, I
                     .build());
     context.setDebugName(VK_OBJECT_TYPE_DESCRIPTOR_POOL, (uint64_t) descriptorPool->vk(), "ImGuiPrimaryDescriptorPool");
 
+    LOG_DEBUG("[ImGuiRenderingPass] Imgui init");
     // Init imgui window
     ImGui_ImplGlfw_InitForVulkan(window.getWindow(), true);
 
@@ -128,9 +138,10 @@ void ImGuiRenderingPass::resizeAttachments(uint32_t, uint32_t) {
 
 void ImGuiRenderingPass::destroy() {
     if (imGuiContext != nullptr) {
+        LOG_DEBUG("[ImGuiRenderingPass] Imgui destroy");
         ImGui_ImplVulkan_Shutdown();
         ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
+        ImGui::DestroyContext(imGuiContext);
     }
 }
 

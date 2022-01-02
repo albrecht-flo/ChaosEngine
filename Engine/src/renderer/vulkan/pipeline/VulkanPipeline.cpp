@@ -37,7 +37,7 @@ static std::vector<char> readFile(const std::string &filename) {
 
     file.close();
 
-    return std::move(buffer);
+    return buffer;
 }
 
 // ------------------------------------ Class Members ------------------------------------------------------------------

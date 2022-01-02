@@ -2,7 +2,7 @@ set(DISABLE_UBSAN OFF CACHE BOOL "disable compilation with the sanitizer for und
 
 include(CheckCXXCompilerFlag)
 
-if (NOT DISABLE_UBSAN)
+if (NOT DISABLE_UBSAN AND CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=undefined")
     check_cxx_compiler_flag("-fsanitize=undefined" HAVE_FLAG_SANITIZE_UNDEFINED)
     unset(CMAKE_REQUIRED_FLAGS)
@@ -14,4 +14,8 @@ if (NOT DISABLE_UBSAN)
     else()
         message(STATUS "Undefined behavior sanitizer enabled")
     endif ()
+elseif(NOT DISABLE_UBSAN)
+    message(STATUS "Undefined behavior sanitizer not supported by compiler")
+else ()
+    message(STATUS "Undefined behavior sanitizer disabled by parameter DISABLE_UBSAN")
 endif ()

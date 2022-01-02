@@ -202,11 +202,11 @@ pickPhysicalDevice(const VulkanInstance &instance, VkSurfaceKHR surface) {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance.vk(), &deviceCount, devices.data());
 
-    LOG_INFO("{0} Available GPUS:", deviceCount);
+    LOG_INFO("[Vulkan Device] {0} Available GPUS:", deviceCount);
     for (size_t i = 0; i < devices.size(); ++i) {
         VkPhysicalDeviceProperties props;
         vkGetPhysicalDeviceProperties(devices[i], &props);
-        LOG_INFO("    GPU({0}): {1}", i, props.deviceName);
+        LOG_INFO("[Vulkan Device]     GPU({0}): {1}", i, props.deviceName);
     }
 
     VkPhysicalDevice physicalDevice{};

@@ -16,6 +16,7 @@ SceneConfiguration TestScene::configure(Window &pWindow) {
 void TestScene::load() {
     using namespace Renderer;
     // Load meshes
+    LOG_INFO("Creating quad buffers");
     auto quadAsset = ModelLoader::getQuad();
     auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(Vertex),
                                        BufferType::Vertex);
@@ -23,7 +24,7 @@ void TestScene::load() {
                                       BufferType::Index);
     quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
 
-
+    LOG_INFO("Creating hex buffers");
     auto hexAsset = ModelLoader::getHexagon();
     auto hexVertexBuffer = Buffer::Create(hexAsset.vertices.data(), hexAsset.vertices.size() * sizeof(Vertex),
                                           BufferType::Vertex);
@@ -31,26 +32,28 @@ void TestScene::load() {
                                          BufferType::Index);
     hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
 
+    LOG_INFO("Creating materials");
     // Load Materials
-    debugMaterial = Material::Create(MaterialCreateInfo{
-            .stage = ShaderPassStage::Opaque,
-            .fixedFunction = FixedFunctionConfiguration{.topology = Topology::TriangleList, .polygonMode = PolygonMode::Line,
-                    .depthTest = true, .depthWrite = true},
-            .vertexShader = "2DDebug",
-            .fragmentShader = "2DStaticColoredSprite",
-            .pushConstant = Material::StandardOpaquePushConstants,
-            .set0 = Material::StandardOpaqueSet0,
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::vector<ShaderBindings>(
-                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                            .layout=std::vector<ShaderBindingLayout>(
-                                    {
-                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                    })
-                    }}),
-            .set1ExpectedCount = 64,
-            .name="DebugWireFrame",
-    });
+//    debugMaterial = Material::Create(MaterialCreateInfo{
+//            .stage = ShaderPassStage::Opaque,
+//            .fixedFunction = FixedFunctionConfiguration{.topology = Topology::TriangleList, .polygonMode = PolygonMode::Line,
+//                    .depthTest = true, .depthWrite = true},
+//            .vertexShader = "2DDebug",
+//            .fragmentShader = "2DStaticColoredSprite",
+//            .pushConstant = Material::StandardOpaquePushConstants,
+//            .set0 = Material::StandardOpaqueSet0,
+//            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
+//            .set1 = std::vector<ShaderBindings>(
+//                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
+//                            .layout=std::vector<ShaderBindingLayout>(
+//                                    {
+//                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
+//                                    })
+//                    }}),
+//            .set1ExpectedCount = 64,
+//            .name="DebugWireFrame",
+//    });
+
     coloredMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
@@ -96,6 +99,7 @@ void TestScene::load() {
 }
 
 void TestScene::loadEntities() {
+    LOG_INFO("Loading entities");
     cameraEnt = registry.createEntity();
     cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     cameraEnt.setComponent<CameraComponent>(CameraComponent{

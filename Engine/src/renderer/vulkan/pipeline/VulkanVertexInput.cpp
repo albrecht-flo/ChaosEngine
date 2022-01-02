@@ -6,4 +6,4 @@
 
 VulkanVertexInput::VulkanVertexInput(std::vector<VkVertexInputBindingDescription> &&bindingDescription,
                                      std::vector<VkVertexInputAttributeDescription> &&attributeDescriptions)
-        : attributeDescriptions(std::move(attributeDescriptions)), bindingDescription(std::move(bindingDescription)) {}
+        : bindingDescription(std::move(bindingDescription)), attributeDescriptions(std::move(attributeDescriptions)) {}

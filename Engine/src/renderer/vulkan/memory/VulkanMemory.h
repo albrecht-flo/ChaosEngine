@@ -22,7 +22,7 @@ class VulkanMemory {
 public:
     VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool, VmaAllocator allocator);
 
-    ~VulkanMemory() { if (allocator != nullptr) vmaDestroyAllocator(allocator); };
+    ~VulkanMemory();
 
     VulkanMemory(const VulkanMemory &o) = delete;
 

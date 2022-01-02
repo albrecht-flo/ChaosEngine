@@ -7,7 +7,7 @@
 /* TODOs:
  *
  * TODO(Current):
- *       - Memory management (https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+ *       - MSVC: Breaks with designated initializers
  *       - Delete Entity at Runtime
  *       - Create Entity at Runtime
 
@@ -52,7 +52,7 @@
 int main() {
     Logger::Init(LogLevel::Debug);
     Logger::I("Main", "Engine starting...");
-    
+
     auto testScene = std::make_unique<TestScene>();
     Engine engine(std::move(testScene));
     engine.run();

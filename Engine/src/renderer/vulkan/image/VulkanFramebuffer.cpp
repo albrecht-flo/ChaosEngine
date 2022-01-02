@@ -76,7 +76,7 @@ VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRend
 
     std::vector<VulkanImageBuffer> attachments;
     attachments.reserve(infos.size());
-    for (auto &info : infos) {
+    for (auto &info: infos) {
         assert("Depth attachment needs to be the LAST Attachment!" &&
                (info.type != Renderer::AttachmentType::Depth || &info == infos.end() - 1));
         if (info.type != Renderer::AttachmentType::SwapChain) {
@@ -87,7 +87,7 @@ VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRend
     std::vector<VkImageView> attachmentViews;
     attachmentViews.reserve(infos.size());
     int attachmentCounter = 0;
-    for (auto &info : infos) {
+    for (auto &info: infos) {
         if (info.type != Renderer::AttachmentType::SwapChain)
             attachmentViews.emplace_back(attachments[attachmentCounter++].getImageView().vk());
         else

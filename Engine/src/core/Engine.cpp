@@ -2,11 +2,10 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
-#include "Engine/src/core/Utils/Logger.h"
-#include "Engine/src/renderer/VulkanRenderer2D.h"
+#include "core/Utils/Logger.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
-        : window(Window::Create("Test Engine")),
+        : window(Window::Create("Chaos Engine")),
           renderingSys(window),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Engine/src/renderer/api/Buffer.h"
-#include "Engine/src/renderer/api/BufferedGPUResource.h"
-#include "Engine/src/core/RenderingSystem.h"
+#include "renderer/api/Buffer.h"
+#include "renderer/api/BufferedGPUResource.h"
+#include "core/RenderingSystem.h"
 
-#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "renderer/vulkan/context/VulkanContext.h"
 #include "VulkanMemory.h"
 
 #include <memory>
@@ -28,7 +28,7 @@ class VulkanBuffer : public Renderer::Buffer {
 
         [[nodiscard]] std::string toString() const override {
             char str[17];
-            snprintf(str, sizeof(str), "%p", (void*)buffer);
+            snprintf(str, sizeof(str), "%p", (void *) buffer);
             return "VulkanBuffer " + std::string(str);
         }
 

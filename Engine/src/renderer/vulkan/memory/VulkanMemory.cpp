@@ -1,8 +1,9 @@
 #include "VulkanMemory.h"
 
-#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "renderer/vulkan/context/VulkanContext.h"
 #include "VulkanBuffer.h"
-#include "Engine/src/renderer/vulkan/image/VulkanImage.h"
+#include "renderer/vulkan/image/VulkanImage.h"
+#include "core/Utils/Logger.h"
 
 #include <stdexcept>
 #include <cstring>
@@ -25,6 +26,11 @@ VulkanMemory VulkanMemory::Create(const VulkanDevice &device, const VulkanInstan
 
 VulkanMemory::VulkanMemory(const VulkanDevice &device, const VulkanCommandPool &commandPool, VmaAllocator allocator)
         : device(device), commandPool(commandPool), allocator(allocator) {}
+
+VulkanMemory::~VulkanMemory() noexcept {
+    LOG_DEBUG("[VulkanMemory] Vulkan Memory destroy");
+    if (allocator != nullptr) vmaDestroyAllocator(allocator);
+};
 
 VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
         : device(o.device), commandPool(o.commandPool), allocator(std::exchange(o.allocator, nullptr)) {}

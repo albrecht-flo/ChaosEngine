@@ -40,8 +40,9 @@ namespace ChaosEngine {
             throw std::runtime_error("[STBI] Failed to load " + filename);
         }
         if (channels != getStbiFormat(desiredFormat)) {
-            LOG_WARN("Desired Format and Image format are not the same! For image {} ; desired # channels {} != {}",
-                     filename, getStbiFormat(desiredFormat), channels);
+            LOG_INFO(
+                    "[RawImage] Desired Format and Image format are not the same! For image {} ; desired # channels {} != {} -> Converting",
+                    filename, getStbiFormat(desiredFormat), channels);
         }
 
         // Conversion of bytes to floats if necessary

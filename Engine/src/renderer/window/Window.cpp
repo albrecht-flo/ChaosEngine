@@ -72,6 +72,7 @@ void Window::poolEvents() {
 }
 
 void Window::destroy() {
+    LOG_DEBUG("[Window] Window Destroy");
     glfwDestroyWindow(window);
     glfwTerminate();
 }

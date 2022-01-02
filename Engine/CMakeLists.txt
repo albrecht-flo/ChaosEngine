@@ -70,6 +70,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/tinyobjloader
         ../dep/stb
         ../dep/spdlog/include
+        src/
         )
 
 add_library(Engine ${ENGINE_SOURCES})

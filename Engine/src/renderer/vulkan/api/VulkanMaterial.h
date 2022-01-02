@@ -25,8 +25,9 @@ private:
 
 public:
     ~VulkanMaterial() override {
-        if (materialBuffer != nullptr) // Has not been moved
-            materialBuffer->destroyImmediately(); // Material its self is buffered destroyed
+        if (materialBuffer != nullptr) { // Has not been moved
+            materialBuffer->destroyImmediately(); // Material itself is buffered destroyed
+        }
     }
 
     VulkanMaterial(const VulkanMaterial &o) = delete;

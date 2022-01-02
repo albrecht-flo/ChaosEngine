@@ -55,7 +55,7 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
     if (set0) pipelineLayoutBuilder.addDescriptorSet(**set0);
     if (set1) pipelineLayoutBuilder.addDescriptorSet(**set1);
     if (info.pushConstant) {
-        for (const auto &binding : info.pushConstant.value()) {
+        for (const auto &binding: info.pushConstant.value()) {
             pipelineLayoutBuilder.addPushConstant(getSizeOfShaderValueType(binding.type), binding.offset,
                                                   binding.stage);
         }

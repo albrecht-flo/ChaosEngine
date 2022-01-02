@@ -64,7 +64,7 @@ void SpriteRenderingPass::createStandardPipeline() {
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(VulkanDescriptorPoolBuilder(context.getDevice())
                                                                     .addDescriptor(cameraDescriptorLayout->getBinding(
-                                                                            0).descriptorType,
+                                                                                           0).descriptorType,
                                                                                    GraphicsContext::maxFramesInFlight)
                                                                     .setMaxSets(GraphicsContext::maxFramesInFlight)
                                                                     .build());

@@ -2,7 +2,7 @@ set(DISABLE_ASAN OFF CACHE BOOL "disable compilation with the address sanitizer 
 
 include(CheckCXXCompilerFlag)
 
-if (NOT DISABLE_ASAN)
+if (NOT DISABLE_ASAN AND CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_REQUIRED_FLAGS "-Werror -fsanitize=address")
     check_cxx_compiler_flag(-fsanitize=address HAVE_FLAG_SANITIZE_ADDRESS)
     unset(CMAKE_REQUIRED_FLAGS)
@@ -14,4 +14,8 @@ if (NOT DISABLE_ASAN)
     else ()
         message(STATUS "Address sanitizer enabled")
     endif ()
+elseif(NOT DISABLE_ASAN)
+    message(STATUS "Address sanitizer not supported by compiler")
+else ()
+    message(STATUS "Address sanitizer disabled by parameter DISABLE_ASAN")
 endif ()
