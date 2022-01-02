@@ -8,7 +8,7 @@ namespace Renderer {
 
     /// Through this enum the used Graphics API can be defined.
     enum class GraphicsAPI {
-        None, Vulkan
+        None, Vulkan, Test
     };
 
     /** This is a wrapper class for different graphics context objects that can be used to be passed down for further

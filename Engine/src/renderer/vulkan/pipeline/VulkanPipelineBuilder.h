@@ -112,7 +112,7 @@ private: // Translation helpers
             case Renderer::Topology::TriangleFan:
                 return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
         }
-        assert("Unknown Primitive type");
+        assert("Unknown Primitive type" && false);
         return VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
     }
 
@@ -125,7 +125,7 @@ private: // Translation helpers
             case Renderer::PolygonMode::Point:
                 return VK_POLYGON_MODE_POINT;
         }
-        assert("Unknown Polygon Mode");
+        assert("Unknown Polygon Mode" && false);
         return VK_POLYGON_MODE_POINT;
     }
 
@@ -136,7 +136,7 @@ private: // Translation helpers
             case Renderer::CullFace::CLW:
                 return VK_FRONT_FACE_CLOCKWISE;
         }
-        assert("Unknown Cull Type");
+        assert("Unknown Cull Type" && false);
         return VK_FRONT_FACE_COUNTER_CLOCKWISE;
     }
 
@@ -159,7 +159,7 @@ private: // Translation helpers
             case Renderer::CompareOp::Never:
                 return VK_COMPARE_OP_NEVER;
         }
-        assert("Unknown Compare Operation");
+        assert("Unknown Compare Operation" && false);
         return VK_COMPARE_OP_ALWAYS;
     }
 };

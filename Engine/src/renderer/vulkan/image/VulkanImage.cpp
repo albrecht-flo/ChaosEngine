@@ -16,7 +16,7 @@ VkFormat VulkanImage::getVkFormat(ImageFormat format) {
         case ImageFormat::Rf32Gf32Bf32Af32:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
         default:
-            assert("Unknown image format");
+            assert(("Unknown image format"));
             return VK_FORMAT_R8G8B8A8_UNORM;
 
     }

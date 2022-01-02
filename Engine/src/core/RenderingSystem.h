@@ -3,12 +3,12 @@
 #include <memory>
 #include "Ecs.h"
 #include "Components.h"
-#include "Engine/src/renderer/api/RendererAPI.h"
-#include "Engine/src/renderer/api/GraphicsContext.h"
+#include "renderer/api/RendererAPI.h"
+#include "renderer/api/GraphicsContext.h"
 
 class RenderingSystem {
 public:
-    explicit RenderingSystem(Window &window);
+    explicit RenderingSystem(Window &window, Renderer::GraphicsAPI api);
 
     ~RenderingSystem();
 

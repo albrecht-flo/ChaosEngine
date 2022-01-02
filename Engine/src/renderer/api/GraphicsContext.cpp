@@ -1,10 +1,12 @@
 #include "GraphicsContext.h"
-#include "Engine/src/renderer/window/Window.h"
-#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
+#include "renderer/window/Window.h"
+#include "renderer/vulkan/context/VulkanContext.h"
+#include "renderer/testRenderer/TestContext.h"
 
 #include <cassert>
 
 namespace Renderer {
+    using namespace TestRenderer;
     GraphicsAPI GraphicsContext::currentAPI = GraphicsAPI::None;
 
     std::unique_ptr<GraphicsContext> Renderer::GraphicsContext::Create(Window &window, Renderer::GraphicsAPI api) {
@@ -12,10 +14,12 @@ namespace Renderer {
         switch (api) {
             case GraphicsAPI::Vulkan:
                 return std::make_unique<VulkanContext>(window);
+            case GraphicsAPI::Test:
+                return std::make_unique<TestContext>(window);
             case GraphicsAPI::None:
-                assert("GraphicsAPI wasn't specified correctly");
+                assert("GraphicsAPI wasn't specified correctly" && false);
             default:
-                assert("Unsupported Graphics API");
+                assert("Unsupported Graphics API" && false);
         }
         return nullptr;
     }
