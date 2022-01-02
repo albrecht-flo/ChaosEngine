@@ -2,12 +2,14 @@
 #include "GraphicsContext.h"
 
 #include "renderer/vulkan/image/VulkanTexture.h"
+#include "renderer/testRenderer/TestTexture.h"
 #include "core/RenderingSystem.h"
 #include "core/Utils/Logger.h"
 
 #include <cassert>
 
 using namespace Renderer;
+using namespace Renderer::TestRenderer;
 
 std::unique_ptr<Texture>
 Texture::Create(const std::string &filename, const ChaosEngine::ImageFormat desiredFormat) {
@@ -24,6 +26,9 @@ std::unique_ptr<Texture> Texture::Create(const ChaosEngine::RawImage &rawImage,
             return std::make_unique<VulkanTexture>(
                     VulkanTexture::Create(
                             dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext()), rawImage, debugName));
+        case GraphicsAPI::Test:
+            return std::make_unique<TestTexture>(
+                    TestTexture::Create(dynamic_cast<const TestContext &>(RenderingSystem::GetContext())));
         default:
             assert("Invalid Graphics API" && false);
             return nullptr;

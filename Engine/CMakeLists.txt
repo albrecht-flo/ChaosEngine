@@ -12,6 +12,7 @@ set(ENGINE_SOURCES
         src/core/Utils/Logger.cpp
         src/core/assets/Mesh.cpp
         src/core/assets/ModelLoader.cpp
+        src/core/assets/RawImage.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
@@ -56,7 +57,12 @@ set(ENGINE_SOURCES
         src/renderer/vulkan/pipeline/VulkanPipelineLayout.cpp
         src/renderer/vulkan/pipeline/VulkanPipelineLayoutBuilder.cpp
         src/renderer/vulkan/pipeline/VulkanVertexInput.cpp
-        src/core/assets/RawImage.cpp
+        #       Testing Rendering files
+        src/renderer/testRenderer/TestContext.cpp
+        src/renderer/testRenderer/TestRenderer.cpp
+        src/renderer/testRenderer/TestRenderPass.cpp
+        src/renderer/testRenderer/TestFramebuffer.cpp
+        src/renderer/testRenderer/TestTexture.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

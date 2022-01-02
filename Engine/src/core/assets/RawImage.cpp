@@ -21,7 +21,7 @@ namespace ChaosEngine {
             case ImageFormat::Rf32Gf32Bf32Af32:
                 return STBI_rgb_alpha;
             default:
-                assert("Unsupported Format!");
+                assert("Unsupported Format!" && false);
                 return 4;
         }
     }
@@ -61,7 +61,7 @@ namespace ChaosEngine {
             finalPixels = std::make_unique<unsigned char[]>(size);
             std::memcpy(finalPixels.get(), pixels, size);
         } else {
-            assert("Unsupported Image Format!");
+            assert("Unsupported Image Format!" && false);
         }
 
         stbi_image_free(pixels);

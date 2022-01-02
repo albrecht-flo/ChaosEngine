@@ -80,7 +80,7 @@ private:
             case AttachmentLoadOp::Undefined:
                 return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             default:
-                assert("Unknown load op");
+                assert("Unknown load op" && false);
         }
         return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     }
@@ -92,7 +92,7 @@ private:
             case AttachmentStoreOp::Undefined:
                 return VK_ATTACHMENT_STORE_OP_DONT_CARE;
             default:
-                assert("Unknown store op");
+                assert("Unknown store op" && false);
         }
         return VK_ATTACHMENT_STORE_OP_DONT_CARE;
     }

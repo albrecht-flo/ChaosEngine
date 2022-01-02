@@ -1,7 +1,8 @@
 #include "RenderingSystem.h"
 
 #include "Engine.h"
-#include "Engine/src/renderer/VulkanRenderer2D.h"
+#include "renderer/VulkanRenderer2D.h"
+#include "renderer/testRenderer/TestRenderer.h"
 
 #include <iostream>
 
@@ -10,8 +11,8 @@ using namespace Renderer;
 std::unique_ptr<GraphicsContext> RenderingSystem::Context = nullptr;
 std::unique_ptr<RendererAPI> RenderingSystem::Renderer = nullptr;
 
-RenderingSystem::RenderingSystem(Window &window) {
-    Context = Renderer::GraphicsContext::Create(window, GraphicsAPI::Vulkan);
+RenderingSystem::RenderingSystem(Window &window, GraphicsAPI api) {
+    Context = Renderer::GraphicsContext::Create(window, api);
 }
 
 RenderingSystem::~RenderingSystem() {
@@ -23,12 +24,25 @@ RenderingSystem::~RenderingSystem() {
 }
 
 void RenderingSystem::createRenderer(RendererType rendererType) {
-    switch (rendererType) {
-        case Renderer::RendererType::RENDERER2D :
-            Renderer = VulkanRenderer2D::Create(*Context);
-            break;
-        default:
-            assert("Unknown renderer" && false);
+    LOG_DEBUG("api {}", Context->currentAPI);
+    if (Context->currentAPI == Renderer::GraphicsAPI::Vulkan) {
+        switch (rendererType) {
+            case Renderer::RendererType::RENDERER2D :
+                Renderer = VulkanRenderer2D::Create(*Context);
+                break;
+            default:
+                assert("Unknown renderer for 'Vulkan' GraphicsAPI" && false);
+        }
+    } else if (Context->currentAPI == Renderer::GraphicsAPI::Test) {
+        switch (rendererType) {
+            case Renderer::RendererType::RENDERER2D :
+                Renderer = TestRenderer::TestRenderer::Create(*Context);
+                break;
+            default:
+                assert("Unknown renderer for 'Test' GraphicsAPI" && false);
+        }
+    } else {
+        assert("Unsupported API" && false);
     }
     Renderer->setup();
 }

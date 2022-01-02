@@ -6,7 +6,7 @@
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Chaos Engine")),
-          renderingSys(window),
+          renderingSys(window, Renderer::GraphicsAPI::Vulkan),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     assert("A Scene is required" && scene != nullptr);

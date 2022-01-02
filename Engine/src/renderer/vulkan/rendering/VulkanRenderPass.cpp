@@ -24,7 +24,7 @@ VulkanRenderPass::Create(const VulkanContext &context,
         } else if (attachmentDescriptions[i].attachmentType == Renderer::AttachmentType::Depth) {
             depthAttachmentRefs.emplace_back(attachmentRef);
         } else {
-            assert("Attachment type not supported.");
+            assert("Attachment type not supported." && false);
         }
         attachments.emplace_back(attachmentDescriptions[i].attachment);
     }

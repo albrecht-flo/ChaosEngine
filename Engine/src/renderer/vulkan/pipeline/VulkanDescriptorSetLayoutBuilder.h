@@ -40,7 +40,7 @@ namespace VulkanPipelineUtility {
             case Renderer::ShaderStage::All:
                 return VK_SHADER_STAGE_ALL_GRAPHICS;
         }
-        assert("Unknown shader stage");
+        assert("Unknown shader stage" && false);
         return VK_SHADER_STAGE_VERTEX_BIT;
     }
 

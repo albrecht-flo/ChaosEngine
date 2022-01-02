@@ -1,5 +1,6 @@
 #include "Engine/src/ChaosEngine.h"
 #include "test/TestScene.h"
+#include "test/EmptyScene.h"
 
 #include <exception>
 #include <iostream>
@@ -54,6 +55,7 @@ int main() {
     Logger::I("Main", "Engine starting...");
 
     auto testScene = std::make_unique<TestScene>();
+//    auto testScene = std::make_unique<EmptyScene>();
     Engine engine(std::move(testScene));
     engine.run();
 
