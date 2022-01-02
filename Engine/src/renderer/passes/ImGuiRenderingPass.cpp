@@ -61,7 +61,7 @@ ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window) {
                     .build());
     context.setDebugName(VK_OBJECT_TYPE_DESCRIPTOR_POOL, (uint64_t) descriptorPool->vk(), "ImGuiPrimaryDescriptorPool");
 
-    LOG_DEBUG("[ImGuiRenderingPass] Imgui init");
+    LOG_DEBUG("[ImGuiRenderingPass] Imgui init Version: {}", IMGUI_VERSION);
     // Init imgui window
     ImGui_ImplGlfw_InitForVulkan(window.getWindow(), true);
 
