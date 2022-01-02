@@ -94,7 +94,7 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromOBJ(const std::str
     std::unordered_map<Vertex, uint32_t> verticesMap = {};
 
     for (size_t s = 0; s < shapes.size(); s++) {
-        for (auto &index : shapes[s].mesh.indices) {
+        for (auto &index: shapes[s].mesh.indices) {
             Vertex vertex;
             vertex.pos = glm::vec3(
                     attrib.vertices[index.vertex_index * 3 + 0],
@@ -226,7 +226,7 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
             throw std::runtime_error("[ModelLoader] Unequal ammount of vertices and vertex data!");
         }
 
-        for (const auto &e : file.get_elements()) {
+        for (const auto &e: file.get_elements()) {
             if (e.name == std::string("vertex")) {
                 // TODO validate type
             } else if (e.name == std::string("face")) {

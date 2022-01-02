@@ -60,7 +60,7 @@ VulkanDescriptorSetOperation::writeImageSampler(uint32_t binding, VkSampler samp
 void VulkanDescriptorSetOperation::commit() {
     std::vector<VkWriteDescriptorSet> writes;
     writes.reserve(descriptorWrites.size());
-    for (const auto &desc : descriptorWrites) {
+    for (const auto &desc: descriptorWrites) {
         writes.emplace_back(desc.descriptorWrite);
         if (desc.type == DescriptorInfoType::Buffer) {
             writes.back().pBufferInfo = &desc.bufferInfo;

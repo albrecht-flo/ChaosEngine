@@ -6,10 +6,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "" FORCE)
 function(add_clang_tidy_target TARGET)
     set(FILES ${ARGN})
 
-    if(NOT FILES)
+    if (NOT FILES)
         add_custom_target(${TARGET})
         return()
-    endif()
+    endif ()
 
     # Remove duplicates & sort
     list(REMOVE_DUPLICATES FILES)
@@ -20,12 +20,12 @@ function(add_clang_tidy_target TARGET)
 
     # Add target
     add_custom_target(${TARGET}
-        COMMAND ${CMAKE_COMMAND} -E chdir
-                ${CMAKE_CURRENT_SOURCE_DIR}
-                ${CLANG_TIDY_EXECUTABLE}
-                "-quiet"
-                "-p=${CMAKE_CURRENT_BINARY_DIR}"
-                ${FILES}
-        COMMENT "Running ${TARGET}"
-        VERBATIM)
+            COMMAND ${CMAKE_COMMAND} -E chdir
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CLANG_TIDY_EXECUTABLE}
+            "-quiet"
+            "-p=${CMAKE_CURRENT_BINARY_DIR}"
+            ${FILES}
+            COMMENT "Running ${TARGET}"
+            VERBATIM)
 endfunction()

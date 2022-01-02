@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/src/core/assets/RawImage.h"
+#include "core/assets/RawImage.h"
 
 #include <string>
 #include <memory>

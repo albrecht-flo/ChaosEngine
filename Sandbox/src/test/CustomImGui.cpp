@@ -100,8 +100,9 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
         uint32_t sceneImageGPUHandleCount;
         switch (GraphicsContext::currentAPI) {
             case Renderer::GraphicsAPI::Vulkan:
+                // TODO: Handle imgui textures properly
                 sceneImageGPUHandleCount = dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext())
-                        .getSwapChain().size() + 1 ; // # swapchain images in flight // TODO: Handle imgui textures properly
+                                                   .getSwapChain().size() + 1; // # swapchain images in flight
                 break;
             default:
                 sceneImageGPUHandleCount = 1;

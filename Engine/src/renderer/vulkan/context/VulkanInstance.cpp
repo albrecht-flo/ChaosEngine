@@ -21,10 +21,10 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
 //    for (const auto &layerProperties : availableLayers) {
 //    }
 
-    for (const char *layerName : validationLayers) {
+    for (const char *layerName: validationLayers) {
         bool layerFound = false;
 
-        for (const auto &layerProperties : availableLayers) {
+        for (const auto &layerProperties: availableLayers) {
             if (strcmp(layerName, layerProperties.layerName) == 0) {
                 layerFound = true;
                 break;
@@ -45,7 +45,7 @@ static bool checkDebugLayerSupport(std::vector<const char *> debugLayers) {
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, availableExtensions.data());
 
     auto dbgLayer = std::set<std::string>(debugLayers.begin(), debugLayers.end());
-    for (const auto &extensionProperties : availableExtensions) {
+    for (const auto &extensionProperties: availableExtensions) {
         dbgLayer.erase(extensionProperties.extensionName);
     }
 

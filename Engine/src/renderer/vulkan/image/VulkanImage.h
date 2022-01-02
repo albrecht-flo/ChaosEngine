@@ -16,7 +16,8 @@ class VulkanImage {
 private:
     VulkanImage(const VulkanMemory &memory, VkImage image, VmaAllocation imageAllocation,
                 uint32_t width, uint32_t height, VkFormat format)
-            : memory(memory), image(image), imageAllocation(imageAllocation), width(width), height(height), format(format) {}
+            : memory(memory), image(image), imageAllocation(imageAllocation), width(width), height(height),
+              format(format) {}
 
 public:
     ~VulkanImage() { destroy(); }

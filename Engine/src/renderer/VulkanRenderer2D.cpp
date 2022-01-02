@@ -1,13 +1,10 @@
 #include "VulkanRenderer2D.h"
 
-#include "Engine/src/core/Utils/Logger.h"
-#include "Engine/src/renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
-#include "Engine/src/core/assets/Mesh.h"
-#include "Engine/src/core/assets/ModelLoader.h"
-#include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
-#include "Engine/src/renderer/api/Material.h"
-
-#include <imgui.h>
+#include "core/Utils/Logger.h"
+#include "renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "core/assets/Mesh.h"
+#include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
+#include "renderer/api/Material.h"
 
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
@@ -23,14 +20,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
                                                          context.getSwapChain().getWidth(),
                                                          context.getSwapChain().getHeight());
 
-    IMGUI_CHECKVERSION();
-    ImGuiContext *imGuiContext = ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;     // Enable new Viewport feature
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable new Docking feature
-    ImGui::StyleColorsDark();
-    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow(), imGuiContext);
+    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow());
 
     return std::unique_ptr<VulkanRenderer2D>(
             new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(postProcessingPass),

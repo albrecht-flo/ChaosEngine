@@ -45,7 +45,7 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     Context->beginFrame();
 
     assert("There must be one active camera" && cameras.begin() != cameras.end());
-    for (const auto&[entity, transform, camera] : cameras.each()) {
+    for (const auto&[entity, transform, camera]: cameras.each()) {
         Renderer->beginScene(transform.getModelMatrix(), camera);
         break;
     }

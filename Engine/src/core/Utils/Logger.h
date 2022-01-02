@@ -9,7 +9,9 @@
 #undef far
 #pragma warning(pop)
 #else
+
 #include <spdlog/spdlog.h>
+
 #endif
 
 enum class LogLevel {

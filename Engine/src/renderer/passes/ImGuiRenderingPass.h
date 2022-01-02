@@ -29,8 +29,7 @@ public:
     ImGuiRenderingPass &operator=(ImGuiRenderingPass &&o) = delete;
 
 
-    static ImGuiRenderingPass
-    Create(const VulkanContext &context, const Window &window, ImGuiContext *imGuiContext);
+    static ImGuiRenderingPass Create(const VulkanContext &context, const Window &window);
 
     void draw();
 

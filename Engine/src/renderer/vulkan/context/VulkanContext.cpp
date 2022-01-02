@@ -44,7 +44,7 @@ VulkanContext::VulkanContext(Window &window)
 
 VulkanContext::~VulkanContext() {
     // Clear buffered resources
-    for (auto &res : bufferedResourceDestroyQueue) {
+    for (auto &res: bufferedResourceDestroyQueue) {
         res.resource->destroy();
     }
 }
@@ -91,7 +91,7 @@ void VulkanContext::tickFrame() {
     }
 
     if (i != 0) {
-        LOG_DEBUG("Cleared {0} buffered resources", i);
+        LOG_DEBUG("[VulkanContext] Cleared {0} buffered resources", i);
     }
 
     ++currentFrameCounter;
