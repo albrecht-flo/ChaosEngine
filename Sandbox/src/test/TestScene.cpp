@@ -59,16 +59,16 @@ void TestScene::load() {
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
             .vertexShader = "2DSprite",
             .fragmentShader = "2DStaticColoredSprite",
-            .pushConstant = Material::StandardOpaquePushConstants,
-            .set0 = Material::StandardOpaqueSet0,
+            .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
+            .set0 = std::make_optional(Material::StandardOpaqueSet0),
             .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::vector<ShaderBindings>(
+            .set1 = std::make_optional(std::vector<ShaderBindings>(
                     {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                            .layout=std::vector<ShaderBindingLayout>(
+                            .layout=std::make_optional(std::vector<ShaderBindingLayout>(
                                     {
                                             ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                    })
-                    }}),
+                                    }))
+                    }})),
             .set1ExpectedCount = 64,
             .name="ColoredSprite",
     });
@@ -77,18 +77,18 @@ void TestScene::load() {
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
             .vertexShader = "2DSprite",
             .fragmentShader = "2DStaticTexturedSprite",
-            .pushConstant = Material::StandardOpaquePushConstants,
-            .set0 = Material::StandardOpaqueSet0,
+            .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
+            .set0 = std::make_optional(Material::StandardOpaqueSet0),
             .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::vector<ShaderBindings>(
+            .set1 = std::make_optional(std::vector<ShaderBindings>(
                     {ShaderBindings{.type = ShaderBindingType::TextureSampler, .stage=ShaderStage::Fragment, .name="diffuseTexture"},
                      ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                             .layout=std::vector<ShaderBindingLayout>(
+                             .layout=std::make_optional(std::vector<ShaderBindingLayout>(
                                      {
                                              ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                     })
+                                     }))
                      }
-                    }),
+                    })),
             .set1ExpectedCount = 64,
             .name="TexturedSprite",
     });

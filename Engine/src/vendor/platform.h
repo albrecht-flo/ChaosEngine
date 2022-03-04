@@ -17,3 +17,8 @@
 
 #define POP_MINIMAL_WARNING_LEVEL _Pragma("GCC diagnostic pop")
 #endif
+
+// MSVC does not support __PRETTY_FUNCTION__ but calls it __FUNCSIG__
+#ifdef _MSC_VER
+#define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif

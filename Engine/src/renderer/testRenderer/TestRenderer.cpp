@@ -1,5 +1,6 @@
 #include "TestRenderer.h"
 #include "core/Utils/Logger.h"
+#include "vendor/platform.h"
 
 using namespace Renderer::TestRenderer;
 

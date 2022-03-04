@@ -10,11 +10,11 @@ using namespace Renderer;
 
 std::vector<ShaderBindings> Material::StandardOpaqueSet0 = std::vector<ShaderBindings>(
         {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Vertex, .name="cameraUbo",
-                .layout=std::vector<ShaderBindingLayout>(
+                .layout=std::make_optional(std::vector<ShaderBindingLayout>(
                         {
                                 ShaderBindingLayout{.type = ShaderValueType::Mat4, .name ="view"},
                                 ShaderBindingLayout{.type = ShaderValueType::Mat4, .name ="proj"}
-                        })
+                        }))
         }});
 
 std::vector<ShaderPushConstantLayout> Material::StandardOpaquePushConstants = std::vector<ShaderPushConstantLayout>(
