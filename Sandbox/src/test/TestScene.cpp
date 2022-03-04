@@ -182,12 +182,27 @@ void TestScene::imGuiMainMenu() {
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 static bool showImGuiDebugger = false;
+static uint32_t selectedSceneElement = 0;
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
     CustomImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
 
     CustomImGui::RenderLogWindow();
+
+    ImGui::Begin("Scene");
+    CustomImGui::TreeLeaf("Entity 1", 1, &selectedSceneElement);
+    if (CustomImGui::TreeNodeBegin("Entity 2", 2, &selectedSceneElement)) {
+        CustomImGui::TreeLeaf("Entity 2-1", 3, &selectedSceneElement);
+        CustomImGui::TreeLeaf("Entity 2-2", 4, &selectedSceneElement);
+        CustomImGui::TreeNodeEnd();
+    }
+    if (CustomImGui::TreeNodeBegin("Entity 3", 5, &selectedSceneElement)) {
+        CustomImGui::TreeLeaf("Entity 3-1", 6, &selectedSceneElement);
+        CustomImGui::TreeLeaf("Entity 3-2", 7, &selectedSceneElement);
+        CustomImGui::TreeNodeEnd();
+    }
+    ImGui::End();
 
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
     auto size = CustomImGui::RenderSceneViewport(fb);
@@ -213,7 +228,7 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(texturedQuad));
+            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(selectedSceneElement));
             auto &tc = texturedQuad.get<Transform>();
             ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
             ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/src/renderer/api/Framebuffer.h"
+#include "Engine/src/core/Scene.h"
 
 #include <imgui.h>
 
@@ -26,6 +27,13 @@ public:
     static void RenderLogWindow(const std::string &title = "Log");
 
     static ImVec2 RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title = "Viewport");
+
+    // Trees
+    static bool TreeLeaf(const char *label, uint32_t id, uint32_t *id_ptr);
+
+    static bool TreeNodeBegin(const char *label, uint32_t id, uint32_t *id_ptr);
+
+    static void TreeNodeEnd();
 
 private:
     static CustomImGuiState state;
