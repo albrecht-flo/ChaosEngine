@@ -3,7 +3,7 @@
 #include "CustomImGui.h"
 
 #include <imgui.h>
-
+#include <misc/cpp/imgui_stdlib.h>
 
 SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
@@ -189,8 +189,11 @@ void TestScene::imGuiMainMenu() {
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 static bool showImGuiDebugger = false;
-static ECS::entity_t selectedSceneElement = entt::null;
-static char nameBuffer[128] = {0};
+static bool showImGuiDemo = false;
+static ECS::entity_t selectedSceneElement = ECS::null;
+// Sanity check because the editor uses uint32_t to manage the entity selection
+static_assert(std::is_same<uint32_t, std::underlying_type<entt::entity>::type>::value,
+              "EnTT entity type does not match editor entity type!");
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
@@ -202,7 +205,7 @@ void TestScene::updateImGui() {
     const uint32_t createEntityButtonSize = 100;
     ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
     if (ImGui::Button("Create Entity", ImVec2(createEntityButtonSize, 20))) {
-        auto entity = ecs.createEntity();
+        auto entity = ecs.addEntity();
         entity.setComponent<Meta>(Meta{"New Entity"});
         entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
         glm::vec4 whiteTintColor(1, 1, 1, 1);
@@ -214,12 +217,8 @@ void TestScene::updateImGui() {
 
     auto entityView = ecs.getRegistry().view<Meta>();
     entityView.each([](auto entity, Meta &meta) {
-        const auto id = entt::to_integral(entity);
-        CustomImGui::TreeLeaf(id, &selectedSceneElement, meta.name.c_str());
-        if (ImGui::IsItemClicked()) {
-            meta.name.copy(nameBuffer, sizeof(nameBuffer) - 1);
-            nameBuffer[std::min(sizeof(nameBuffer) - 1, meta.name.size())] = 0; // set missing null termination
-        }
+        const auto id = ECS::to_integral(entity);
+        CustomImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str());
     });
     ImGui::End();
 
@@ -235,8 +234,12 @@ void TestScene::updateImGui() {
     if (ImGui::Button("Show ImGui Debugger")) {
         showImGuiDebugger = true;
     }
+    if (ImGui::Button("Show ImGui Demo")) {
+        showImGuiDemo = true;
+    }
     ImGui::End();
     if (showImGuiDebugger) ImGui::ShowMetricsWindow(&showImGuiDebugger);
+    if (showImGuiDemo) ImGui::ShowDemoWindow(&showImGuiDemo);
 
     if (cameraControllerActive) {
         if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
@@ -247,28 +250,35 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            if (selectedSceneElement != entt::null) {
+            if (selectedSceneElement != ECS::null) {
                 auto entity = ecs.getEntity(selectedSceneElement);
-                ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-                if (ImGui::InputText("Edit Entity", nameBuffer, sizeof(nameBuffer), input_text_flags)) {
-                    nameBuffer[63] = 0;
-                    LOG_DEBUG("new Text \"{0}\"", nameBuffer);
-                    auto &meta = entity.get<Meta>();
-                    meta.name = nameBuffer;
-                }
-                ImGui::Separator();
 
-                auto &tc = entity.get<Transform>();
-                ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-                ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-                ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
-                ImGui::Separator();
-                ImGui::ColorEdit4("Color", &(editTintColor.r));
-                if (ImGui::Button("Apply")) {
-                    entity.setComponent<RenderComponent>(
-                            texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor),
-                                                         {fallbackTexture.get()}),
-                            quadROB);
+                ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+                auto &meta = entity.get<Meta>();
+                ImGui::InputText(" ", &meta.name, input_text_flags);
+
+                const auto panelWidth = ImGui::GetWindowWidth();
+                ImGui::SameLine(panelWidth - 60);
+                if (ImGui::Button("Delete")) {
+                    LOG_DEBUG("Delete {}", entity.operator unsigned int());
+                    ecs.removeEntity(entity);
+                    selectedSceneElement = ECS::null;
+                } else {
+
+                    ImGui::Separator();
+
+                    auto &tc = entity.get<Transform>();
+                    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
+                    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
+                    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+                    ImGui::Separator();
+                    ImGui::ColorEdit4("Color", &(editTintColor.r));
+                    if (ImGui::Button("Apply")) {
+                        entity.setComponent<RenderComponent>(
+                                texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor),
+                                                             {fallbackTexture.get()}),
+                                quadROB);
+                    }
                 }
             } else {
                 ImGui::Text("No Item selected");

@@ -9,5 +9,6 @@ PUSH_MINIMAL_WARNING_LEVEL
 #include <imgui_widgets.cpp>
 #include <imgui_demo.cpp>
 #include <imgui.cpp>
+#include <misc/cpp/imgui_stdlib.cpp>
 
 POP_MINIMAL_WARNING_LEVEL
