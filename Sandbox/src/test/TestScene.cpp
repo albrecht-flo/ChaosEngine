@@ -199,6 +199,19 @@ void TestScene::updateImGui() {
     CustomImGui::RenderLogWindow();
 
     ImGui::Begin("Outline");
+    const uint32_t createEntityButtonSize = 100;
+    ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
+    if (ImGui::Button("Create Entity", ImVec2(createEntityButtonSize, 20))) {
+        auto entity = ecs.createEntity();
+        entity.setComponent<Meta>(Meta{"New Entity"});
+        entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+        glm::vec4 whiteTintColor(1, 1, 1, 1);
+        entity.setComponent<RenderComponent>(
+                texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
+                quadROB);
+    }
+    ImGui::Separator();
+
     auto entityView = ecs.getRegistry().view<Meta>();
     entityView.each([](auto entity, Meta &meta) {
         const auto id = entt::to_integral(entity);
