@@ -175,11 +175,27 @@ void TestScene::update(float deltaTime) {
 
 }
 
+void TestScene::addNewEntity() {
+    auto entity = ecs.addEntity();
+    entity.setComponent<Meta>(Meta{"New Entity"});
+    entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+    glm::vec4 whiteTintColor(1, 1, 1, 1);
+    entity.setComponent<RenderComponent>(
+            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
+            quadROB);
+}
+
 void TestScene::imGuiMainMenu() {
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Close", "Ctrl+Q")) {
             window->close();
+        }
+        ImGui::EndMenu();
+    }
+    if (ImGui::BeginMenu("Edit")) {
+        if (ImGui::MenuItem("New Entity")) {
+            addNewEntity();
         }
         ImGui::EndMenu();
     }
@@ -205,15 +221,16 @@ void TestScene::updateImGui() {
     const uint32_t createEntityButtonSize = 100;
     ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
     if (ImGui::Button("Create Entity", ImVec2(createEntityButtonSize, 20))) {
-        auto entity = ecs.addEntity();
-        entity.setComponent<Meta>(Meta{"New Entity"});
-        entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
-        glm::vec4 whiteTintColor(1, 1, 1, 1);
-        entity.setComponent<RenderComponent>(
-                texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
-                quadROB);
+        addNewEntity();
     }
     ImGui::Separator();
+    if (ImGui::BeginPopupContextWindow("Outline-menu")) {
+        if (ImGui::Selectable("Create Entity")) {
+            addNewEntity();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
 
     auto entityView = ecs.getRegistry().view<Meta>();
     entityView.each([](auto entity, Meta &meta) {
@@ -260,7 +277,6 @@ void TestScene::updateImGui() {
                 const auto panelWidth = ImGui::GetWindowWidth();
                 ImGui::SameLine(panelWidth - 60);
                 if (ImGui::Button("Delete")) {
-                    LOG_DEBUG("Delete {}", entity.operator unsigned int());
                     ecs.removeEntity(entity);
                     selectedSceneElement = ECS::null;
                 } else {

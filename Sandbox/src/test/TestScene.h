@@ -20,6 +20,8 @@ private:
 
     void loadEntities();
 
+    void addNewEntity();
+
     void imGuiMainMenu();
 
 private:
