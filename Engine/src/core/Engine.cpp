@@ -2,6 +2,7 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 
+#include "Scene.h"
 #include "core/Utils/Logger.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
@@ -40,7 +41,7 @@ void Engine::run() {
         window.poolEvents();
 
         // TOBE: Apply all changes to components
-        renderingSys.updateComponents(scene->registry);
+        renderingSys.updateComponents(scene->ecs);
         // --------------------------------------------------------------------
         // TOBE Syncpoint
 
@@ -52,7 +53,7 @@ void Engine::run() {
         ImGui::Render();
 
         // Update render system
-        renderingSys.renderEntities(scene->registry);
+        renderingSys.renderEntities(scene->ecs);
 
 
         // Update Scene // TODO: Process scripts instead ----------------------

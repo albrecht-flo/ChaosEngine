@@ -152,33 +152,3 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
     return state.previousSize;
 }
 
-// ------------------------------------ Trees --------------------------------------------------------------------------
-
-static const ImGuiTreeNodeFlags node_flags_base = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-static const ImGuiTreeNodeFlags node_flags_leaf =
-        node_flags_base | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-static const ImGuiTreeNodeFlags node_flags_selected = ImGuiTreeNodeFlags_Selected;
-
-// See ImGui Issue: https://github.com/ocornut/imgui/issues/581
-// And demo: https://github.com/ocornut/imgui/commit/ac501102fc7524433c2343f2fa2cc47ea08f548e
-bool CustomImGui::TreeLeaf(const char *label, const uint32_t id, uint32_t *id_ptr) {
-    bool nodeState = ImGui::TreeNodeEx(label, node_flags_leaf | (*id_ptr == id ? node_flags_selected : 0));
-    if (ImGui::IsItemClicked() && *id_ptr != id) {
-        LOG_DEBUG("Updating id to {}", id);
-        *id_ptr = id;
-    }
-    return nodeState;
-}
-
-bool CustomImGui::TreeNodeBegin(const char *label, const uint32_t id, uint32_t *id_ptr) {
-    bool nodeState = ImGui::TreeNodeEx(label, node_flags_base | (*id_ptr == id ? node_flags_selected : 0));
-    if (ImGui::IsItemClicked() && *id_ptr != id) {
-        LOG_DEBUG("Updating id to {}", id);
-        *id_ptr = id;
-    }
-    return nodeState;
-}
-
-void CustomImGui::TreeNodeEnd() {
-    ImGui::TreePop();
-}

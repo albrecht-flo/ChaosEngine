@@ -28,12 +28,40 @@ public:
 
     static ImVec2 RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title = "Viewport");
 
-    // Trees
-    static bool TreeLeaf(const char *label, uint32_t id, uint32_t *id_ptr);
+    // Trees -----------------------------------------------------------------------------------------------------------
+    // See ImGui Issue: https://github.com/ocornut/imgui/issues/581
+    // And demo: https://github.com/ocornut/imgui/commit/ac501102fc7524433c2343f2fa2cc47ea08f548e
+private:
+    static const ImGuiTreeNodeFlags node_flags_base =
+            ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+    static const ImGuiTreeNodeFlags node_flags_leaf =
+            node_flags_base | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    static const ImGuiTreeNodeFlags node_flags_selected = ImGuiTreeNodeFlags_Selected;
+public:
 
-    static bool TreeNodeBegin(const char *label, uint32_t id, uint32_t *id_ptr);
+    template<class id_type, class... Args>
+    static bool TreeLeaf(id_type id, id_type *id_ptr, const char *fmt, Args &&... args) {
+        bool nodeState = ImGui::TreeNodeEx((void *) (intptr_t) id,
+                                           node_flags_leaf | (*id_ptr == id ? node_flags_selected : 0),
+                                           fmt, std::forward<Args>(args)...);
+        if (ImGui::IsItemClicked() && *id_ptr != id) {
+            *id_ptr = id;
+        }
+        return nodeState;
+    }
 
-    static void TreeNodeEnd();
+    template<class id_type, class... Args>
+    static bool TreeNodeBegin(id_type id, id_type *id_ptr, const char *fmt, Args &&... args) {
+        bool nodeState = ImGui::TreeNodeEx((void *) (intptr_t) id,
+                                           node_flags_base | (*id_ptr == id ? node_flags_selected : 0),
+                                           fmt, std::forward<Args>(args)...);
+        if (ImGui::IsItemClicked() && *id_ptr != id) {
+            *id_ptr = id;
+        }
+        return nodeState;
+    }
+
+    static void TreeNodeEnd() { ImGui::TreePop(); }
 
 private:
     static CustomImGuiState state;

@@ -4,6 +4,8 @@
 
 /**
  * This is a handler to an entity for modifying associated data.
+ *
+ * See https://skypjack.github.io/entt/md_docs_md_entity.html for EnTT examples.
  */
 class Entity {
     friend class ECS;

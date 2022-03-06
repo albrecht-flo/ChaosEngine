@@ -3,8 +3,9 @@
 #include <chrono>
 #include "Engine/src/renderer/window/Window.h"
 #include "Engine/src/renderer/api/GraphicsContext.h"
-#include "Scene.h"
 #include "RenderingSystem.h"
+
+class Scene;
 
 /**
  * This class is responsible for the orchestration of engine systems for processing entities and scenes.

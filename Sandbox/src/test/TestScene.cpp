@@ -100,7 +100,7 @@ void TestScene::load() {
 
 void TestScene::loadEntities() {
     LOG_INFO("Loading entities");
-    cameraEnt = registry.createEntity();
+    cameraEnt = createEntity();
     cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     cameraEnt.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
@@ -108,26 +108,26 @@ void TestScene::loadEntities() {
             .far = 100.0f,
     });
 
-    yellowQuad = registry.createEntity();
+    yellowQuad = createEntity();
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 greenColor(1, 1, 0, 1);
     yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
                                              quadROB);
 
-    redQuad = registry.createEntity();
+    redQuad = createEntity();
     redQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(0, 1, 0, 1);
     redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
                                           quadROB);
 
-    texturedQuad = registry.createEntity();
+    texturedQuad = createEntity();
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
             quadROB);
 
-    hexagon = registry.createEntity();
+    hexagon = createEntity();
     hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 blueColor(0, 0, 1, 1);
     hexagon.setComponent<RenderComponent>(
@@ -182,7 +182,7 @@ void TestScene::imGuiMainMenu() {
 
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 static bool showImGuiDebugger = false;
-static uint32_t selectedSceneElement = 0;
+static ECS::entity_t selectedSceneElement = entt::null;
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
@@ -191,17 +191,10 @@ void TestScene::updateImGui() {
     CustomImGui::RenderLogWindow();
 
     ImGui::Begin("Scene");
-    CustomImGui::TreeLeaf("Entity 1", 1, &selectedSceneElement);
-    if (CustomImGui::TreeNodeBegin("Entity 2", 2, &selectedSceneElement)) {
-        CustomImGui::TreeLeaf("Entity 2-1", 3, &selectedSceneElement);
-        CustomImGui::TreeLeaf("Entity 2-2", 4, &selectedSceneElement);
-        CustomImGui::TreeNodeEnd();
-    }
-    if (CustomImGui::TreeNodeBegin("Entity 3", 5, &selectedSceneElement)) {
-        CustomImGui::TreeLeaf("Entity 3-1", 6, &selectedSceneElement);
-        CustomImGui::TreeLeaf("Entity 3-2", 7, &selectedSceneElement);
-        CustomImGui::TreeNodeEnd();
-    }
+    ecs.getRegistry().each([](const auto entity) {
+        const auto id = entt::to_integral(entity);
+        CustomImGui::TreeLeaf(id, &selectedSceneElement, "Entity %u", id);
+    });
     ImGui::End();
 
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
@@ -228,17 +221,23 @@ void TestScene::updateImGui() {
     }
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
-            ImGui::Text("Edit Entity %X", static_cast<uint32_t>(selectedSceneElement));
-            auto &tc = texturedQuad.get<Transform>();
-            ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-            ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-            ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
-            ImGui::Separator();
-            ImGui::ColorEdit4("Color", &(editTintColor.r));
-            if (ImGui::Button("Apply")) {
-                texturedQuad.setComponent<RenderComponent>(
-                        texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor), {fallbackTexture.get()}),
-                        quadROB);
+            if (selectedSceneElement != entt::null) {
+                ImGui::Text("Edit Entity %X", selectedSceneElement);
+                auto entity = ecs.getEntity(selectedSceneElement);
+                auto &tc = entity.get<Transform>();
+                ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
+                ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
+                ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+                ImGui::Separator();
+                ImGui::ColorEdit4("Color", &(editTintColor.r));
+                if (ImGui::Button("Apply")) {
+                    entity.setComponent<RenderComponent>(
+                            texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor),
+                                                         {fallbackTexture.get()}),
+                            quadROB);
+                }
+            } else {
+                ImGui::Text("No Item selected");
             }
         }
         ImGui::End();
