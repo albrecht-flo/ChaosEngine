@@ -109,18 +109,21 @@ void TestScene::loadEntities() {
     });
 
     yellowQuad = createEntity();
+    yellowQuad.setComponent<Meta>(Meta{"Yellow quad"});
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 greenColor(1, 1, 0, 1);
     yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
                                              quadROB);
 
-    redQuad = createEntity();
-    redQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    greenQuad = createEntity();
+    greenQuad.setComponent<Meta>(Meta{"Green quad"});
+    greenQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(0, 1, 0, 1);
-    redQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
-                                          quadROB);
+    greenQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
+                                            quadROB);
 
     texturedQuad = createEntity();
+    texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
@@ -128,6 +131,7 @@ void TestScene::loadEntities() {
             quadROB);
 
     hexagon = createEntity();
+    hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
     hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 blueColor(0, 0, 1, 1);
     hexagon.setComponent<RenderComponent>(
@@ -136,6 +140,7 @@ void TestScene::loadEntities() {
 
 // Test data
 static bool cameraControllerActive = false;
+static bool viewportInFocus = false;
 static bool itemEditActive = true;
 static float dragSpeed = 1.0f;
 static glm::vec3 origin(0, 0, -2.0f);
@@ -153,18 +158,20 @@ void TestScene::update(float deltaTime) {
     if (window->isKeyDown(GLFW_KEY_LEFT_CONTROL)) { dragSpeed = 0.125f; } else { dragSpeed = 1.0f; }
 
     // Camera controls
-    if (window->isKeyDown(GLFW_KEY_W)) { origin.y -= cameraSpeed * deltaTime; }
-    if (window->isKeyDown(GLFW_KEY_S)) { origin.y += cameraSpeed * deltaTime; }
-    if (window->isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
-    if (window->isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
-    if (window->isKeyDown(GLFW_KEY_KP_ADD)) {
-        cameraEnt.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
-    } // TODO: Remove delta time after input refactor
-    if (window->isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
-        cameraEnt.get<CameraComponent>().fieldOfView += 5 * deltaTime;
-    } // TODO: Remove delta time after input refactor
+    if (viewportInFocus) {
+        if (window->isKeyDown(GLFW_KEY_W)) { origin.y -= cameraSpeed * deltaTime; }
+        if (window->isKeyDown(GLFW_KEY_S)) { origin.y += cameraSpeed * deltaTime; }
+        if (window->isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
+        if (window->isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
+        if (window->isKeyDown(GLFW_KEY_KP_ADD)) {
+            cameraEnt.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
+        } // TODO: Remove delta time after input refactor
+        if (window->isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
+            cameraEnt.get<CameraComponent>().fieldOfView += 5 * deltaTime;
+        } // TODO: Remove delta time after input refactor
 
-    cameraEnt.get<Transform>().position = origin;
+        cameraEnt.get<Transform>().position = origin;
+    }
 
 }
 
@@ -183,6 +190,7 @@ void TestScene::imGuiMainMenu() {
 static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 static bool showImGuiDebugger = false;
 static ECS::entity_t selectedSceneElement = entt::null;
+static char nameBuffer[128] = {0};
 
 void TestScene::updateImGui() {
     ImGui::NewFrame();
@@ -190,15 +198,20 @@ void TestScene::updateImGui() {
 
     CustomImGui::RenderLogWindow();
 
-    ImGui::Begin("Scene");
-    ecs.getRegistry().each([](const auto entity) {
+    ImGui::Begin("Outline");
+    auto entityView = ecs.getRegistry().view<Meta>();
+    entityView.each([](auto entity, Meta &meta) {
         const auto id = entt::to_integral(entity);
-        CustomImGui::TreeLeaf(id, &selectedSceneElement, "Entity %u", id);
+        CustomImGui::TreeLeaf(id, &selectedSceneElement, meta.name.c_str());
+        if (ImGui::IsItemClicked()) {
+            meta.name.copy(nameBuffer, sizeof(nameBuffer) - 1);
+            nameBuffer[std::min(sizeof(nameBuffer) - 1, meta.name.size())] = 0; // set missing null termination
+        }
     });
     ImGui::End();
 
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    auto size = CustomImGui::RenderSceneViewport(fb);
+    auto size = CustomImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
 
     ImGui::Begin("Info");
     ImGuiIO &io = ImGui::GetIO();
@@ -222,8 +235,16 @@ void TestScene::updateImGui() {
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
             if (selectedSceneElement != entt::null) {
-                ImGui::Text("Edit Entity %X", selectedSceneElement);
                 auto entity = ecs.getEntity(selectedSceneElement);
+                ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
+                if (ImGui::InputText("Edit Entity", nameBuffer, sizeof(nameBuffer), input_text_flags)) {
+                    nameBuffer[63] = 0;
+                    LOG_DEBUG("new Text \"{0}\"", nameBuffer);
+                    auto &meta = entity.get<Meta>();
+                    meta.name = nameBuffer;
+                }
+                ImGui::Separator();
+
                 auto &tc = entity.get<Transform>();
                 ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
                 ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);

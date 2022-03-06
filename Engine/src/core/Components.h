@@ -14,6 +14,11 @@
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
 
+struct Meta {
+    std::string name;
+};
+
+
 struct Transform {
     glm::vec3 position;
     glm::vec3 rotation;

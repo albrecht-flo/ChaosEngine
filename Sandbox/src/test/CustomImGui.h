@@ -26,7 +26,8 @@ public:
 
     static void RenderLogWindow(const std::string &title = "Log");
 
-    static ImVec2 RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title = "Viewport");
+    static ImVec2 RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title = "Viewport",
+                                      bool *focused = nullptr);
 
     // Trees -----------------------------------------------------------------------------------------------------------
     // See ImGui Issue: https://github.com/ocornut/imgui/issues/581

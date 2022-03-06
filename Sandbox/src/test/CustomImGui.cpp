@@ -94,7 +94,7 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
 }
 
 
-ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title) {
+ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool* focused) {
     using namespace Renderer;
     if (state.sceneImageGPUHandles.empty()) {
         uint32_t sceneImageGPUHandleCount;
@@ -135,6 +135,9 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
     // Render viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin(title.c_str());
+    if(focused != nullptr) {
+        *focused = ImGui::IsWindowFocused();
+    }
     // Size and Resize handling
     auto size = ImGui::GetContentRegionAvail();
     if (state.previousSize.x != size.x || state.previousSize.y != size.y) {

@@ -32,7 +32,7 @@ private:
     std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
     Entity cameraEnt;
     Entity yellowQuad;
-    Entity redQuad;
+    Entity greenQuad;
     Entity texturedQuad;
     Entity hexagon;
 };
