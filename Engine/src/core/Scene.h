@@ -30,7 +30,7 @@ public:
     /// Here the scene can render ImGui interfaces
     virtual void updateImGui() = 0;
 
-    Entity createEntity() { return ecs.createEntity(); }
+    Entity createEntity() { return ecs.addEntity(); }
 
 protected:
     ECS ecs;
