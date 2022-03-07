@@ -100,29 +100,29 @@ void TestScene::load() {
 
 void TestScene::loadEntities() {
     LOG_INFO("Loading entities");
-    cameraEnt = createEntity();
-    cameraEnt.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
-    cameraEnt.setComponent<CameraComponent>(CameraComponent{
+    editorCamera = createEntity();
+    editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    editorCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
             .far = 100.0f,
     });
 
-    yellowQuad = createEntity();
+    auto yellowQuad = createEntity();
     yellowQuad.setComponent<Meta>(Meta{"Yellow quad"});
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 greenColor(1, 1, 0, 1);
     yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
                                              quadROB);
 
-    greenQuad = createEntity();
+    auto greenQuad = createEntity();
     greenQuad.setComponent<Meta>(Meta{"Green quad"});
     greenQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(0, 1, 0, 1);
     greenQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
                                             quadROB);
 
-    texturedQuad = createEntity();
+    auto texturedQuad = createEntity();
     texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
@@ -130,7 +130,7 @@ void TestScene::loadEntities() {
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
             quadROB);
 
-    hexagon = createEntity();
+    auto hexagon = createEntity();
     hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
     hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 blueColor(0, 0, 1, 1);
@@ -164,13 +164,13 @@ void TestScene::update(float deltaTime) {
         if (window->isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
         if (window->isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
         if (window->isKeyDown(GLFW_KEY_KP_ADD)) {
-            cameraEnt.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
+            editorCamera.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
         } // TODO: Remove delta time after input refactor
         if (window->isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
-            cameraEnt.get<CameraComponent>().fieldOfView += 5 * deltaTime;
+            editorCamera.get<CameraComponent>().fieldOfView += 5 * deltaTime;
         } // TODO: Remove delta time after input refactor
 
-        cameraEnt.get<Transform>().position = origin;
+        editorCamera.get<Transform>().position = origin;
     }
 
 }
