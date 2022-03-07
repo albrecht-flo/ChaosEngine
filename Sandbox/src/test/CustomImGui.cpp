@@ -9,10 +9,11 @@
 #include <vector>
 #include <string>
 
-CustomImGui::CustomImGuiState CustomImGui::state{};
+using namespace CustomImGui;
+CoreImGui::CoreImGuiState CoreImGui::state{};
 
 // Source: https://gist.github.com/Pikachuxxxx/a3796bb193ca0aaed4ad4f591b2dab07
-void CustomImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallback) {
+void CoreImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallback) {
     static bool opt_fullscreen = true;
     static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
 
@@ -64,7 +65,7 @@ void CustomImGui::ImGuiEnableDocking(const std::function<void(void)> &menuCallba
     ImGui::End();
 }
 
-void CustomImGui::RenderLogWindow(const std::string &title) {
+void CoreImGui::RenderLogWindow(const std::string &title) {
     ImGui::Begin(title.c_str());
     if (ImGui::Button("Toggle auto scroll"))
         state.followLog = !state.followLog;
@@ -94,7 +95,7 @@ void CustomImGui::RenderLogWindow(const std::string &title) {
 }
 
 
-ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool* focused) {
+ImVec2 CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool *focused) {
     using namespace Renderer;
     if (state.sceneImageGPUHandles.empty()) {
         uint32_t sceneImageGPUHandleCount;
@@ -135,7 +136,7 @@ ImVec2 CustomImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer
     // Render viewport
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin(title.c_str());
-    if(focused != nullptr) {
+    if (focused != nullptr) {
         *focused = ImGui::IsWindowFocused();
     }
     // Size and Resize handling
