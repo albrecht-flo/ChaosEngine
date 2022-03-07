@@ -1,8 +1,9 @@
 set(SANDBOX_SOURCES
+        src/test/AssetView.cpp
         src/test/CustomImGui.cpp
+        src/test/EmptyScene.cpp
         src/test/TestScene.cpp
         src/main.cpp
-        src/test/EmptyScene.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

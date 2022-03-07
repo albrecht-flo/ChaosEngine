@@ -1,6 +1,7 @@
 #include "TestScene.h"
 
 #include "CustomImGui.h"
+#include "AssetView.h"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -212,35 +213,37 @@ static_assert(std::is_same<uint32_t, std::underlying_type<entt::entity>::type>::
               "EnTT entity type does not match editor entity type!");
 
 void TestScene::updateImGui() {
+    using namespace CustomImGui;
     ImGui::NewFrame();
-    CustomImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
+    CoreImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
 
-    CustomImGui::RenderLogWindow();
+    CoreImGui::RenderLogWindow();
 
-    ImGui::Begin("Outline");
-    const uint32_t createEntityButtonSize = 100;
-    ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
-    if (ImGui::Button("Create Entity", ImVec2(createEntityButtonSize, 20))) {
-        addNewEntity();
-    }
-    ImGui::Separator();
-    if (ImGui::BeginPopupContextWindow("Outline-menu")) {
-        if (ImGui::Selectable("Create Entity")) {
+    if (ImGui::Begin("Outline")) {
+        const uint32_t createEntityButtonSize = 100;
+        ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
+        if (ImGui::Button("Create Entity", ImVec2(createEntityButtonSize, 20))) {
             addNewEntity();
-            ImGui::CloseCurrentPopup();
         }
-        ImGui::EndPopup();
-    }
+        ImGui::Separator();
+        if (ImGui::BeginPopupContextWindow("Outline-menu")) {
+            if (ImGui::Selectable("Create Entity")) {
+                addNewEntity();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
 
-    auto entityView = ecs.getRegistry().view<Meta>();
-    entityView.each([](auto entity, Meta &meta) {
-        const auto id = ECS::to_integral(entity);
-        CustomImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str());
-    });
+        auto entityView = ecs.getRegistry().view<Meta>();
+        entityView.each([](auto entity, Meta &meta) {
+            const auto id = ECS::to_integral(entity);
+            CoreImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str());
+        });
+    }
     ImGui::End();
 
     const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    auto size = CustomImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
+    auto size = CoreImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
 
     ImGui::Begin("Info");
     ImGuiIO &io = ImGui::GetIO();
@@ -303,4 +306,5 @@ void TestScene::updateImGui() {
         ImGui::End();
     }
 
+    AssetView::renderAssetView();
 }
