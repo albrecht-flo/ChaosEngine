@@ -32,11 +32,7 @@ private:
     Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
     std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
-    Entity cameraEnt;
-    Entity yellowQuad;
-    Entity greenQuad;
-    Entity texturedQuad;
-    Entity hexagon;
+    Entity editorCamera;
 };
 
 
