@@ -51,7 +51,7 @@ private:
 #else
     public:
         void
-        setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::optional<std::string>& name) const
+        setDebugName(VkDevice, VkObjectType, uint64_t, const std::optional<std::string>&) const
         {}
 
 #endif
