@@ -63,6 +63,8 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
+        src/core/assets/AssetManager.cpp
+        src/core/assets/AssetLoader.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
