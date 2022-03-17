@@ -38,7 +38,7 @@ static bool checkValidationLayerSupport(const std::vector<const char *> &validat
     return true;
 }
 
-static bool checkDebugLayerSupport(std::vector<const char *> debugLayers) {
+[[maybe_unused]] static bool checkDebugLayerSupport(std::vector<const char *> debugLayers) {
     uint32_t extensionCount;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> availableExtensions(extensionCount);

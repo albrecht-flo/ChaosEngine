@@ -149,7 +149,7 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
             throw std::runtime_error("file_stream failed to open " + filename);
 
         file_stream->seekg(0, std::ios::end);
-        const float size_mb = file_stream->tellg() * float(1e-6);
+//        const float size_mb = file_stream->tellg() * float(1e-6);
         file_stream->seekg(0, std::ios::beg);
 
         PlyFile file;

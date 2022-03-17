@@ -236,7 +236,11 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
 
     // Create the queues
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily, *indices.transferFamily};
+    std::set<uint32_t> uniqueQueueFamilies;
+    if(indices.transferFamily.has_value())
+        uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily, *indices.transferFamily};
+    else
+        uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily};
 
     float queuePriority = 1.0f; // between 0.0 and 1.0
     for (uint32_t queueFamily: uniqueQueueFamilies) {
@@ -330,7 +334,16 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
 
     auto[graphicsQueue, graphicsQueueFamilyIndex] = ::getGraphicsQueue(device, indices);
     auto[presentQueue, presentQueueFamilyIndex] = ::getPresentQueue(device, indices);
-    auto[transferQueue, transferQueueFamilyIndex] = ::getTransferQueue(device, indices);
+    VkQueue transferQueue{};
+    uint32_t transferQueueFamilyIndex = 0;
+    if(!indices.transferFamily) {
+        transferQueue = graphicsQueue;
+        transferQueueFamilyIndex = graphicsQueueFamilyIndex;
+    } else {
+        auto[tQueue, tQueueFamilyIndex] = ::getTransferQueue(device, indices);
+        transferQueue = tQueue;
+        transferQueueFamilyIndex = tQueueFamilyIndex;
+    }
 
     assert("Missing required Queue" &&
            (graphicsQueue != VK_NULL_HANDLE && presentQueue != VK_NULL_HANDLE && transferQueue != VK_NULL_HANDLE));
