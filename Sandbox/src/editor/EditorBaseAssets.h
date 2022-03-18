@@ -34,11 +34,11 @@ namespace Editor {
 
         std::shared_ptr<Renderer::RenderMesh> getQuadMesh() const { return quadROB; }
 
-        std::string getQuadMeshName() const { return "editor/quad.mesh"; }
+        std::string getQuadMeshName() const { return "Quad"; }
 
         std::shared_ptr<Renderer::RenderMesh> getHexMesh() const { return hexROB; }
 
-        std::string getHexMeshName() const { return "editor/hex.mesh"; }
+        std::string getHexMeshName() const { return "Hex"; }
 
         // --------------------------------------- Materials -----------------------------------------------------------
 
@@ -50,6 +50,8 @@ namespace Editor {
 
         Renderer::Texture &getFallbackTexture() const { return *fallbackTexture; }
 
+        std::string getFallbackTextureName() const { return "TestAtlas.jpg"; }
+
 
     private:
         AssetManager &assetManager;
@@ -57,7 +59,7 @@ namespace Editor {
         std::shared_ptr<Renderer::RenderMesh> hexROB;
         Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
         Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
-        std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
+        Renderer::Texture *fallbackTexture = nullptr;
     public:
         uint32_t DebugMaterialID = 1;
         uint32_t TexturedMaterialID = 2;

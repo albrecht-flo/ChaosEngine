@@ -76,5 +76,7 @@ void EditorBaseAssets::loadBaseMaterials() {
 }
 
 void EditorBaseAssets::loadBaseTextures() {
-    fallbackTexture = Texture::Create("TestAtlas.jpg");
+    auto fallbackTexture1 = Texture::Create("TestAtlas.jpg");
+    fallbackTexture = assetManager.registerTexture("TestAtlas.jpg", std::move(fallbackTexture1),
+                                                   AssetManager::TextureInfo{});
 }
