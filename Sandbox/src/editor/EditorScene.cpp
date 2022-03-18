@@ -1,4 +1,4 @@
-#include "TestScene.h"
+#include "EditorScene.h"
 
 #include "Sandbox/src/common/CustomImGui.h"
 #include "Sandbox/src/common/AssetView.h"
@@ -6,7 +6,7 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-SceneConfiguration TestScene::configure(Window &pWindow) {
+SceneConfiguration EditorScene::configure(Window &pWindow) {
     window = &pWindow;
     return SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
@@ -14,7 +14,7 @@ SceneConfiguration TestScene::configure(Window &pWindow) {
 }
 
 
-void TestScene::load() {
+void EditorScene::load() {
     using namespace Renderer;
     // Load meshes
     LOG_INFO("Creating quad buffers");
@@ -99,7 +99,7 @@ void TestScene::load() {
 
 }
 
-void TestScene::loadEntities() {
+void EditorScene::loadEntities() {
     LOG_INFO("Loading entities");
     editorCamera = createEntity();
     editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
@@ -147,7 +147,7 @@ static float dragSpeed = 1.0f;
 static glm::vec3 origin(0, 0, -2.0f);
 static float cameraSpeed = 10.0f;
 
-void TestScene::update(float deltaTime) {
+void EditorScene::update(float deltaTime) {
     // Close window controls
     if (window->isKeyDown(GLFW_KEY_ESCAPE) ||
         (window->isKeyDown(GLFW_KEY_Q) && window->isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window->close(); }
@@ -176,7 +176,7 @@ void TestScene::update(float deltaTime) {
 
 }
 
-void TestScene::addNewEntity() {
+void EditorScene::addNewEntity() {
     auto entity = ecs.addEntity();
     entity.setComponent<Meta>(Meta{"New Entity"});
     entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
@@ -186,7 +186,7 @@ void TestScene::addNewEntity() {
             quadROB);
 }
 
-void TestScene::imGuiMainMenu() {
+void EditorScene::imGuiMainMenu() {
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("File")) {
         if (ImGui::MenuItem("Close", "Ctrl+Q")) {
@@ -212,7 +212,7 @@ static ECS::entity_t selectedSceneElement = ECS::null;
 static_assert(std::is_same<uint32_t, std::underlying_type<entt::entity>::type>::value,
               "EnTT entity type does not match editor entity type!");
 
-void TestScene::updateImGui() {
+void EditorScene::updateImGui() {
     using namespace CustomImGui;
     ImGui::NewFrame();
     CoreImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });

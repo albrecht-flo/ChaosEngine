@@ -1,8 +1,9 @@
 set(SANDBOX_SOURCES
-        src/test/AssetView.cpp
-        src/test/CustomImGui.cpp
+        src/common/AssetView.cpp
+        src/common/CustomImGui.cpp
         src/test/EmptyScene.cpp
         src/test/TestScene.cpp
+        src/editor/EditorScene.cpp
         src/main.cpp
         )
 

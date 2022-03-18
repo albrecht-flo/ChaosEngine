@@ -1,6 +1,7 @@
 #include "Engine/src/ChaosEngine.h"
-#include "test/TestScene.h"
-#include "test/EmptyScene.h"
+//#include "test/TestScene.h"
+//#include "test/EmptyScene.h"
+#include "editor/EditorScene.h"
 
 #include <exception>
 #include <iostream>
@@ -54,9 +55,10 @@ int main() {
     Logger::Init(LogLevel::Debug);
     Logger::I("Main", "Engine starting...");
 
-    auto testScene = std::make_unique<TestScene>();
-//    auto testScene = std::make_unique<EmptyScene>();
-    Engine engine(std::move(testScene));
+//    auto scene = std::make_unique<TestScene>();
+//    auto scene = std::make_unique<EmptyScene>();
+    auto scene = std::make_unique<EditorScene>();
+    Engine engine(std::move(scene));
     engine.run();
 
     return EXIT_SUCCESS;
