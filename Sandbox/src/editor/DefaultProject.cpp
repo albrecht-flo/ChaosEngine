@@ -8,6 +8,7 @@ namespace Editor {
 
         auto camera = scene.createEntity();
         camera.setComponent<Meta>(Meta{"Main Camera"});
+        camera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
         camera.setComponent<CameraComponent>(
                 CameraComponent{.fieldOfView=10.0f, .near=0.1f, .far=100.0f, .active=false, .mainCamera = true});
 

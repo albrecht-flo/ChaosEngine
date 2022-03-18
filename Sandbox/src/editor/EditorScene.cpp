@@ -7,6 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "DefaultProject.h"
+#include "EditorUI.h"
 
 using namespace Editor;
 
@@ -43,7 +44,6 @@ void EditorScene::load() {
 static bool cameraControllerActive = false;
 static bool viewportInFocus = false;
 static bool itemEditActive = true;
-static float dragSpeed = 1.0f;
 static glm::vec3 origin(0, 0, -2.0f);
 static float cameraSpeed = 10.0f;
 
@@ -56,7 +56,6 @@ void EditorScene::update(float deltaTime) {
         window->isKeyDown(GLFW_KEY_C)) { cameraControllerActive = true; }
     if (window->isKeyDown(GLFW_KEY_LEFT_ALT) && window->isKeyDown(GLFW_KEY_LEFT_SHIFT) &&
         window->isKeyDown(GLFW_KEY_E)) { itemEditActive = true; }
-    if (window->isKeyDown(GLFW_KEY_LEFT_CONTROL)) { dragSpeed = 0.125f; } else { dragSpeed = 1.0f; }
 
     // Camera controls
     if (viewportInFocus) {
@@ -105,7 +104,6 @@ void EditorScene::imGuiMainMenu() {
 
 }
 
-static glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
 static bool showImGuiDebugger = false;
 static bool showImGuiDemo = false;
 static ECS::entity_t selectedSceneElement = ECS::null;
@@ -169,37 +167,14 @@ void EditorScene::updateImGui() {
         }
         ImGui::End();
     }
+
     if (itemEditActive) {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
             if (selectedSceneElement != ECS::null) {
                 auto entity = ecs.getEntity(selectedSceneElement);
-
-                ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-                auto &meta = entity.get<Meta>();
-                ImGui::InputText(" ", &meta.name, input_text_flags);
-
-                const auto panelWidth = ImGui::GetWindowWidth();
-                ImGui::SameLine(panelWidth - 60);
-                if (ImGui::Button("Delete")) {
+                if (EditorUI::renderEntityComponentPanel(entity, baseAssets)) {
                     ecs.removeEntity(entity);
                     selectedSceneElement = ECS::null;
-                } else {
-
-                    ImGui::Separator();
-
-                    auto &tc = entity.get<Transform>();
-                    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-                    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-                    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
-                    ImGui::Separator();
-                    ImGui::ColorEdit4("Color", &(editTintColor.r));
-                    if (ImGui::Button("Apply")) {
-
-                        entity.setComponent<RenderComponent>(
-                                baseAssets.getTexturedMaterial().instantiate(&editTintColor, sizeof(editTintColor),
-                                                                             {&baseAssets.getFallbackTexture()}),
-                                baseAssets.getQuadMesh());
-                    }
                 }
             } else {
                 ImGui::Text("No Item selected");
