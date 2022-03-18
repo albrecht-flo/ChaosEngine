@@ -6,9 +6,9 @@
 
 namespace Editor {
 
-    class EditorUI {
+    class EditorComponentUI {
     public:
-        explicit EditorUI(const AssetManager &assetManager) : assetManager(assetManager) {}
+        explicit EditorComponentUI(const AssetManager &assetManager) : assetManager(assetManager) {}
 
         bool renderEntityComponentPanel(Entity &entity);
 

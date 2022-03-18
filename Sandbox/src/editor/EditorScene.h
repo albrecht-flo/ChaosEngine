@@ -2,7 +2,7 @@
 
 #include "Engine/src/ChaosEngine.h"
 #include "EditorBaseAssets.h"
-#include "EditorUI.h"
+#include "EditorComponentUI.h"
 
 namespace Editor {
 
@@ -29,7 +29,7 @@ namespace Editor {
     private:
         Window *window;
         EditorBaseAssets baseAssets;
-        EditorUI editorUI;
+        EditorComponentUI editorUI;
         Entity editorCamera;
     };
 

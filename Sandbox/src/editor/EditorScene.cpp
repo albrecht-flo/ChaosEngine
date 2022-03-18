@@ -7,7 +7,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include "DefaultProject.h"
-#include "EditorUI.h"
+#include "EditorComponentUI.h"
 
 using namespace Editor;
 
