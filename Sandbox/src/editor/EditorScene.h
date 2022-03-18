@@ -2,6 +2,8 @@
 
 #include "Engine/src/ChaosEngine.h"
 
+namespace Editor {
+
 class EditorScene : public Scene {
 public:
     EditorScene() : Scene(), window(nullptr) {}
@@ -35,5 +37,5 @@ private:
     Entity editorCamera;
 };
 
-
+}
 

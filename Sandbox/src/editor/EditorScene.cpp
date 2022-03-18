@@ -6,6 +6,8 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
+using namespace Editor;
+
 SceneConfiguration EditorScene::configure(Window &pWindow) {
     window = &pWindow;
     return SceneConfiguration{

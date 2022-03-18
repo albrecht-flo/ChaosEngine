@@ -57,7 +57,7 @@ int main() {
 
 //    auto scene = std::make_unique<TestScene>();
 //    auto scene = std::make_unique<EmptyScene>();
-    auto scene = std::make_unique<EditorScene>();
+    auto scene = std::make_unique<Editor::EditorScene>();
     Engine engine(std::move(scene));
     engine.run();
 
