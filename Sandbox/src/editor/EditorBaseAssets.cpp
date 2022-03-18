@@ -15,6 +15,7 @@ void EditorBaseAssets::loadBaseMeshes() {
     auto indexBuffer = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(uint32_t),
                                       BufferType::Index);
     quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
+    assetManager.registerMesh("Quad", quadROB, AssetManager::MeshInfo{});
 
     LOG_INFO("Creating hex buffers");
     auto hexAsset = ModelLoader::getHexagon();
@@ -23,6 +24,7 @@ void EditorBaseAssets::loadBaseMeshes() {
     auto hexIndexBuffer = Buffer::Create(hexAsset.indices.data(), hexAsset.indices.size() * sizeof(uint32_t),
                                          BufferType::Index);
     hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
+    assetManager.registerMesh("Hex", quadROB, AssetManager::MeshInfo{});
 
 }
 
