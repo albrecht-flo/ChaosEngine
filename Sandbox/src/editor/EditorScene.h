@@ -2,12 +2,13 @@
 
 #include "Engine/src/ChaosEngine.h"
 #include "EditorBaseAssets.h"
+#include "EditorUI.h"
 
 namespace Editor {
 
     class EditorScene : public Scene {
     public:
-        EditorScene() : Scene(), window(nullptr) {}
+        EditorScene() : Scene(), window(nullptr), baseAssets(assetManager), editorUI(assetManager) {}
 
         ~EditorScene() override = default;
 
@@ -28,6 +29,7 @@ namespace Editor {
     private:
         Window *window;
         EditorBaseAssets baseAssets;
+        EditorUI editorUI;
         Entity editorCamera;
     };
 

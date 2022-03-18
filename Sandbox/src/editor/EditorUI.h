@@ -2,34 +2,32 @@
 
 #include "Engine/src/core/Entity.h"
 #include "Engine/src/core/Scene.h"
-#include "EditorBaseAssets.h"
 #include "EditorComponents.h"
 
 namespace Editor {
 
     class EditorUI {
-    private:
-        struct EditorUIState {
-            glm::vec4 editTintColor;
-            float dragSpeed;
-        };
     public:
-        static bool renderEntityComponentPanel(Entity &entity, const EditorBaseAssets &assets);
+        explicit EditorUI(const AssetManager &assetManager) : assetManager(assetManager) {}
+
+        bool renderEntityComponentPanel(Entity &entity);
 
     private:
-        static void renderMetaComponentUI(Entity &entity);
+        void renderMetaComponentUI(Entity &entity);
 
-        static void renderTransformComponentUI(Entity &entity);
+        void renderTransformComponentUI(Entity &entity);
 
-        static void renderCameraComponentUI(Entity &entity);
+        void renderCameraComponentUI(Entity &entity);
 
-        static void renderRenderComponentUI(Entity &entity, const EditorBaseAssets &assets);
+        void renderRenderComponentUI(Entity &entity);
 
     private:
-        static EditorUIState state;
 
-        static void updateMaterialInstance(Entity &entity, const EditorBaseAssets &assets, glm::vec4 color,
-                                           const RenderComponentMeta &rcMeta);
+        void updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta);
+
+    private:
+        const AssetManager &assetManager;
+        glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
+        float dragSpeed = 1.0f;
     };
-
 }
