@@ -8,7 +8,7 @@ namespace Editor {
 
     class EditorScene : public Scene {
     public:
-        EditorScene() : Scene(), window(nullptr), baseAssets(assetManager), editorUI(assetManager) {}
+        EditorScene() : Scene(), window(nullptr), baseAssets(assetManager), editorUI(assetManager, baseAssets) {}
 
         ~EditorScene() override = default;
 
