@@ -22,8 +22,8 @@ namespace Editor {
                         &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
                 assets.getQuadMesh(), assets.TexturedMaterialID
         );
-        texturedQuad.setComponent<RenderComponentMeta>(assets.getTexturedMaterial()->getName(),
-                                                       assets.getQuadMeshName(),
+        texturedQuad.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
+                                                       assets.getTexturedMaterial()->getName(),
                                                        std::make_optional(std::vector<TextureMeta>(
                                                                {TextureMeta{"diffuse", "fallback-0.tex"}})),
                                                        assets.TexturedMaterialID);
@@ -36,8 +36,8 @@ namespace Editor {
                         &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
                 assets.getHexMesh(), assets.TexturedMaterialID
         );
-        hexagon.setComponent<RenderComponentMeta>(assets.getTexturedMaterial()->getName(),
-                                                  assets.getHexMeshName(),
+        hexagon.setComponent<RenderComponentMeta>(assets.getHexMeshName(),
+                                                  assets.getTexturedMaterial()->getName(),
                                                   std::make_optional(std::vector<TextureMeta>(
                                                           {TextureMeta{"diffuse", "fallback-0.tex"}})),
                                                   assets.TexturedMaterialID);
@@ -50,7 +50,7 @@ namespace Editor {
                 assets.getDebugMaterial().instantiate(&blueColor, sizeof(blueColor), {}),
                 assets.getHexMesh(), assets.DebugMaterialID
         );
-        hexagonD.setComponent<RenderComponentMeta>(assets.getDebugMaterial()->getName(), assets.getHexMeshName(),
+        hexagonD.setComponent<RenderComponentMeta>(assets.getHexMeshName(), assets.getDebugMaterial()->getName(),
                                                    std::nullopt, assets.DebugMaterialID);
     }
 }

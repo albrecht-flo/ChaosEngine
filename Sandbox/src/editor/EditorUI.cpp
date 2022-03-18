@@ -8,11 +8,6 @@
 
 using namespace Editor;
 
-EditorUI::EditorUIState EditorUI::state = EditorUI::EditorUIState{
-        .editTintColor = glm::vec4(1, 1, 1, 1),
-        .dragSpeed = 1,
-};
-
 // ------------------------------------ Component rendering ------------------------------------------------------------
 
 void EditorUI::renderMetaComponentUI(Entity &entity) {
@@ -23,9 +18,9 @@ void EditorUI::renderMetaComponentUI(Entity &entity) {
 
 void EditorUI::renderTransformComponentUI(Entity &entity) {
     auto &tc = entity.get<Transform>();
-    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * state.dragSpeed);
-    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * state.dragSpeed);
-    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * state.dragSpeed);
+    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
+    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
+    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
 }
 
 void EditorUI::renderCameraComponentUI(Entity &entity) {
@@ -39,7 +34,7 @@ void EditorUI::renderCameraComponentUI(Entity &entity) {
     }
 }
 
-void EditorUI::renderRenderComponentUI(Entity &entity, const EditorBaseAssets &assets) {
+void EditorUI::renderRenderComponentUI(Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Render Component", flags)) {
         auto &rcMeta = entity.get<RenderComponentMeta>();
@@ -55,9 +50,9 @@ void EditorUI::renderRenderComponentUI(Entity &entity, const EditorBaseAssets &a
             // TODO
         }
         ImGui::Indent(indentW);
-        if (rcMeta.materialID == assets.DebugMaterialID || assets.TexturedMaterialID) {
-            if (ImGui::ColorEdit4("Color", &(state.editTintColor.r))) {
-                updateMaterialInstance(entity, assets, state.editTintColor, rcMeta);
+        if (assetManager.getMaterialInfo(rcMeta.materialName).hasTintColor) {
+            if (ImGui::ColorEdit4("Color", &(editTintColor.r))) {
+                updateMaterialInstance(entity, editTintColor, rcMeta);
             }
         }
         if (rcMeta.textures) {
@@ -74,7 +69,7 @@ void EditorUI::renderRenderComponentUI(Entity &entity, const EditorBaseAssets &a
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-bool EditorUI::renderEntityComponentPanel(Entity &entity, const EditorBaseAssets &assets) {
+bool EditorUI::renderEntityComponentPanel(Entity &entity) {
     renderMetaComponentUI(entity);
 
     const auto panelWidth = ImGui::GetWindowWidth();
@@ -93,15 +88,14 @@ bool EditorUI::renderEntityComponentPanel(Entity &entity, const EditorBaseAssets
     }
 
     if (entity.has<RenderComponent>()) {
-        renderRenderComponentUI(entity, assets);
+        renderRenderComponentUI(entity);
         ImGui::Separator();
     }
 
     return false;
 }
 
-void EditorUI::updateMaterialInstance(Entity &entity, const EditorBaseAssets &assets, glm::vec4 color,
-                                      const RenderComponentMeta &rcMeta) {
+void EditorUI::updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta) {
     // TODO
 //    auto mesh = assets.getMesh(rcMeta);
 //    auto& material = assets.getMaterial(rcMeta);

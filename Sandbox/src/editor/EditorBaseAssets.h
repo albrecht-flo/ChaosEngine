@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "Engine/src/core/assets/AssetManager.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/api/Texture.h"
 #include "Engine/src/renderer/api/Material.h"
@@ -9,7 +10,7 @@ namespace Editor {
 
     class EditorBaseAssets {
     public:
-        EditorBaseAssets() = default;
+        explicit EditorBaseAssets(AssetManager &assetManager) : assetManager(assetManager) {}
 
         ~EditorBaseAssets() = default;
 
@@ -51,6 +52,7 @@ namespace Editor {
 
 
     private:
+        AssetManager &assetManager;
         std::shared_ptr<Renderer::RenderMesh> quadROB;
         std::shared_ptr<Renderer::RenderMesh> hexROB;
         Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);

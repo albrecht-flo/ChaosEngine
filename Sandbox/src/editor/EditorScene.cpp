@@ -172,7 +172,7 @@ void EditorScene::updateImGui() {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
             if (selectedSceneElement != ECS::null) {
                 auto entity = ecs.getEntity(selectedSceneElement);
-                if (EditorUI::renderEntityComponentPanel(entity, baseAssets)) {
+                if (editorUI.renderEntityComponentPanel(entity)) {
                     ecs.removeEntity(entity);
                     selectedSceneElement = ECS::null;
                 }

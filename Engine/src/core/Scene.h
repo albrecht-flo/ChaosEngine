@@ -3,6 +3,7 @@
 #include "Ecs.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/window/Window.h"
+#include "assets/AssetManager.h"
 
 /// Via this struct the scene is able to configure the engine runtime.
 struct SceneConfiguration {
@@ -34,5 +35,6 @@ public:
 
 protected:
     ECS ecs;
+    AssetManager assetManager;
     //TODO: Scene tree
 };

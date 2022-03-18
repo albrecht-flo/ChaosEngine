@@ -47,6 +47,7 @@ void EditorBaseAssets::loadBaseMaterials() {
             .set1ExpectedCount = 64,
             .name="DebugWireFrame",
     });
+    assetManager.registerMaterial("DebugWireFrame", debugMaterial, AssetManager::MaterialInfo{.hasTintColor=true});
 
     texturedMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
@@ -68,6 +69,7 @@ void EditorBaseAssets::loadBaseMaterials() {
             .set1ExpectedCount = 64,
             .name="TexturedSprite",
     });
+    assetManager.registerMaterial("TexturedSprite", texturedMaterial, AssetManager::MaterialInfo{.hasTintColor=true});
 
 }
 

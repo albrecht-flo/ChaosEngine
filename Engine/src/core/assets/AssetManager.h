@@ -1,26 +1,35 @@
 #pragma once
+
 #include <string>
+#include <unordered_map>
+
+#include "Engine/src/renderer/api/Material.h"
 
 class AssetManager {
+public:
     enum class ResourceType {
         Scene, Entity, Mesh, Material, Texture, Script
     };
-    class ResourceHandle {};
+
+    struct MaterialInfo {
+        bool hasTintColor;
+    };
+
 public:
-    // TODO: COnstruction
+    AssetManager() = default;
 
-    /// Load resource from file into the engine
-    ResourceHandle loadResource(ResourceType type, const std::string& uri);
+    ~AssetManager() = default;
 
-    /// Destroy resource from the engine
-    void destroyResource(ResourceHandle handle);
+    void registerMaterial(const std::string &uri, const Renderer::MaterialRef& ref, MaterialInfo materialInfo) {
+        materials.emplace(uri, std::make_pair(ref, materialInfo));
+    }
 
-    /// Retrieve loaded resource by UIR
-    ResourceHandle getResource(ResourceType type, const std::string& uri) const;
+    [[nodiscard]] Renderer::MaterialRef getMaterial(const std::string &uri) const { return materials.at(uri).first; }
 
+    [[nodiscard]] MaterialInfo getMaterialInfo(const std::string &uri) const { return materials.at(uri).second; }
 
 private:
-    std::string baseResourcePath;
+    std::unordered_map<std::string, std::pair<Renderer::MaterialRef, MaterialInfo>> materials{};
 };
 
 
