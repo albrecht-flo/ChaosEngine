@@ -4,6 +4,7 @@ set(SANDBOX_SOURCES
         src/test/EmptyScene.cpp
         src/test/TestScene.cpp
         src/editor/EditorScene.cpp
+        src/editor/EditorBaseAssets.cpp
         src/main.cpp
         )
 

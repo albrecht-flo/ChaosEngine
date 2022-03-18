@@ -1,41 +1,37 @@
 #pragma once
 
 #include "Engine/src/ChaosEngine.h"
+#include "EditorBaseAssets.h"
 
 namespace Editor {
 
-class EditorScene : public Scene {
-public:
-    EditorScene() : Scene(), window(nullptr) {}
+    class EditorScene : public Scene {
+    public:
+        EditorScene() : Scene(), window(nullptr) {}
 
-    ~EditorScene() override = default;
+        ~EditorScene() override = default;
 
-    SceneConfiguration configure(Window &window) override;
+        SceneConfiguration configure(Window &window) override;
 
-    void load() override;
+        void load() override;
 
-    void update(float deltaTime) override;
+        void update(float deltaTime) override;
 
-    void updateImGui() override;
+        void updateImGui() override;
 
-private:
+    private:
 
-    void loadEntities();
+        void loadEntities();
 
-    void addNewEntity();
+        void addNewEntity();
 
-    void imGuiMainMenu();
+        void imGuiMainMenu();
 
-private:
-    Window *window;
-    std::shared_ptr<Renderer::RenderMesh> quadROB;
-    std::shared_ptr<Renderer::RenderMesh> hexROB;
-    Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
-    Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
-    Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
-    std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
-    Entity editorCamera;
-};
+    private:
+        Window *window;
+        EditorBaseAssets baseAssets;
+        Entity editorCamera;
+    };
 
 }
 
