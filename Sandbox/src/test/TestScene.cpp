@@ -107,6 +107,8 @@ void TestScene::loadEntities() {
             .fieldOfView = 10.0f,
             .near = 0.1f,
             .far = 100.0f,
+            .active = true,
+            .mainCamera = true,
     });
 
     auto yellowQuad = createEntity();
