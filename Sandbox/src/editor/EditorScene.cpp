@@ -18,85 +18,11 @@ SceneConfiguration EditorScene::configure(Window &pWindow) {
 
 void EditorScene::load() {
     using namespace Renderer;
-    // Load meshes
-    LOG_INFO("Creating quad buffers");
-    auto quadAsset = ModelLoader::getQuad();
-    auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(Vertex),
-                                       BufferType::Vertex);
-    auto indexBuffer = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(uint32_t),
-                                      BufferType::Index);
-    quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
 
-    LOG_INFO("Creating hex buffers");
-    auto hexAsset = ModelLoader::getHexagon();
-    auto hexVertexBuffer = Buffer::Create(hexAsset.vertices.data(), hexAsset.vertices.size() * sizeof(Vertex),
-                                          BufferType::Vertex);
-    auto hexIndexBuffer = Buffer::Create(hexAsset.indices.data(), hexAsset.indices.size() * sizeof(uint32_t),
-                                         BufferType::Index);
-    hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
+    baseAssets.loadBaseMeshes();
+    baseAssets.loadBaseMaterials();
+    baseAssets.loadBaseTextures();
 
-    LOG_INFO("Creating materials");
-    // Load Materials
-//    debugMaterial = Material::Create(MaterialCreateInfo{
-//            .stage = ShaderPassStage::Opaque,
-//            .fixedFunction = FixedFunctionConfiguration{.topology = Topology::TriangleList, .polygonMode = PolygonMode::Line,
-//                    .depthTest = true, .depthWrite = true},
-//            .vertexShader = "2DDebug",
-//            .fragmentShader = "2DStaticColoredSprite",
-//            .pushConstant = Material::StandardOpaquePushConstants,
-//            .set0 = Material::StandardOpaqueSet0,
-//            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-//            .set1 = std::vector<ShaderBindings>(
-//                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-//                            .layout=std::vector<ShaderBindingLayout>(
-//                                    {
-//                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-//                                    })
-//                    }}),
-//            .set1ExpectedCount = 64,
-//            .name="DebugWireFrame",
-//    });
-
-    coloredMaterial = Material::Create(MaterialCreateInfo{
-            .stage = ShaderPassStage::Opaque,
-            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
-            .vertexShader = "2DSprite",
-            .fragmentShader = "2DStaticColoredSprite",
-            .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
-            .set0 = std::make_optional(Material::StandardOpaqueSet0),
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::make_optional(std::vector<ShaderBindings>(
-                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                            .layout=std::make_optional(std::vector<ShaderBindingLayout>(
-                                    {
-                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                    }))
-                    }})),
-            .set1ExpectedCount = 64,
-            .name="ColoredSprite",
-    });
-    texturedMaterial = Material::Create(MaterialCreateInfo{
-            .stage = ShaderPassStage::Opaque,
-            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
-            .vertexShader = "2DSprite",
-            .fragmentShader = "2DStaticTexturedSprite",
-            .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
-            .set0 = std::make_optional(Material::StandardOpaqueSet0),
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::make_optional(std::vector<ShaderBindings>(
-                    {ShaderBindings{.type = ShaderBindingType::TextureSampler, .stage=ShaderStage::Fragment, .name="diffuseTexture"},
-                     ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                             .layout=std::make_optional(std::vector<ShaderBindingLayout>(
-                                     {
-                                             ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                     }))
-                     }
-                    })),
-            .set1ExpectedCount = 64,
-            .name="TexturedSprite",
-    });
-
-    fallbackTexture = Texture::Create("TestAtlas.jpg");
     loadEntities();
 
 }
@@ -115,30 +41,35 @@ void EditorScene::loadEntities() {
     yellowQuad.setComponent<Meta>(Meta{"Yellow quad"});
     yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 greenColor(1, 1, 0, 1);
-    yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
-                                             quadROB);
+    yellowQuad.setComponent<RenderComponent>(
+            baseAssets.getColoredMaterial().instantiate(&greenColor, sizeof(greenColor), {}),
+            baseAssets.getQuadMesh());
 
     auto greenQuad = createEntity();
     greenQuad.setComponent<Meta>(Meta{"Green quad"});
     greenQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(0, 1, 0, 1);
-    greenQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
-                                            quadROB);
+    greenQuad.setComponent<RenderComponent>(
+            baseAssets.getColoredMaterial().instantiate(&redColor, sizeof(redColor), {}),
+            baseAssets.getQuadMesh());
 
     auto texturedQuad = createEntity();
     texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
     texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
-            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
-            quadROB);
+            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
+                                                         {&baseAssets.getFallbackTexture()}),
+            baseAssets.getQuadMesh());
 
     auto hexagon = createEntity();
     hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
     hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 blueColor(0, 0, 1, 1);
     hexagon.setComponent<RenderComponent>(
-            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}), hexROB);
+            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
+                                                         {&baseAssets.getFallbackTexture()}),
+            baseAssets.getHexMesh());
 }
 
 // Test data
@@ -184,8 +115,9 @@ void EditorScene::addNewEntity() {
     entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     entity.setComponent<RenderComponent>(
-            texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
-            quadROB);
+            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
+                                                         {&baseAssets.getFallbackTexture()}),
+            baseAssets.getQuadMesh());
 }
 
 void EditorScene::imGuiMainMenu() {
@@ -295,10 +227,11 @@ void EditorScene::updateImGui() {
                     ImGui::Separator();
                     ImGui::ColorEdit4("Color", &(editTintColor.r));
                     if (ImGui::Button("Apply")) {
+
                         entity.setComponent<RenderComponent>(
-                                texturedMaterial.instantiate(&editTintColor, sizeof(editTintColor),
-                                                             {fallbackTexture.get()}),
-                                quadROB);
+                                baseAssets.getTexturedMaterial().instantiate(&editTintColor, sizeof(editTintColor),
+                                                                             {&baseAssets.getFallbackTexture()}),
+                                baseAssets.getQuadMesh());
                     }
                 }
             } else {
