@@ -3,6 +3,7 @@
 #include "Engine/src/core/Entity.h"
 #include "Engine/src/core/Scene.h"
 #include "EditorBaseAssets.h"
+#include "EditorComponents.h"
 
 namespace Editor {
 
@@ -26,6 +27,9 @@ namespace Editor {
 
     private:
         static EditorUIState state;
+
+        static void updateMaterialInstance(Entity &entity, const EditorBaseAssets &assets, glm::vec4 color,
+                                           const RenderComponentMeta &rcMeta);
     };
 
 }

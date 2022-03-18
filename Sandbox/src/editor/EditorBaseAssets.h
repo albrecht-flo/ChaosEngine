@@ -33,8 +33,11 @@ namespace Editor {
 
         std::shared_ptr<Renderer::RenderMesh> getQuadMesh() const { return quadROB; }
 
+        std::string getQuadMeshName() const { return "editor/quad.mesh"; }
+
         std::shared_ptr<Renderer::RenderMesh> getHexMesh() const { return hexROB; }
 
+        std::string getHexMeshName() const { return "editor/hex.mesh"; }
 
         // --------------------------------------- Materials -----------------------------------------------------------
 
@@ -53,6 +56,9 @@ namespace Editor {
         Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
         Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
         std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
+    public:
+        uint32_t DebugMaterialID = 1;
+        uint32_t TexturedMaterialID = 2;
     };
 
 }

@@ -29,5 +29,5 @@ void main() {
     out_fragWorldPos = position.xyz;
     gl_Position = cameraUbo.proj * cameraUbo.view * position;
 
-    gl_PointSize = 3.0;
+    gl_PointSize = 2.0;
 }
