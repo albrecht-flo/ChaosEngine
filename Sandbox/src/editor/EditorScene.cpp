@@ -6,6 +6,8 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
+#include "DefaultProject.h"
+
 using namespace Editor;
 
 SceneConfiguration EditorScene::configure(Window &pWindow) {
@@ -23,53 +25,18 @@ void EditorScene::load() {
     baseAssets.loadBaseMaterials();
     baseAssets.loadBaseTextures();
 
-    loadEntities();
-
-}
-
-void EditorScene::loadEntities() {
-    LOG_INFO("Loading entities");
     editorCamera = createEntity();
     editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     editorCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
             .far = 100.0f,
+            .active = true,
+            .mainCamera = true,
     });
 
-    auto yellowQuad = createEntity();
-    yellowQuad.setComponent<Meta>(Meta{"Yellow quad"});
-    yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
-    glm::vec4 greenColor(1, 1, 0, 1);
-    yellowQuad.setComponent<RenderComponent>(
-            baseAssets.getColoredMaterial().instantiate(&greenColor, sizeof(greenColor), {}),
-            baseAssets.getQuadMesh());
+    Editor::loadDefaultSceneEntities(*this, baseAssets);
 
-    auto greenQuad = createEntity();
-    greenQuad.setComponent<Meta>(Meta{"Green quad"});
-    greenQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
-    glm::vec4 redColor(0, 1, 0, 1);
-    greenQuad.setComponent<RenderComponent>(
-            baseAssets.getColoredMaterial().instantiate(&redColor, sizeof(redColor), {}),
-            baseAssets.getQuadMesh());
-
-    auto texturedQuad = createEntity();
-    texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
-    texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
-    glm::vec4 whiteTintColor(1, 1, 1, 1);
-    texturedQuad.setComponent<RenderComponent>(
-            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
-                                                         {&baseAssets.getFallbackTexture()}),
-            baseAssets.getQuadMesh());
-
-    auto hexagon = createEntity();
-    hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
-    hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
-    glm::vec4 blueColor(0, 0, 1, 1);
-    hexagon.setComponent<RenderComponent>(
-            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
-                                                         {&baseAssets.getFallbackTexture()}),
-            baseAssets.getHexMesh());
 }
 
 // Test data

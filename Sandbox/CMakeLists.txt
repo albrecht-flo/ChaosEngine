@@ -6,6 +6,7 @@ set(SANDBOX_SOURCES
         src/editor/EditorScene.cpp
         src/editor/EditorBaseAssets.cpp
         src/main.cpp
+        src/editor/DefaultProject.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

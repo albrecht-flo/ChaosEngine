@@ -48,24 +48,6 @@ void EditorBaseAssets::loadBaseMaterials() {
             .name="DebugWireFrame",
     });
 
-    coloredMaterial = Material::Create(MaterialCreateInfo{
-            .stage = ShaderPassStage::Opaque,
-            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
-            .vertexShader = "2DSprite",
-            .fragmentShader = "2DStaticColoredSprite",
-            .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
-            .set0 = std::make_optional(Material::StandardOpaqueSet0),
-            .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
-            .set1 = std::make_optional(std::vector<ShaderBindings>(
-                    {ShaderBindings{.type = ShaderBindingType::UniformBuffer, .stage=ShaderStage::Fragment, .name="materialData",
-                            .layout=std::make_optional(std::vector<ShaderBindingLayout>(
-                                    {
-                                            ShaderBindingLayout{.type = ShaderValueType::Vec4, .name ="color"},
-                                    }))
-                    }})),
-            .set1ExpectedCount = 64,
-            .name="ColoredSprite",
-    });
     texturedMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},

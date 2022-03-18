@@ -40,8 +40,6 @@ namespace Editor {
 
         Renderer::MaterialRef getDebugMaterial() const { return debugMaterial; }
 
-        Renderer::MaterialRef getColoredMaterial() const { return coloredMaterial; }
-
         Renderer::MaterialRef getTexturedMaterial() const { return texturedMaterial; }
 
         // --------------------------------------- Textures ------------------------------------------------------------
@@ -53,7 +51,6 @@ namespace Editor {
         std::shared_ptr<Renderer::RenderMesh> quadROB;
         std::shared_ptr<Renderer::RenderMesh> hexROB;
         Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
-        Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
         Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
         std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
     };

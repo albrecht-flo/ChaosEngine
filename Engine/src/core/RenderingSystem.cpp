@@ -58,11 +58,20 @@ void RenderingSystem::renderEntities(ECS &ecs) {
 
     Context->beginFrame();
 
-    assert("There must be one active camera" && cameras.begin() != cameras.end());
+    bool rendered = false;
     for (const auto&[entity, transform, camera]: cameras.each()) {
-        Renderer->beginScene(transform.getModelMatrix(), camera);
-        break;
+        if (camera.active && !rendered) {
+            Renderer->beginScene(transform.getModelMatrix(), camera);
+            rendered = true;
+        } else if (camera.active && rendered) {
+            LOG_WARN("Only one camera can be active at a time!");
+        }
     }
+    if (!rendered) {
+        LOG_ERROR("There was no active camera so nothing was rendered!");
+        assert("There was no active camera so nothing was rendered!");
+    }
+
     for (const auto&[entity, transform, renderComp]: view.each()) {
         Renderer->draw(transform.getModelMatrix(), renderComp);
     }
