@@ -1,5 +1,6 @@
 #include "EditorUI.h"
 
+#include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/core/Components.h"
 #include "EditorComponents.h"
 
@@ -50,8 +51,10 @@ void EditorUI::renderRenderComponentUI(Entity &entity) {
             // TODO
         }
         ImGui::Indent(indentW);
+        ImGuiColorEditFlags colorFlags = ImGuiColorEditFlags_None;
         if (assetManager.getMaterialInfo(rcMeta.materialName).hasTintColor) {
-            if (ImGui::ColorEdit4("Color", &(editTintColor.r))) {
+            if (ImGui::ColorEdit4("Color", &(editTintColor.r), colorFlags)) {
+                LOG_DEBUG("Color edit true");
                 updateMaterialInstance(entity, editTintColor, rcMeta);
             }
         }
@@ -96,11 +99,16 @@ bool EditorUI::renderEntityComponentPanel(Entity &entity) {
 }
 
 void EditorUI::updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta) {
-    // TODO
-//    auto mesh = assets.getMesh(rcMeta);
-//    auto& material = assets.getMaterial(rcMeta);
-//    auto textureSet = assets.getTextureSet(rcMeta);
-//    entity.setComponent<RenderComponent>(
-//            material.instantiate(&color, sizeof(color),textureSet),
-//            mesh);
+    auto mesh = assetManager.getMesh(rcMeta.meshName);
+    auto material = assetManager.getMaterial(rcMeta.materialName);
+
+    std::vector<const Renderer::Texture *> textureSet{};
+    if (rcMeta.textures) {
+        for (const auto &texMeta: *rcMeta.textures) {
+            textureSet.emplace_back(&assetManager.getTexture(texMeta.texture));
+        }
+    }
+
+    auto mat = material.instantiate(&color, sizeof(color), textureSet);
+    entity.setComponent<RenderComponent>(mat, mesh);
 }

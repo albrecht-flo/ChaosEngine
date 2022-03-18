@@ -33,7 +33,9 @@ public:
         meshes.emplace(uri, std::make_pair(ref, meshInfo));
     }
 
-    [[nodiscard]] Renderer::RenderMesh &getMesh(const std::string &uri) const { return *meshes.at(uri).first; }
+    [[nodiscard]] std::shared_ptr<Renderer::RenderMesh> getMesh(const std::string &uri) const {
+        return meshes.at(uri).first;
+    }
 
     [[nodiscard]] MeshInfo getMeshInfo(const std::string &uri) const { return meshes.at(uri).second; }
 
