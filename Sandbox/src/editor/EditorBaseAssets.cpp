@@ -24,7 +24,7 @@ void EditorBaseAssets::loadBaseMeshes() {
     auto hexIndexBuffer = Buffer::Create(hexAsset.indices.data(), hexAsset.indices.size() * sizeof(uint32_t),
                                          BufferType::Index);
     hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
-    assetManager.registerMesh("Hex", quadROB, AssetManager::MeshInfo{});
+    assetManager.registerMesh("Hex", hexROB, AssetManager::MeshInfo{});
 
 }
 
