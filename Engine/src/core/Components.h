@@ -34,17 +34,16 @@ struct Transform {
 struct RenderComponent {
     RenderComponent(std::shared_ptr<Renderer::MaterialInstance> materialInstance,
                     std::shared_ptr<Renderer::RenderMesh> mesh)
-            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)), materialType(0) {}
+            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)) {}
 
     RenderComponent(std::shared_ptr<Renderer::MaterialInstance> materialInstance,
                     std::shared_ptr<Renderer::RenderMesh> mesh, uint32_t materialType)
-            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)), materialType(materialType) {}
+            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)) {}
 
     // The Material Instance can't be stored here because depending on the used Graphics API the storage of a Material
     // Instance might change. So we need to store a pointer for now.
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
     std::shared_ptr<Renderer::RenderMesh> mesh;
-    uint32_t materialType;
 };
 
 struct CameraComponent {

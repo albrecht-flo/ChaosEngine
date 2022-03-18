@@ -19,7 +19,6 @@ namespace Editor {
         std::string meshName;
         std::string materialName;
         std::optional<std::vector<TextureMeta>> textures;
-        uint32_t materialID;
     };
 
 }

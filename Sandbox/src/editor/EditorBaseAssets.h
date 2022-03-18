@@ -5,6 +5,7 @@
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/api/Texture.h"
 #include "Engine/src/renderer/api/Material.h"
+#include "EditorComponents.h"
 
 namespace Editor {
 
@@ -40,11 +41,19 @@ namespace Editor {
 
         std::string getHexMeshName() const { return "Hex"; }
 
+        std::pair<std::shared_ptr<Renderer::RenderMesh>, std::string> getDefaultMesh() const {
+            return std::make_pair(quadROB, getQuadMeshName());
+        }
+
         // --------------------------------------- Materials -----------------------------------------------------------
 
         Renderer::MaterialRef getDebugMaterial() const { return debugMaterial; }
 
         Renderer::MaterialRef getTexturedMaterial() const { return texturedMaterial; }
+
+        std::pair<Renderer::MaterialRef, std::string> getDefaultMaterial() const {
+            return std::make_pair(texturedMaterial, "TexturedSprite");
+        }
 
         // --------------------------------------- Textures ------------------------------------------------------------
 
@@ -52,6 +61,14 @@ namespace Editor {
 
         std::string getFallbackTextureName() const { return "TestAtlas.jpg"; }
 
+        std::pair<std::vector<const Renderer::Texture *>, std::vector<TextureMeta>>
+        getDefaultTextureSet() const {
+            auto info = std::vector<TextureMeta>(
+                    {TextureMeta{"diffuse", getFallbackTextureName()}}
+            );
+            std::vector<const Renderer::Texture *> texs{fallbackTexture};
+            return std::make_pair(texs, info);
+        }
 
     private:
         AssetManager &assetManager;

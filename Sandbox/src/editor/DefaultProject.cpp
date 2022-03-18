@@ -20,14 +20,13 @@ namespace Editor {
         texturedQuad.setComponent<RenderComponent>(
                 assets.getTexturedMaterial().instantiate(
                         &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
-                assets.getQuadMesh(), assets.TexturedMaterialID
+                assets.getQuadMesh()
         );
         texturedQuad.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
                                                        assets.getTexturedMaterial()->getName(),
                                                        std::make_optional(std::vector<TextureMeta>(
                                                                {TextureMeta{"diffuse",
-                                                                            assets.getFallbackTextureName()}})),
-                                                       assets.TexturedMaterialID);
+                                                                            assets.getFallbackTextureName()}})));
 
         auto hexagon = scene.createEntity();
         hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
@@ -40,8 +39,7 @@ namespace Editor {
         hexagon.setComponent<RenderComponentMeta>(assets.getHexMeshName(),
                                                   assets.getTexturedMaterial()->getName(),
                                                   std::make_optional(std::vector<TextureMeta>(
-                                                          {TextureMeta{"diffuse", assets.getFallbackTextureName()}})),
-                                                  assets.TexturedMaterialID);
+                                                          {TextureMeta{"diffuse", assets.getFallbackTextureName()}})));
 
         auto hexagonD = scene.createEntity();
         hexagonD.setComponent<Meta>(Meta{"Debug hexagon"});
@@ -49,9 +47,9 @@ namespace Editor {
         glm::vec4 blueColor(0, 0, 1, 1);
         hexagonD.setComponent<RenderComponent>(
                 assets.getDebugMaterial().instantiate(&blueColor, sizeof(blueColor), {}),
-                assets.getHexMesh(), assets.DebugMaterialID
+                assets.getHexMesh()
         );
         hexagonD.setComponent<RenderComponentMeta>(assets.getHexMeshName(), assets.getDebugMaterial()->getName(),
-                                                   std::nullopt, assets.DebugMaterialID);
+                                                   std::nullopt);
     }
 }
