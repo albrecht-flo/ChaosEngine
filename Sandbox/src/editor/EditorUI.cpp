@@ -1,6 +1,7 @@
 #include "EditorUI.h"
 
 #include "Engine/src/core/Components.h"
+#include "EditorComponents.h"
 
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
@@ -41,13 +42,33 @@ void EditorUI::renderCameraComponentUI(Entity &entity) {
 void EditorUI::renderRenderComponentUI(Entity &entity, const EditorBaseAssets &assets) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Render Component", flags)) {
-        ImGui::ColorEdit4("Color", &(state.editTintColor.r));
-        if (ImGui::Button("Apply")) {
-            entity.setComponent<RenderComponent>(
-                    assets.getTexturedMaterial().instantiate(&state.editTintColor, sizeof(state.editTintColor),
-                                                             {&assets.getFallbackTexture()}),
-                    assets.getQuadMesh());
+        auto &rcMeta = entity.get<RenderComponentMeta>();
+        const auto panelWidth = ImGui::GetContentRegionAvailWidth();
+        const float indentW = 16.0f;
+
+        ImGui::Text("Mesh:");
+        if (ImGui::Button(rcMeta.meshName.c_str(), ImVec2(panelWidth, 0))) {
+            // TODO
         }
+        ImGui::Text("Material:");
+        if (ImGui::Button(rcMeta.materialName.c_str(), ImVec2(panelWidth, 0))) {
+            // TODO
+        }
+        ImGui::Indent(indentW);
+        if (rcMeta.materialID == assets.DebugMaterialID || assets.TexturedMaterialID) {
+            if (ImGui::ColorEdit4("Color", &(state.editTintColor.r))) {
+                updateMaterialInstance(entity, assets, state.editTintColor, rcMeta);
+            }
+        }
+        if (rcMeta.textures) {
+            for (const auto &tex: *rcMeta.textures) {
+                ImGui::Text("%s", tex.slot.c_str());
+                if (ImGui::Button(tex.texture.c_str(), ImVec2(panelWidth, 0))) {
+                    // TODO
+                }
+            }
+        }
+        ImGui::Unindent(indentW);
     }
 }
 
@@ -77,4 +98,15 @@ bool EditorUI::renderEntityComponentPanel(Entity &entity, const EditorBaseAssets
     }
 
     return false;
+}
+
+void EditorUI::updateMaterialInstance(Entity &entity, const EditorBaseAssets &assets, glm::vec4 color,
+                                      const RenderComponentMeta &rcMeta) {
+    // TODO
+//    auto mesh = assets.getMesh(rcMeta);
+//    auto& material = assets.getMaterial(rcMeta);
+//    auto textureSet = assets.getTextureSet(rcMeta);
+//    entity.setComponent<RenderComponent>(
+//            material.instantiate(&color, sizeof(color),textureSet),
+//            mesh);
 }
