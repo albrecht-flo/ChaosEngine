@@ -1,4 +1,4 @@
-#include "EditorUI.h"
+#include "EditorComponentUI.h"
 
 #include "Engine/src/core/Utils/Logger.h"
 #include "Engine/src/core/Components.h"
@@ -11,20 +11,20 @@ using namespace Editor;
 
 // ------------------------------------ Component rendering ------------------------------------------------------------
 
-void EditorUI::renderMetaComponentUI(Entity &entity) {
+void EditorComponentUI::renderMetaComponentUI(Entity &entity) {
     auto &meta = entity.get<Meta>();
     ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
     ImGui::InputText(" ", &meta.name, input_text_flags);
 }
 
-void EditorUI::renderTransformComponentUI(Entity &entity) {
+void EditorComponentUI::renderTransformComponentUI(Entity &entity) {
     auto &tc = entity.get<Transform>();
     ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
     ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
     ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
 }
 
-void EditorUI::renderCameraComponentUI(Entity &entity) {
+void EditorComponentUI::renderCameraComponentUI(Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Camera Component", flags)) {
         auto &camera = entity.get<CameraComponent>();
@@ -35,7 +35,7 @@ void EditorUI::renderCameraComponentUI(Entity &entity) {
     }
 }
 
-void EditorUI::renderRenderComponentUI(Entity &entity) {
+void EditorComponentUI::renderRenderComponentUI(Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Render Component", flags)) {
         auto &rcMeta = entity.get<RenderComponentMeta>();
@@ -72,7 +72,7 @@ void EditorUI::renderRenderComponentUI(Entity &entity) {
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-bool EditorUI::renderEntityComponentPanel(Entity &entity) {
+bool EditorComponentUI::renderEntityComponentPanel(Entity &entity) {
     renderMetaComponentUI(entity);
 
     const auto panelWidth = ImGui::GetWindowWidth();
@@ -98,7 +98,7 @@ bool EditorUI::renderEntityComponentPanel(Entity &entity) {
     return false;
 }
 
-void EditorUI::updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta) {
+void EditorComponentUI::updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta) {
     auto mesh = assetManager.getMesh(rcMeta.meshName);
     auto material = assetManager.getMaterial(rcMeta.materialName);
 

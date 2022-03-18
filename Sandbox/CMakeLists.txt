@@ -7,7 +7,7 @@ set(SANDBOX_SOURCES
         src/editor/EditorBaseAssets.cpp
         src/main.cpp
         src/editor/DefaultProject.cpp
-        src/editor/EditorUI.cpp
+        src/editor/EditorComponentUI.cpp
         src/editor/EditorComponents.cpp
         )
 
