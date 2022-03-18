@@ -6,6 +6,7 @@
 
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/renderer/api/Material.h"
+#include "Engine/src/renderer/api/Texture.h"
 
 class AssetManager {
 public:
@@ -18,6 +19,9 @@ public:
     };
 
     struct MeshInfo {
+    };
+
+    struct TextureInfo {
     };
 public:
     AssetManager() = default;
@@ -42,9 +46,21 @@ public:
 
     [[nodiscard]] MaterialInfo getMaterialInfo(const std::string &uri) const { return materials.at(uri).second; }
 
+    // ------------------------------------ Textures -------------------------------------------------------------------
+    Renderer::Texture *
+    registerTexture(const std::string &uri, std::unique_ptr<Renderer::Texture> &&texture, TextureInfo texInfo) {
+        auto tex = textures.emplace(uri, std::make_pair(std::move(texture), texInfo));
+        return tex.first->second.first.get();
+    }
+
+    [[nodiscard]] Renderer::Texture &getTexture(const std::string &uri) const { return *textures.at(uri).first; }
+
+    [[nodiscard]] TextureInfo getTextureInfo(const std::string &uri) const { return textures.at(uri).second; }
+
 private:
     std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> meshes{};
     std::unordered_map<std::string, std::pair<Renderer::MaterialRef, MaterialInfo>> materials{};
+    std::unordered_map<std::string, std::pair<std::unique_ptr<Renderer::Texture>, TextureInfo>> textures{};
 };
 
 

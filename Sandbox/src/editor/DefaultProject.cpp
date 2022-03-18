@@ -25,7 +25,8 @@ namespace Editor {
         texturedQuad.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
                                                        assets.getTexturedMaterial()->getName(),
                                                        std::make_optional(std::vector<TextureMeta>(
-                                                               {TextureMeta{"diffuse", "fallback-0.tex"}})),
+                                                               {TextureMeta{"diffuse",
+                                                                            assets.getFallbackTextureName()}})),
                                                        assets.TexturedMaterialID);
 
         auto hexagon = scene.createEntity();
@@ -39,7 +40,7 @@ namespace Editor {
         hexagon.setComponent<RenderComponentMeta>(assets.getHexMeshName(),
                                                   assets.getTexturedMaterial()->getName(),
                                                   std::make_optional(std::vector<TextureMeta>(
-                                                          {TextureMeta{"diffuse", "fallback-0.tex"}})),
+                                                          {TextureMeta{"diffuse", assets.getFallbackTextureName()}})),
                                                   assets.TexturedMaterialID);
 
         auto hexagonD = scene.createEntity();
