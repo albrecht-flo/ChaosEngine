@@ -79,11 +79,11 @@ void EditorScene::addNewEntity() {
     auto entity = ecs.addEntity();
     entity.setComponent<Meta>(Meta{"New Entity"});
     entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
-//    glm::vec4 whiteTintColor(1, 1, 1, 1);
-//    entity.setComponent<RenderComponent>(
-//            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
-//                                                         {&baseAssets.getFallbackTexture()}),
-//            baseAssets.getQuadMesh());
+    glm::vec4 whiteTintColor(1, 1, 1, 1);
+    entity.setComponent<RenderComponent>(
+            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
+                                                         {&baseAssets.getFallbackTexture()}),
+            baseAssets.getQuadMesh());
 }
 
 void EditorScene::imGuiMainMenu() {

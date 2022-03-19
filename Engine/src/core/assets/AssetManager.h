@@ -39,6 +39,9 @@ public:
 
     [[nodiscard]] MeshInfo getMeshInfo(const std::string &uri) const { return meshes.at(uri).second; }
 
+    [[nodiscard]] const std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> &
+    getAllMeshes() const { return meshes; }
+
     // ------------------------------------ Materials ------------------------------------------------------------------
     void registerMaterial(const std::string &uri, const Renderer::MaterialRef &ref, MaterialInfo materialInfo) {
         materials.emplace(uri, std::make_pair(ref, materialInfo));
@@ -47,6 +50,9 @@ public:
     [[nodiscard]] Renderer::MaterialRef getMaterial(const std::string &uri) const { return materials.at(uri).first; }
 
     [[nodiscard]] MaterialInfo getMaterialInfo(const std::string &uri) const { return materials.at(uri).second; }
+
+    [[nodiscard]] const std::unordered_map<std::string, std::pair<Renderer::MaterialRef, MaterialInfo>> &
+    getAllMaterials() const { return materials; }
 
     // ------------------------------------ Textures -------------------------------------------------------------------
     Renderer::Texture *
@@ -58,6 +64,9 @@ public:
     [[nodiscard]] Renderer::Texture &getTexture(const std::string &uri) const { return *textures.at(uri).first; }
 
     [[nodiscard]] TextureInfo getTextureInfo(const std::string &uri) const { return textures.at(uri).second; }
+
+    [[nodiscard]] const std::unordered_map<std::string, std::pair<std::unique_ptr<Renderer::Texture>, TextureInfo>> &
+    getAllTextures() const { return textures; }
 
 private:
     std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> meshes{};

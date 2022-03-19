@@ -2,15 +2,15 @@
 
 #include "Engine/src/core/Entity.h"
 #include "Engine/src/core/Scene.h"
-#include "EditorComponents.h"
 #include "EditorBaseAssets.h"
+#include "EditorAssetSelector.h"
 
 namespace Editor {
 
     class EditorComponentUI {
     public:
         explicit EditorComponentUI(const AssetManager &assetManager, const EditorBaseAssets &baseAssets)
-                : assetManager(assetManager), editorAssets(baseAssets) {}
+                : assetManager(assetManager), editorAssets(baseAssets), assetSelector(assetManager) {}
 
         bool renderEntityComponentPanel(Entity &entity);
 
@@ -34,6 +34,7 @@ namespace Editor {
     private:
         const AssetManager &assetManager;
         const EditorBaseAssets &editorAssets;
+        EditorAssetSelector assetSelector;
         glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
         float dragSpeed = 1.0f;
         std::string componentMenuInput{};

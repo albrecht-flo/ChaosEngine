@@ -9,10 +9,13 @@ set(ENGINE_SOURCES
         src/core/Ecs.cpp
         src/core/Entity.cpp
         src/core/RenderingSystem.cpp
-        src/core/Utils/Logger.cpp
         src/core/assets/Mesh.cpp
         src/core/assets/ModelLoader.cpp
         src/core/assets/RawImage.cpp
+        src/core/assets/AssetManager.cpp
+        src/core/assets/AssetLoader.cpp
+        src/core/Utils/Logger.cpp
+        src/core/Utils/STDExtensions.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
@@ -63,8 +66,6 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
-        src/core/assets/AssetManager.cpp
-        src/core/assets/AssetLoader.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
