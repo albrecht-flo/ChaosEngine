@@ -1,6 +1,9 @@
 #include "EditorComponentUI.h"
 
+#include <optional>
+
 #include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/Utils/STDExtensions.h"
 #include "Engine/src/core/Components.h"
 #include "EditorComponents.h"
 
@@ -9,14 +12,6 @@
 #include <imgui_internal.h>
 
 using namespace Editor;
-
-static std::string stringToLower(const std::string &str) {
-    std::string copy(str);
-    std::transform(copy.begin(), copy.end(), copy.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-    return copy;
-}
-
 
 const std::array<std::string, 2> EditorComponentUI::componentList = {"Render Component", "Camera Component"};
 
@@ -50,18 +45,18 @@ void EditorComponentUI::renderRenderComponentUI(Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Render Component", flags)) {
         auto &rcMeta = entity.get<RenderComponentMeta>();
-        const auto panelWidth = ImGui::GetContentRegionAvailWidth();
         const float indentW = 16.0f;
 
         ImGui::Text("Mesh:");
-        if (ImGui::Button(rcMeta.meshName.c_str(), ImVec2(panelWidth, 0))) {
-            // TODO
+        if (auto meshSelection = assetSelector.render(rcMeta.meshName, assetManager.getAllMeshes(), "Mesh")) {
+            LOG_DEBUG("TODO: Handle mesh selection: {}", meshSelection->c_str());
         }
         ImGui::Spacing();
 
         ImGui::Text("Material:");
-        if (ImGui::Button(rcMeta.materialName.c_str(), ImVec2(panelWidth, 0))) {
-            // TODO
+        if (auto materialSelection = assetSelector.render(rcMeta.materialName, assetManager.getAllMaterials(),
+                                                          "Material")) {
+            LOG_DEBUG("TODO: Handle material selection: {}", materialSelection->c_str());
         }
         ImGui::Spacing();
 
@@ -75,13 +70,15 @@ void EditorComponentUI::renderRenderComponentUI(Entity &entity) {
         if (rcMeta.textures) {
             for (const auto &tex: *rcMeta.textures) {
                 ImGui::Text("%s", tex.slot.c_str());
-                if (ImGui::Button(tex.texture.c_str(), ImVec2(panelWidth, 0))) {
-                    // TODO
+                if (auto textureSelection = assetSelector.render(tex.texture, assetManager.getAllTextures(),
+                                                                 "Texture")) {
+                    LOG_DEBUG("TODO: Handle texture selection: {}", textureSelection->c_str());
                 }
             }
         }
         ImGui::Unindent(indentW);
     }
+
 }
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
@@ -139,11 +136,11 @@ void EditorComponentUI::renderComponentPopupList(Entity &entity) {
 
     const ImGuiTreeNodeFlags node_flags_leaf = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     const ImGuiTreeNodeFlags node_flags_selected = ImGuiTreeNodeFlags_Selected;
-    auto componentMenuInputLower = stringToLower(componentMenuInput);
+    auto componentMenuInputLower = ChaosEngine::stringToLower(componentMenuInput);
     int id = 0;
     bool first = true;
     for (const auto &comp: componentList) {
-        auto compLower = stringToLower(comp);
+        auto compLower = ChaosEngine::stringToLower(comp);
         if (componentMenuInput.empty() || compLower.find(componentMenuInputLower) != std::string::npos) {
             if (first) {
                 selectedComponent = id;

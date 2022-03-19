@@ -9,6 +9,7 @@ set(SANDBOX_SOURCES
         src/editor/DefaultProject.cpp
         src/editor/EditorComponentUI.cpp
         src/editor/EditorComponents.cpp
+        src/editor/EditorAssetSelector.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
