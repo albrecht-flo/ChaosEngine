@@ -5,6 +5,9 @@
 #include "Scene.h"
 #include "core/utils/Logger.h"
 
+
+Window *ChaosEngine::Engine::engineWindow = nullptr;
+
 using namespace ChaosEngine;
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
@@ -14,6 +17,10 @@ Engine::Engine(std::unique_ptr<Scene> &&scene)
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     assert("A Scene is required" && scene != nullptr);
+    if (engineWindow != nullptr) {
+        throw std::runtime_error("There can only be one running Engine instance!");
+    }
+    engineWindow = &window;
     Logger::I("Engine", "Loading Scene");
     loadScene(std::move(scene));
 }

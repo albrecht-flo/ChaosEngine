@@ -8,6 +8,7 @@
 
 #include "DefaultProject.h"
 #include "EditorComponentUI.h"
+#include "Sandbox/src/editor/scripts/EditorCameraScript.h"
 
 using namespace Editor;
 using namespace ChaosEngine;
@@ -36,6 +37,8 @@ void EditorScene::load() {
             .active = true,
             .mainCamera = true,
     });
+    auto script = std::unique_ptr<ChaosEngine::NativeScript>(new EditorCameraScript(editorCamera));
+    editorCamera.setComponent<NativeScriptComponent>(std::move(script));
 
     Editor::loadDefaultSceneEntities(*this, baseAssets);
 
@@ -45,7 +48,6 @@ void EditorScene::load() {
 static bool cameraControllerActive = false;
 static bool viewportInFocus = false;
 static bool itemEditActive = true;
-static glm::vec3 origin(0, 0, -2.0f);
 static float cameraSpeed = 10.0f;
 
 void EditorScene::update(float deltaTime) {
@@ -59,20 +61,8 @@ void EditorScene::update(float deltaTime) {
         window->isKeyDown(GLFW_KEY_E)) { itemEditActive = true; }
 
     // Camera controls
-    if (viewportInFocus) {
-        if (window->isKeyDown(GLFW_KEY_W)) { origin.y -= cameraSpeed * deltaTime; }
-        if (window->isKeyDown(GLFW_KEY_S)) { origin.y += cameraSpeed * deltaTime; }
-        if (window->isKeyDown(GLFW_KEY_A)) { origin.x += cameraSpeed * deltaTime; }
-        if (window->isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
-        if (window->isKeyDown(GLFW_KEY_KP_ADD)) {
-            editorCamera.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
-        } // TODO: Remove delta time after input refactor
-        if (window->isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
-            editorCamera.get<CameraComponent>().fieldOfView += 5 * deltaTime;
-        } // TODO: Remove delta time after input refactor
+    dynamic_cast<EditorCameraScript &>(*(editorCamera.get<NativeScriptComponent>().script)).setActive(viewportInFocus);
 
-        editorCamera.get<Transform>().position = origin;
-    }
 
 }
 
@@ -169,6 +159,8 @@ void EditorScene::updateImGui() {
         if (ImGui::Begin("CameraControl", &cameraControllerActive)) {
             ImGui::Text("Camera Controller");
             ImGui::SliderFloat("float", &cameraSpeed, 0.0f, 50.0f);
+            dynamic_cast<EditorCameraScript &>(*(editorCamera.get<NativeScriptComponent>().script))
+                    .setSpeed(cameraSpeed);
         }
         ImGui::End();
     }

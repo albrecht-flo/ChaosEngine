@@ -9,7 +9,7 @@ namespace ChaosEngine {
 
     /// Via this struct the scene is able to configure the engine runtime.
     struct SceneConfiguration {
-        Renderer::RendererType rendererType; // TODO: Abstraction layer
+        Renderer::RendererType rendererType; // TOBE: Abstraction layer
     };
 
     /**
@@ -37,8 +37,8 @@ namespace ChaosEngine {
 
     protected:
         ECS ecs;
-        AssetManager assetManager;
-        //TODO: Scene tree
+        AssetManager assetManager; // TODO: move to engine
+        //TOBE: Scene tree
     };
 
 }

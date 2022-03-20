@@ -60,7 +60,28 @@ namespace ChaosEngine { class NativeScriptSystem; }
 struct NativeScriptComponent {
     friend class ChaosEngine::NativeScriptSystem;
 
+    explicit NativeScriptComponent(std::unique_ptr<ChaosEngine::NativeScript> &&script) : script(std::move(script)) {}
+
+    ~NativeScriptComponent() = default;
+
+    NativeScriptComponent(const NativeScriptComponent &o) = delete;
+
+    NativeScriptComponent &operator=(const NativeScriptComponent &o) = delete;
+
+    NativeScriptComponent(NativeScriptComponent &&o) noexcept
+            : script(std::move(o.script)), initialized(o.initialized) {}
+
+    NativeScriptComponent &operator=(NativeScriptComponent &&o) noexcept {
+        if (this == &o)
+            return *this;
+        script = std::move(o.script);
+        initialized = o.initialized;
+        return *this;
+    }
+
+public:
     std::unique_ptr<ChaosEngine::NativeScript> script;
+
 private:
     bool initialized = false;
 };
