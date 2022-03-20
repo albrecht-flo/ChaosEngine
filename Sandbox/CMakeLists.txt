@@ -10,7 +10,7 @@ set(SANDBOX_SOURCES
         src/editor/EditorComponentUI.cpp
         src/editor/EditorComponents.cpp
         src/editor/EditorAssetSelector.cpp
-        )
+        src/editor/EditorAssetManager.cpp src/editor/EditorAssetManager.h)
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../Engine/src
@@ -23,6 +23,8 @@ add_dependencies(Sandbox Engine)
 
 target_include_directories(Sandbox PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
 target_link_libraries(Sandbox PUBLIC Engine)
+
+target_link_libraries(Sandbox PRIVATE nfd)
 
 add_custom_command(
         TARGET Sandbox POST_BUILD

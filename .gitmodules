@@ -32,3 +32,9 @@
 [submodule ".\\dep\\VulkanMemoryAllocator"]
 	path = .\\dep\\VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule ".\\dep\\ImGuiFileDialog"]
+	path = .\\dep\\ImGuiFileDialog
+	url = git@github.com:aiekick/ImGuiFileDialog.git
+[submodule ".\\dep\\nativefiledialog-extended"]
+	path = .\\dep\\nativefiledialog-extended
+	url = git@github.com:btzy/nativefiledialog-extended.git

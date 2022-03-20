@@ -92,6 +92,9 @@ void EditorScene::imGuiMainMenu() {
         if (ImGui::MenuItem("Close", "Ctrl+Q")) {
             window->close();
         }
+        if (ImGui::MenuItem("New Project")) {
+            editorAssetManager.createProject();
+        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Edit")) {
@@ -100,6 +103,7 @@ void EditorScene::imGuiMainMenu() {
         }
         ImGui::EndMenu();
     }
+    editorAssetManager.renderAssetMenu();
     ImGui::EndMainMenuBar();
 
 }
