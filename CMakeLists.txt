@@ -21,6 +21,7 @@ include(EnableUndefinedSanitizer)
 include(clang-tidy)
 include(BundledGTest)
 
+add_subdirectory(dep/nativefiledialog-extended)
 #set(CMAKE_CXX_CLANG_TIDY
 #        clang-tidy;
 #        -header-filter=.*

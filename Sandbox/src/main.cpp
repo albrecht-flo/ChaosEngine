@@ -3,6 +3,8 @@
 //#include "test/EmptyScene.h"
 #include "editor/EditorScene.h"
 
+#include <nfd.h>
+
 #include <exception>
 #include <iostream>
 
@@ -59,7 +61,10 @@ int main() {
 //    auto scene = std::make_unique<EmptyScene>();
     auto scene = std::make_unique<Editor::EditorScene>();
     Engine engine(std::move(scene));
+
+    NFD_Init();
     engine.run();
+    NFD_Quit();
 
     return EXIT_SUCCESS;
 }

@@ -3,6 +3,7 @@
 #include "Engine/src/ChaosEngine.h"
 #include "EditorBaseAssets.h"
 #include "EditorComponentUI.h"
+#include "EditorAssetManager.h"
 
 namespace Editor {
 
@@ -30,6 +31,7 @@ namespace Editor {
         Window *window;
         EditorBaseAssets baseAssets;
         EditorComponentUI editorUI;
+        EditorAssetManager editorAssetManager;
         Entity editorCamera;
     };
 
