@@ -1,6 +1,6 @@
 #include "ModelLoader.h"
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 

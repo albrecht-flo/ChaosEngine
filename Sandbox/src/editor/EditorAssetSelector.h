@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 #include "Engine/src/core/assets/AssetManager.h"
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 #include "Engine/src/core/Utils/STDExtensions.h"
 
 #include <imgui.h>

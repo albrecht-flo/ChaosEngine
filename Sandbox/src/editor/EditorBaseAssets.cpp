@@ -1,6 +1,6 @@
 #include "EditorBaseAssets.h"
 
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 #include "core/assets/ModelLoader.h"
 
 using namespace Editor;

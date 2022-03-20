@@ -1,6 +1,6 @@
 #include "VulkanContext.h"
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 
 #include <stdexcept>
 #include <cstdio>

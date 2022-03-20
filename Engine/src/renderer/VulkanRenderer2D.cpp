@@ -1,6 +1,6 @@
 #include "VulkanRenderer2D.h"
 
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 #include "renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "core/assets/Mesh.h"
 #include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"

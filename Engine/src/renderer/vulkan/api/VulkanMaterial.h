@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/vulkan/context/VulkanContext.h"

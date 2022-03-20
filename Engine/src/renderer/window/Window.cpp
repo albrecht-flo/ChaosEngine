@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 #include <utility>
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 
 static void glfwErrorCallback(int error_code, const char *description) {
     LOG_ERROR("[GLFW] Error: [{0}] :{1}", error_code, description);

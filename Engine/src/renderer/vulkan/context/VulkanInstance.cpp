@@ -1,6 +1,6 @@
 #include "VulkanInstance.h"
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 
 #include <GLFW/glfw3.h>
 

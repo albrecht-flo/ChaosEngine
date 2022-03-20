@@ -1,5 +1,5 @@
 #include "AssetView.h"
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 #include "CustomImGui.h"
 
 #include "dep/imgui/imgui.h"

@@ -2,7 +2,7 @@
 
 #include <optional>
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 #include "Engine/src/core/Utils/STDExtensions.h"
 #include "Engine/src/core/Components.h"
 #include "EditorComponents.h"

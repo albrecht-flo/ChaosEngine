@@ -1,6 +1,6 @@
 #include "DefaultProject.h"
 
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 #include "EditorComponents.h"
 
 namespace Editor {

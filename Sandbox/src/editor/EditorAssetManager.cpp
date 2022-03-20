@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 
 #include <imgui.h>
 #include <nfd.h>

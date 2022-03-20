@@ -1,5 +1,5 @@
 #include "TestContext.h"
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 #include "vendor/platform.h"
 
 using namespace Renderer::TestRenderer;

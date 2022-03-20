@@ -3,7 +3,7 @@
 #include <backends/imgui_impl_glfw.h>
 
 #include "Scene.h"
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Chaos Engine", 1400, 800)),

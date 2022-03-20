@@ -3,7 +3,7 @@
 #include "renderer/vulkan/image/VulkanImageView.h"
 #include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 
 #include <backends/imgui_impl_glfw.h>
 #include <backends/imgui_impl_vulkan.h>

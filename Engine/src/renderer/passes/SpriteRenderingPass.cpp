@@ -1,5 +1,5 @@
 #include "SpriteRenderingPass.h"
-#include "Engine/src/core/Utils/Logger.h"
+#include "Engine/src/core/utils/Logger.h"
 #include "Engine/src/renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorSetLayoutBuilder.h"
 #include "Engine/src/renderer/vulkan/pipeline/VulkanDescriptorPoolBuilder.h"

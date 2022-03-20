@@ -4,7 +4,7 @@
 #include "renderer/vulkan/image/VulkanTexture.h"
 #include "renderer/testRenderer/TestTexture.h"
 #include "core/RenderingSystem.h"
-#include "core/Utils/Logger.h"
+#include "core/utils/Logger.h"
 
 #include <cassert>
 

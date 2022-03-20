@@ -14,8 +14,8 @@ set(ENGINE_SOURCES
         src/core/assets/RawImage.cpp
         src/core/assets/AssetManager.cpp
         src/core/assets/AssetLoader.cpp
-        src/core/Utils/Logger.cpp
-        src/core/Utils/STDExtensions.cpp
+        src/core/utils/Logger.cpp
+        src/core/utils/STDExtensions.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
