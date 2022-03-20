@@ -16,6 +16,8 @@ set(ENGINE_SOURCES
         src/core/assets/AssetLoader.cpp
         src/core/utils/Logger.cpp
         src/core/utils/STDExtensions.cpp
+        src/core/scriptSystem/NativeScriptSystem.cpp
+        src/core/scriptSystem/NativeScript.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
@@ -66,7 +68,7 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
-        src/core/scriptSystem/NativeScriptSystem.cpp src/core/scriptSystem/NativeScriptSystem.h src/core/scriptSystem/NativeScript.cpp src/core/scriptSystem/NativeScript.h)
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm

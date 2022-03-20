@@ -32,12 +32,15 @@ namespace ChaosEngine {
         /**
          * Run main-loop: <br/>
          *  Update the engine systems.
-         * TODO: Parallelization > Apply component changes -> run systems
+         *  TOBE: Parallelization > Apply component changes -> run systems
          */
         void run();
 
+        static Window* getEngineWindow() { return engineWindow; }
+
     private:
         Window window;
+        static Window* engineWindow;
 
         // Systems
         RenderingSystem renderingSys;

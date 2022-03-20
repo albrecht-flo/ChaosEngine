@@ -10,7 +10,9 @@ set(SANDBOX_SOURCES
         src/editor/EditorComponentUI.cpp
         src/editor/EditorComponents.cpp
         src/editor/EditorAssetSelector.cpp
-        src/editor/EditorAssetManager.cpp src/editor/EditorAssetManager.h)
+        src/editor/EditorAssetManager.cpp
+        src/editor/scripts/EditorCameraScript.cpp
+        )
 
 set(ADDITIONAL_INCLUDE_DIRS
         ../Engine/src

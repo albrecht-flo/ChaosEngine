@@ -2,6 +2,7 @@
 
 #include "Engine/src/core/Entity.h"
 
+class Window;
 namespace ChaosEngine {
 
     class NativeScript {
@@ -9,7 +10,7 @@ namespace ChaosEngine {
         explicit NativeScript(Entity entity) : entity(entity) {}
 
         /// This doubles as `onDestroy()` because it is the only function guaranteed to run at destroy.
-        virtual ~NativeScript() = 0;
+        virtual ~NativeScript() = default;;
 
         NativeScript(const NativeScript &o) = delete;
 
@@ -61,6 +62,12 @@ namespace ChaosEngine {
         [[nodiscard]] decltype(auto) hasComponent() {
             return entity.has<Component...>();
         }
+
+        // ------------------------------------ Input Helpers ----------------------------------------------------------
+    protected:
+        static bool isKeyDown(int keyCode);
+
+        static bool isKeyUp(int keyCode);
 
     protected:
         Entity entity;
