@@ -1,3 +1,3 @@
 #include "Ecs.h"
 
-const ECS::entity_t ECS::null = entt::null;
+const ChaosEngine::ECS::entity_t ChaosEngine::ECS::null = entt::null;

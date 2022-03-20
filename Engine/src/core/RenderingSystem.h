@@ -6,31 +6,35 @@
 #include "renderer/api/RendererAPI.h"
 #include "renderer/api/GraphicsContext.h"
 
-class RenderingSystem {
-public:
-    explicit RenderingSystem(Window &window, Renderer::GraphicsAPI api);
+namespace ChaosEngine {
 
-    ~RenderingSystem();
+    class RenderingSystem {
+    public:
+        explicit RenderingSystem(Window &window, Renderer::GraphicsAPI api);
 
-    /// Applies all changes that happened since last frame
-    void updateComponents(ECS &ecs);
+        ~RenderingSystem();
 
-    /// Processes all entities to create the next frame
-    void renderEntities(ECS &ecs);
+        /// Applies all changes that happened since last frame
+        void updateComponents(ECS &ecs);
 
-    void createRenderer(Renderer::RendererType rendererType);
+        /// Processes all entities to create the next frame
+        void renderEntities(ECS &ecs);
 
-    static Renderer::GraphicsContext &GetContext() {
-        assert("Context MUST not be empty!" && Context != nullptr);
-        return *Context;
-    }
+        void createRenderer(Renderer::RendererType rendererType);
 
-    static Renderer::RendererAPI &GetCurrentRenderer() {
-        assert("Renderer MUST not be empty!" && Renderer != nullptr);
-        return *Renderer;
-    }
+        static Renderer::GraphicsContext &GetContext() {
+            assert("Context MUST not be empty!" && Context != nullptr);
+            return *Context;
+        }
 
-private:
-    static std::unique_ptr<Renderer::GraphicsContext> Context;
-    static std::unique_ptr<Renderer::RendererAPI> Renderer;
-};
+        static Renderer::RendererAPI &GetCurrentRenderer() {
+            assert("Renderer MUST not be empty!" && Renderer != nullptr);
+            return *Renderer;
+        }
+
+    private:
+        static std::unique_ptr<Renderer::GraphicsContext> Context;
+        static std::unique_ptr<Renderer::RendererAPI> Renderer;
+    };
+
+}

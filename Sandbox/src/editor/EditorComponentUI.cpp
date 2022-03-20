@@ -3,7 +3,7 @@
 #include <optional>
 
 #include "Engine/src/core/utils/Logger.h"
-#include "Engine/src/core/Utils/STDExtensions.h"
+#include "Engine/src/core/utils/STDExtensions.h"
 #include "Engine/src/core/Components.h"
 #include "EditorComponents.h"
 
@@ -17,20 +17,20 @@ const std::array<std::string, 2> EditorComponentUI::componentList = {"Render Com
 
 // ------------------------------------ Component rendering ------------------------------------------------------------
 
-void EditorComponentUI::renderMetaComponentUI(Entity &entity) {
+void EditorComponentUI::renderMetaComponentUI(ChaosEngine::Entity &entity) {
     auto &meta = entity.get<Meta>();
     ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue;
     ImGui::InputText("##meta_name", &meta.name, input_text_flags);
 }
 
-void EditorComponentUI::renderTransformComponentUI(Entity &entity) {
+void EditorComponentUI::renderTransformComponentUI(ChaosEngine::Entity &entity) {
     auto &tc = entity.get<Transform>();
     ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
     ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
     ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
 }
 
-void EditorComponentUI::renderCameraComponentUI(Entity &entity) {
+void EditorComponentUI::renderCameraComponentUI(ChaosEngine::Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Camera Component", flags)) {
         auto &camera = entity.get<CameraComponent>();
@@ -41,7 +41,7 @@ void EditorComponentUI::renderCameraComponentUI(Entity &entity) {
     }
 }
 
-void EditorComponentUI::renderRenderComponentUI(Entity &entity) {
+void EditorComponentUI::renderRenderComponentUI(ChaosEngine::Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Render Component", flags)) {
         auto &rcMeta = entity.get<RenderComponentMeta>();
@@ -83,7 +83,7 @@ void EditorComponentUI::renderRenderComponentUI(Entity &entity) {
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-bool EditorComponentUI::renderEntityComponentPanel(Entity &entity) {
+bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) {
     renderMetaComponentUI(entity);
 
     const auto panelWidth = ImGui::GetContentRegionAvailWidth();
@@ -126,7 +126,7 @@ bool EditorComponentUI::renderEntityComponentPanel(Entity &entity) {
     return false;
 }
 
-void EditorComponentUI::renderComponentPopupList(Entity &entity) {
+void EditorComponentUI::renderComponentPopupList(ChaosEngine::Entity &entity) {
     ImGui::SetKeyboardFocusHere(0);
     ImGuiInputTextFlags inputFlags = ImGuiInputTextFlags_EnterReturnsTrue;
     if (ImGui::InputText("##component_menu_onput", &componentMenuInput, inputFlags) && selectedComponent >= 0) {
@@ -160,8 +160,8 @@ void EditorComponentUI::renderComponentPopupList(Entity &entity) {
     }
 }
 
-// ------------------------------------ Entity Helpers -----------------------------------------------------------------
-void EditorComponentUI::addComponentToEntity(Entity &entity, const std::string &component) {
+// ------------------------------------ ChaosEngine::Entity Helpers -----------------------------------------------------------------
+void EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const std::string &component) {
     LOG_DEBUG("Adding Component {}", component.c_str());
     if (component == "Render Component") {
         if (entity.has<RenderComponent>()) {
@@ -194,7 +194,8 @@ void EditorComponentUI::addComponentToEntity(Entity &entity, const std::string &
     }
 }
 
-void EditorComponentUI::updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta) {
+void EditorComponentUI::updateMaterialInstance(ChaosEngine::Entity &entity, glm::vec4 color,
+                                               const RenderComponentMeta &rcMeta) {
     auto mesh = assetManager.getMesh(rcMeta.meshName);
     auto material = assetManager.getMaterial(rcMeta.materialName);
 

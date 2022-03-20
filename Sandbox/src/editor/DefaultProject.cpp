@@ -4,7 +4,8 @@
 #include "EditorComponents.h"
 
 namespace Editor {
-    void loadDefaultSceneEntities(Scene &scene, EditorBaseAssets &assets) {
+
+    void loadDefaultSceneEntities(ChaosEngine::Scene &scene, EditorBaseAssets &assets) {
         LOG_INFO("Loading entities");
 
         auto camera = scene.createEntity();

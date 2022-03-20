@@ -10,10 +10,11 @@
 #include "EditorComponentUI.h"
 
 using namespace Editor;
+using namespace ChaosEngine;
 
-SceneConfiguration EditorScene::configure(Window &pWindow) {
+ChaosEngine::SceneConfiguration EditorScene::configure(Window &pWindow) {
     window = &pWindow;
-    return SceneConfiguration{
+    return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
     };
 }
@@ -145,7 +146,7 @@ void EditorScene::updateImGui() {
     }
     ImGui::End();
 
-    const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
+    const auto &fb = ChaosEngine::RenderingSystem::GetCurrentRenderer().getFramebuffer();
     auto size = CoreImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
 
     ImGui::Begin("Info");

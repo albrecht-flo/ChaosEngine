@@ -72,7 +72,7 @@ public:
 private:
     void destroy() {
         if (buffer != nullptr) {
-            auto &vulkanContext = dynamic_cast<VulkanContext &>(RenderingSystem::GetContext());
+            auto &vulkanContext = dynamic_cast<VulkanContext &>(ChaosEngine::RenderingSystem::GetContext());
             vulkanContext.destroyBuffered(std::make_unique<VulkanBufferBufferedDestroy>(memory, buffer, allocation));
             buffer = nullptr;
             allocation = nullptr;

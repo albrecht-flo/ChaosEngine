@@ -5,6 +5,8 @@
 #include "Scene.h"
 #include "core/utils/Logger.h"
 
+using namespace ChaosEngine;
+
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Chaos Engine", 1400, 800)),
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),

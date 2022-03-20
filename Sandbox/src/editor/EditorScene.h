@@ -7,13 +7,13 @@
 
 namespace Editor {
 
-    class EditorScene : public Scene {
+    class EditorScene : public ChaosEngine::Scene {
     public:
         EditorScene() : Scene(), window(nullptr), baseAssets(assetManager), editorUI(assetManager, baseAssets) {}
 
         ~EditorScene() override = default;
 
-        SceneConfiguration configure(Window &window) override;
+        ChaosEngine::SceneConfiguration configure(Window &window) override;
 
         void load() override;
 
@@ -32,7 +32,7 @@ namespace Editor {
         EditorBaseAssets baseAssets;
         EditorComponentUI editorUI;
         EditorAssetManager editorAssetManager;
-        Entity editorCamera;
+        ChaosEngine::Entity editorCamera;
     };
 
 }

@@ -2,13 +2,13 @@
 
 #include "Engine/src/ChaosEngine.h"
 
-class TestScene : public Scene {
+class TestScene : public ChaosEngine::Scene {
 public:
     TestScene() : Scene(), window(nullptr) {}
 
     ~TestScene() override = default;
 
-    SceneConfiguration configure(Window &window) override;
+    ChaosEngine::SceneConfiguration configure(Window &window) override;
 
     void load() override;
 
@@ -32,7 +32,7 @@ private:
     Renderer::MaterialRef coloredMaterial = Renderer::MaterialRef(nullptr);
     Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
     std::unique_ptr<Renderer::Texture> fallbackTexture = nullptr;
-    Entity editorCamera;
+    ChaosEngine::Entity editorCamera;
 };
 
 
