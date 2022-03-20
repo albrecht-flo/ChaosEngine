@@ -25,10 +25,11 @@ std::unique_ptr<Texture> Texture::Create(const ChaosEngine::RawImage &rawImage,
         case GraphicsAPI::Vulkan:
             return std::make_unique<VulkanTexture>(
                     VulkanTexture::Create(
-                            dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext()), rawImage, debugName));
+                            dynamic_cast<const VulkanContext &>(ChaosEngine::RenderingSystem::GetContext()),
+                            rawImage, debugName));
         case GraphicsAPI::Test:
             return std::make_unique<TestTexture>(
-                    TestTexture::Create(dynamic_cast<const TestContext &>(RenderingSystem::GetContext())));
+                    TestTexture::Create(dynamic_cast<const TestContext &>(ChaosEngine::RenderingSystem::GetContext())));
         default:
             assert("Invalid Graphics API" && false);
             return nullptr;

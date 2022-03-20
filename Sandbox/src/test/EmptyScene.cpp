@@ -1,8 +1,8 @@
 #include "EmptyScene.h"
 
-SceneConfiguration EmptyScene::configure(Window &pWindow) {
+ChaosEngine::SceneConfiguration EmptyScene::configure(Window &pWindow) {
     window = &pWindow;
-    return SceneConfiguration{
+    return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
     };
 }

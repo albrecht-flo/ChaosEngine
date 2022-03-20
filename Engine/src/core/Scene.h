@@ -5,36 +5,40 @@
 #include "Engine/src/renderer/window/Window.h"
 #include "assets/AssetManager.h"
 
-/// Via this struct the scene is able to configure the engine runtime.
-struct SceneConfiguration {
-    Renderer::RendererType rendererType; // TODO: Abstraction layer
-};
+namespace ChaosEngine {
 
-/**
- *  Scenes are responsible for configuring the engine and managing entity lifetimes.
- */
-class Scene {
-    friend class Engine;
+    /// Via this struct the scene is able to configure the engine runtime.
+    struct SceneConfiguration {
+        Renderer::RendererType rendererType; // TODO: Abstraction layer
+    };
 
-public:
-    virtual ~Scene() = default;
+    /**
+     *  Scenes are responsible for configuring the engine and managing entity lifetimes.
+     */
+    class Scene {
+        friend class Engine;
 
-    /// Returns the configuration of the engine for this scene.
-    virtual SceneConfiguration configure(Window &window) = 0;
+    public:
+        virtual ~Scene() = default;
 
-    /// Initializes the scene
-    virtual void load() = 0;
+        /// Returns the configuration of the engine for this scene.
+        virtual SceneConfiguration configure(Window &window) = 0;
 
-    /// Update the scene
-    virtual void update(float deltaTime) = 0;
+        /// Initializes the scene
+        virtual void load() = 0;
 
-    /// Here the scene can render ImGui interfaces
-    virtual void updateImGui() = 0;
+        /// Update the scene
+        virtual void update(float deltaTime) = 0;
 
-    Entity createEntity() { return ecs.addEntity(); }
+        /// Here the scene can render ImGui interfaces
+        virtual void updateImGui() = 0;
 
-protected:
-    ECS ecs;
-    AssetManager assetManager;
-    //TODO: Scene tree
-};
+        Entity createEntity() { return ecs.addEntity(); }
+
+    protected:
+        ECS ecs;
+        AssetManager assetManager;
+        //TODO: Scene tree
+    };
+
+}

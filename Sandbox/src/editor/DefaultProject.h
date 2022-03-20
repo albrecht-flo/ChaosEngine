@@ -5,6 +5,6 @@
 
 namespace Editor {
 
-    void loadDefaultSceneEntities(Scene &scene, EditorBaseAssets &assets);
+    void loadDefaultSceneEntities(ChaosEngine::Scene &scene, EditorBaseAssets &assets);
 
 }

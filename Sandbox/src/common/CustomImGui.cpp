@@ -95,15 +95,16 @@ void CoreImGui::RenderLogWindow(const std::string &title) {
 }
 
 
-ImVec2 CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool *focused) {
+ImVec2
+CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool *focused) {
     using namespace Renderer;
     if (state.sceneImageGPUHandles.empty()) {
         uint32_t sceneImageGPUHandleCount;
         switch (GraphicsContext::currentAPI) {
             case Renderer::GraphicsAPI::Vulkan:
-                // TODO: Handle imgui textures properly
-                sceneImageGPUHandleCount = dynamic_cast<const VulkanContext &>(RenderingSystem::GetContext())
-                                                   .getSwapChain().size() + 1; // # swapchain images in flight
+                sceneImageGPUHandleCount =
+                        dynamic_cast<const VulkanContext &>(ChaosEngine::RenderingSystem::GetContext())
+                                .getSwapChain().size() + 1; // # swapchain images in flight
                 break;
             default:
                 sceneImageGPUHandleCount = 1;
@@ -143,7 +144,7 @@ ImVec2 CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, 
     auto size = ImGui::GetContentRegionAvail();
     if (state.previousSize.x != size.x || state.previousSize.y != size.y) {
         state.previousSize = size;
-        RenderingSystem::GetCurrentRenderer().requestViewportResize(glm::vec2(size.x, size.y));
+        ChaosEngine::RenderingSystem::GetCurrentRenderer().requestViewportResize(glm::vec2(size.x, size.y));
     }
 
     ImGui::Image(state.sceneImageGPUHandles[state.currentFrame],

@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+using namespace ChaosEngine;
 using namespace Renderer;
 
 std::unique_ptr<GraphicsContext> RenderingSystem::Context = nullptr;

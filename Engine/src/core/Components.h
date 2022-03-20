@@ -53,3 +53,7 @@ struct CameraComponent {
     bool active = true;
     bool mainCamera = true;
 };
+
+struct NativeScriptComponent {
+
+};

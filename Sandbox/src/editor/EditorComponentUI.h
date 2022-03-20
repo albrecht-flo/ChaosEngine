@@ -12,24 +12,24 @@ namespace Editor {
         explicit EditorComponentUI(const AssetManager &assetManager, const EditorBaseAssets &baseAssets)
                 : assetManager(assetManager), editorAssets(baseAssets), assetSelector(assetManager) {}
 
-        bool renderEntityComponentPanel(Entity &entity);
+        bool renderEntityComponentPanel(ChaosEngine::Entity &entity);
 
     private:
-        void renderMetaComponentUI(Entity &entity);
+        void renderMetaComponentUI(ChaosEngine::Entity &entity);
 
-        void renderTransformComponentUI(Entity &entity);
+        void renderTransformComponentUI(ChaosEngine::Entity &entity);
 
-        void renderCameraComponentUI(Entity &entity);
+        void renderCameraComponentUI(ChaosEngine::Entity &entity);
 
-        void renderRenderComponentUI(Entity &entity);
+        void renderRenderComponentUI(ChaosEngine::Entity &entity);
 
     private:
 
-        void renderComponentPopupList(Entity &entity);
+        void renderComponentPopupList(ChaosEngine::Entity &entity);
 
-        void addComponentToEntity(Entity &entity, const std::string &component);
+        void addComponentToEntity(ChaosEngine::Entity &entity, const std::string &component);
 
-        void updateMaterialInstance(Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta);
+        void updateMaterialInstance(ChaosEngine::Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta);
 
     private:
         const AssetManager &assetManager;

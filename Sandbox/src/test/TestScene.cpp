@@ -6,9 +6,11 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-SceneConfiguration TestScene::configure(Window &pWindow) {
+using namespace ChaosEngine;
+
+ChaosEngine::SceneConfiguration TestScene::configure(Window &pWindow) {
     window = &pWindow;
-    return SceneConfiguration{
+    return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
     };
 }
@@ -244,7 +246,7 @@ void TestScene::updateImGui() {
     }
     ImGui::End();
 
-    const auto &fb = RenderingSystem::GetCurrentRenderer().getFramebuffer();
+    const auto &fb = ChaosEngine::RenderingSystem::GetCurrentRenderer().getFramebuffer();
     auto size = CoreImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
 
     ImGui::Begin("Info");
