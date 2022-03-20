@@ -10,6 +10,7 @@ using namespace ChaosEngine;
 Engine::Engine(std::unique_ptr<Scene> &&scene)
         : window(Window::Create("Chaos Engine", 1400, 800)),
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),
+          nativeScriptSystem(),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     assert("A Scene is required" && scene != nullptr);
@@ -23,6 +24,8 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     renderingSys.createRenderer(config.rendererType);
 
     scene->load();
+
+    nativeScriptSystem.init(scene->ecs);
 }
 
 void Engine::run() {
@@ -57,8 +60,9 @@ void Engine::run() {
         // Update render system
         renderingSys.renderEntities(scene->ecs);
 
-
-        // Update Scene // TODO: Process scripts instead ----------------------
+        // Run all script updates
+        nativeScriptSystem.update(scene->ecs, deltaTime);
+        // Update Scene
         scene->update(deltaTime);
 
     }

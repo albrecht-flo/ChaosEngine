@@ -22,7 +22,7 @@ namespace ChaosEngine {
         ~Entity() = default;
 
         /**
-         * Add or overwrite the component of type <i>Component</i> to this entity.
+         * Adds or overwrite the component of type <i>Component</i> to this entity.
          * @tparam Component
          * @tparam Args
          * @param args to be passed to the constructor of Component
@@ -36,7 +36,7 @@ namespace ChaosEngine {
         /**
          * Get the component of type <i>Component</i> of this entity.
          * @tparam Component
-         * @return
+         * @return Component
          */
         template<typename... Component>
         [[nodiscard]] decltype(auto) get() {
@@ -45,9 +45,9 @@ namespace ChaosEngine {
         }
 
         /**
-         * Check if the entity has a  component of type <i>Component</i>.
+         * Check if the entity has a component of type <i>Component</i>.
          * @tparam Component
-         * @return
+         * @return bool
          */
         template<typename... Component>
         [[nodiscard]] decltype(auto) has() {

@@ -10,9 +10,11 @@
 
 #include <glm/gtx/quaternion.hpp>
 #include <utility>
+#include <memory>
 
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
+#include "Engine/src/core/scriptSystem/NativeScript.h"
 
 struct Meta {
     std::string name;
@@ -54,6 +56,11 @@ struct CameraComponent {
     bool mainCamera = true;
 };
 
+namespace ChaosEngine { class NativeScriptSystem; }
 struct NativeScriptComponent {
+    friend class ChaosEngine::NativeScriptSystem;
 
+    std::unique_ptr<ChaosEngine::NativeScript> script;
+private:
+    bool initialized = false;
 };
