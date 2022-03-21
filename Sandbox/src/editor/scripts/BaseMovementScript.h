@@ -16,7 +16,6 @@ namespace Editor {
         void onUpdate(float deltaTime) override;
 
     private:
-        Transform *transform = nullptr;
         glm::vec3 origin{};
         float speed = 10.0f;
     };

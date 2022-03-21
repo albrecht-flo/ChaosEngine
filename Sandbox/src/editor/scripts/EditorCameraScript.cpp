@@ -4,8 +4,7 @@
 using namespace Editor;
 
 void EditorCameraScript::onStart() {
-    transform = &getComponent<Transform>();
-    origin = transform->position;
+    origin = getComponent<Transform>().position;
 }
 
 
@@ -24,7 +23,7 @@ void EditorCameraScript::onUpdate(float deltaTime) {
         getComponent<CameraComponent>().fieldOfView += 5 * deltaTime;
     }
 
-    transform->position = origin;
+    getComponent<Transform>().position = origin;
 }
 
 void EditorCameraScript::setActive(bool b) {

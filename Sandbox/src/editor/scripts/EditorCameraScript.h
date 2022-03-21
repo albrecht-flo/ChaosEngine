@@ -20,7 +20,6 @@ namespace Editor {
         void setSpeed(float cameraSpeed);
 
     private:
-        Transform *transform = nullptr;
         glm::vec3 origin{};
         float speed = 10.0f;
         bool active = false;

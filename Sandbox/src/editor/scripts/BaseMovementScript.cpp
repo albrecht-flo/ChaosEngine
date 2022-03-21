@@ -4,8 +4,7 @@
 using namespace Editor;
 
 void BaseMovementScript::onStart() {
-    transform = &getComponent<Transform>();
-    origin = transform->position;
+    origin = getComponent<Transform>().position;
 }
 
 
@@ -14,5 +13,5 @@ void BaseMovementScript::onUpdate(float deltaTime) {
     if (isKeyDown(GLFW_KEY_DOWN)) { origin.y -= speed * deltaTime; }
     if (isKeyDown(GLFW_KEY_LEFT)) { origin.x -= speed * deltaTime; }
     if (isKeyDown(GLFW_KEY_RIGHT)) { origin.x += speed * deltaTime; }
-    transform->position = origin;
+    getComponent<Transform>().position = origin;
 }
