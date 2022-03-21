@@ -3,6 +3,7 @@
 #include <chrono>
 #include "Engine/src/renderer/window/Window.h"
 #include "Engine/src/renderer/api/GraphicsContext.h"
+#include "assets/AssetManager.h"
 #include "RenderingSystem.h"
 #include "scriptSystem/NativeScriptSystem.h"
 
@@ -18,7 +19,7 @@ namespace ChaosEngine {
     class Engine {
     public:
         /// Create an application window and initialize the engine context
-        explicit Engine(std::unique_ptr<Scene> &&scene);
+        Engine();
 
         ~Engine() = default;
 
@@ -36,17 +37,26 @@ namespace ChaosEngine {
          */
         void run();
 
-        static Window* getEngineWindow() { return engineWindow; }
+        // ------------------------------------ Getters ----------------------------------------------------------------
+        Window &getEngineWindow() { return window; }
+
+        std::shared_ptr<AssetManager> getAssetManager() { return assetManager; }
+
+        // ------------------------------------ Static Getters ---------------------------------------------------------
+        inline static Engine *getEngineInstance() { return s_engineInstance; }
+
+    private:
+        static Engine *s_engineInstance;
 
     private:
         Window window;
-        static Window* engineWindow;
 
         // Systems
         RenderingSystem renderingSys;
         NativeScriptSystem nativeScriptSystem;
 
         // Scene Data
+        std::shared_ptr<AssetManager> assetManager;
         std::unique_ptr<Scene> scene;
 
         // FPS counter

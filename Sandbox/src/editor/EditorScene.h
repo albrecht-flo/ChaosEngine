@@ -9,11 +9,12 @@ namespace Editor {
 
     class EditorScene : public ChaosEngine::Scene {
     public:
-        EditorScene() : Scene(), window(nullptr), baseAssets(assetManager), editorUI(assetManager, baseAssets) {}
+        EditorScene() : Scene(), window(nullptr),
+                        baseAssets(nullptr), editorUI(nullptr), editorAssetManager(nullptr) {}
 
         ~EditorScene() override = default;
 
-        ChaosEngine::SceneConfiguration configure(Window &window) override;
+        ChaosEngine::SceneConfiguration configure(ChaosEngine::Engine &engine) override;
 
         void load() override;
 
@@ -29,9 +30,12 @@ namespace Editor {
 
     private:
         Window *window;
-        EditorBaseAssets baseAssets;
-        EditorComponentUI editorUI;
-        EditorAssetManager editorAssetManager;
+        std::shared_ptr<AssetManager> assetManager;
+
+        std::unique_ptr<EditorBaseAssets> baseAssets;
+        std::unique_ptr<EditorComponentUI> editorUI;
+        std::unique_ptr<EditorAssetManager> editorAssetManager;
+
         ChaosEngine::Entity editorCamera;
     };
 

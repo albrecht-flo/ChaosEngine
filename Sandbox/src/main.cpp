@@ -59,8 +59,9 @@ int main() {
 
 //    auto scene = std::make_unique<TestScene>();
 //    auto scene = std::make_unique<EmptyScene>();
+    ChaosEngine::Engine engine{};
     auto scene = std::make_unique<Editor::EditorScene>();
-    ChaosEngine::Engine engine(std::move(scene));
+    engine.loadScene(std::move(scene));
 
     NFD_Init();
     engine.run();

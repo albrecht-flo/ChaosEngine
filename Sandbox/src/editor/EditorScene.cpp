@@ -13,8 +13,9 @@
 using namespace Editor;
 using namespace ChaosEngine;
 
-ChaosEngine::SceneConfiguration EditorScene::configure(Window &pWindow) {
-    window = &pWindow;
+ChaosEngine::SceneConfiguration EditorScene::configure(ChaosEngine::Engine &engine) {
+    window = &engine.getEngineWindow();
+    assetManager = engine.getAssetManager();
     return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
     };
@@ -23,10 +24,13 @@ ChaosEngine::SceneConfiguration EditorScene::configure(Window &pWindow) {
 
 void EditorScene::load() {
     using namespace Renderer;
+    baseAssets = std::make_unique<EditorBaseAssets>(*assetManager);
+    editorUI = std::make_unique<EditorComponentUI>(*assetManager, *baseAssets);
+    editorAssetManager = std::make_unique<EditorAssetManager>();
 
-    baseAssets.loadBaseMeshes();
-    baseAssets.loadBaseMaterials();
-    baseAssets.loadBaseTextures();
+    baseAssets->loadBaseMeshes();
+    baseAssets->loadBaseMaterials();
+    baseAssets->loadBaseTextures();
 
     editorCamera = createEntity();
     editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
@@ -40,7 +44,7 @@ void EditorScene::load() {
     auto script = std::unique_ptr<ChaosEngine::NativeScript>(new EditorCameraScript(editorCamera));
     editorCamera.setComponent<NativeScriptComponent>(std::move(script));
 
-    Editor::loadDefaultSceneEntities(*this, baseAssets);
+    Editor::loadDefaultSceneEntities(*this, *baseAssets);
 
 }
 
@@ -72,9 +76,9 @@ void EditorScene::addNewEntity() {
     entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     entity.setComponent<RenderComponent>(
-            baseAssets.getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
-                                                         {&baseAssets.getFallbackTexture()}),
-            baseAssets.getQuadMesh());
+            baseAssets->getTexturedMaterial().instantiate(&whiteTintColor, sizeof(whiteTintColor),
+                                                          {&(baseAssets->getFallbackTexture())}),
+            baseAssets->getQuadMesh());
 }
 
 void EditorScene::imGuiMainMenu() {
@@ -84,7 +88,7 @@ void EditorScene::imGuiMainMenu() {
             window->close();
         }
         if (ImGui::MenuItem("New Project")) {
-            editorAssetManager.createProject();
+            editorAssetManager->createProject();
         }
         ImGui::EndMenu();
     }
@@ -94,7 +98,7 @@ void EditorScene::imGuiMainMenu() {
         }
         ImGui::EndMenu();
     }
-    editorAssetManager.renderAssetMenu();
+    editorAssetManager->renderAssetMenu();
     ImGui::EndMainMenuBar();
 
 }
@@ -169,7 +173,7 @@ void EditorScene::updateImGui() {
         if (ImGui::Begin("ItemEdit", &itemEditActive)) {
             if (selectedSceneElement != ECS::null) {
                 auto entity = ecs.getEntity(selectedSceneElement);
-                if (editorUI.renderEntityComponentPanel(entity)) {
+                if (editorUI->renderEntityComponentPanel(entity)) {
                     ecs.removeEntity(entity);
                     selectedSceneElement = ECS::null;
                 }

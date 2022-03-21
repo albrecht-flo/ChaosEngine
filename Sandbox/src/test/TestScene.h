@@ -8,7 +8,7 @@ public:
 
     ~TestScene() override = default;
 
-    ChaosEngine::SceneConfiguration configure(Window &window) override;
+    ChaosEngine::SceneConfiguration configure(ChaosEngine::Engine &engine) override;
 
     void load() override;
 

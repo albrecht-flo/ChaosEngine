@@ -3,7 +3,6 @@
 #include "Ecs.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/window/Window.h"
-#include "assets/AssetManager.h"
 
 namespace ChaosEngine {
 
@@ -19,10 +18,12 @@ namespace ChaosEngine {
         friend class Engine;
 
     public:
+        Scene() = default;
+
         virtual ~Scene() = default;
 
         /// Returns the configuration of the engine for this scene.
-        virtual SceneConfiguration configure(Window &window) = 0;
+        virtual SceneConfiguration configure(Engine &engine) = 0;
 
         /// Initializes the scene
         virtual void load() = 0;
@@ -37,7 +38,6 @@ namespace ChaosEngine {
 
     protected:
         ECS ecs;
-        AssetManager assetManager; // TODO: move to engine
         //TOBE: Scene tree
     };
 

@@ -8,8 +8,8 @@
 
 using namespace ChaosEngine;
 
-ChaosEngine::SceneConfiguration TestScene::configure(Window &pWindow) {
-    window = &pWindow;
+ChaosEngine::SceneConfiguration TestScene::configure(Engine &engine) {
+    window = &engine.getEngineWindow();
     return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D
     };

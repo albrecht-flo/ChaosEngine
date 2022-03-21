@@ -5,29 +5,29 @@
 #include "Scene.h"
 #include "core/utils/Logger.h"
 
-
-Window *ChaosEngine::Engine::engineWindow = nullptr;
-
 using namespace ChaosEngine;
 
-Engine::Engine(std::unique_ptr<Scene> &&scene)
+Engine *ChaosEngine::Engine::s_engineInstance = nullptr;
+
+Engine::Engine()
         : window(Window::Create("Chaos Engine", 1400, 800)),
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),
           nativeScriptSystem(),
+          assetManager(std::make_shared<AssetManager>()),
+          scene(nullptr),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
-    assert("A Scene is required" && scene != nullptr);
-    if (engineWindow != nullptr) {
+    if (s_engineInstance != nullptr) {
         throw std::runtime_error("There can only be one running Engine instance!");
     }
-    engineWindow = &window;
+    s_engineInstance = this;
     Logger::I("Engine", "Loading Scene");
-    loadScene(std::move(scene));
 }
 
 void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
+    assert("A Scene is required." && pScene != nullptr);
     scene = std::move(pScene);
-    SceneConfiguration config = scene->configure(window);
+    SceneConfiguration config = scene->configure(*this);
     renderingSys.createRenderer(config.rendererType);
 
     scene->load();
@@ -36,6 +36,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
 }
 
 void Engine::run() {
+    assert("A Scene is required for the engine to run!" && scene != nullptr);
     while (!window.shouldClose()) {
         Logger::Tick();
         // FPS counter + delta time calculation -------------------------------
