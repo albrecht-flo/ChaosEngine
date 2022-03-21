@@ -16,7 +16,7 @@ namespace Editor {
 
     class EditorAssetSelector {
     public:
-        explicit EditorAssetSelector(const AssetManager &assetManager) : assetManager(assetManager) {}
+        explicit EditorAssetSelector(const ChaosEngine::AssetManager &assetManager) : assetManager(assetManager) {}
 
         ~EditorAssetSelector() = default;
 
@@ -27,6 +27,7 @@ namespace Editor {
             const std::string imGUIId = std::string("##") + label;
             const auto panelWidth = ImGui::GetContentRegionAvailWidth();
             if (ImGui::Button(label.c_str(), ImVec2(panelWidth, 0))) {
+                LOG_DEBUG("Button pressed {}", label.c_str());
                 ImGui::OpenPopup(imGUIId.c_str());
                 currentSelection = "";
                 assetFilterInput = "";
@@ -81,7 +82,7 @@ namespace Editor {
         }
 
     private:
-        const AssetManager &assetManager;
+        const ChaosEngine::AssetManager &assetManager;
         std::string currentSelection{};
         std::string assetFilterInput{};
     };

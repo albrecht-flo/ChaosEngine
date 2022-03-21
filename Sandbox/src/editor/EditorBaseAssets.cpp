@@ -3,8 +3,11 @@
 #include "core/utils/Logger.h"
 #include "core/assets/ModelLoader.h"
 
+#include "scripts/BaseMovementScript.h"
+
 using namespace Editor;
 using namespace Renderer;
+using namespace ChaosEngine;
 
 void EditorBaseAssets::loadBaseMeshes() {
     // Load meshes
@@ -79,4 +82,13 @@ void EditorBaseAssets::loadBaseTextures() {
     auto fallbackTexture1 = Texture::Create("TestAtlas.jpg");
     fallbackTexture = assetManager.registerTexture("TestAtlas.jpg", std::move(fallbackTexture1),
                                                    AssetManager::TextureInfo{});
+}
+
+void EditorBaseAssets::loadBaseScripts() {
+    assetManager.registerNativeScript("BaseMovementScript",
+                                      [](ChaosEngine::Entity e) {
+                                          return std::unique_ptr<NativeScript>(new BaseMovementScript(e));
+                                      },
+                                      AssetManager::ScriptInfo{}
+    );
 }

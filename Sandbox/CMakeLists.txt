@@ -12,6 +12,7 @@ set(SANDBOX_SOURCES
         src/editor/EditorAssetSelector.cpp
         src/editor/EditorAssetManager.cpp
         src/editor/scripts/EditorCameraScript.cpp
+        src/editor/scripts/BaseMovementScript.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

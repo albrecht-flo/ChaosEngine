@@ -30,7 +30,7 @@ namespace Editor {
 
     private:
         Window *window;
-        std::shared_ptr<AssetManager> assetManager;
+        std::shared_ptr<ChaosEngine::AssetManager> assetManager;
 
         std::unique_ptr<EditorBaseAssets> baseAssets;
         std::unique_ptr<EditorComponentUI> editorUI;

@@ -11,7 +11,7 @@ namespace Editor {
 
     class EditorBaseAssets {
     public:
-        explicit EditorBaseAssets(AssetManager &assetManager) : assetManager(assetManager) {}
+        explicit EditorBaseAssets(ChaosEngine::AssetManager &assetManager) : assetManager(assetManager) {}
 
         ~EditorBaseAssets() = default;
 
@@ -30,6 +30,8 @@ namespace Editor {
         void loadBaseMaterials();
 
         void loadBaseTextures();
+
+        void loadBaseScripts();
 
         // --------------------------------------- Materials -----------------------------------------------------------
 
@@ -71,15 +73,12 @@ namespace Editor {
         }
 
     private:
-        AssetManager &assetManager;
+        ChaosEngine::AssetManager &assetManager;
         std::shared_ptr<Renderer::RenderMesh> quadROB;
         std::shared_ptr<Renderer::RenderMesh> hexROB;
         Renderer::MaterialRef debugMaterial = Renderer::MaterialRef(nullptr);
         Renderer::MaterialRef texturedMaterial = Renderer::MaterialRef(nullptr);
         Renderer::Texture *fallbackTexture = nullptr;
-    public:
-        uint32_t DebugMaterialID = 1;
-        uint32_t TexturedMaterialID = 2;
     };
 
 }

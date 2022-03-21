@@ -1,5 +1,6 @@
 #include "EditorComponentUI.h"
 
+#include <memory>
 #include <optional>
 
 #include "Engine/src/core/utils/Logger.h"
@@ -13,7 +14,8 @@
 
 using namespace Editor;
 
-const std::array<std::string, 2> EditorComponentUI::componentList = {"Render Component", "Camera Component"};
+const std::array<std::string, 3> EditorComponentUI::componentList =
+        {"Render Component", "Camera Component", "Native Script Component"};
 
 // ------------------------------------ Component rendering ------------------------------------------------------------
 
@@ -81,6 +83,26 @@ void EditorComponentUI::renderRenderComponentUI(ChaosEngine::Entity &entity) {
 
 }
 
+void EditorComponentUI::renderNativeScriptComponentUI(ChaosEngine::Entity &entity) {
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    if (ImGui::CollapsingHeader("Native Script Component", flags)) {
+        auto &scriptComponent = entity.get<NativeScriptComponent>();
+        auto &meta = entity.get<NativeScriptComponentMeta>();
+
+        ImGui::Checkbox("Active", &scriptComponent.active);
+        ImGui::Text("Script:");
+        auto name = (meta.scriptName.empty()) ? "Empty Script" : meta.scriptName;
+        if (auto scriptSelection = assetSelector.render(name, assetManager.getAllScripts(), "Script")) {
+            LOG_INFO("Script selection: {}", scriptSelection->c_str());
+            entity.setComponent<NativeScriptComponent>(
+                    NativeScriptComponent{assetManager.getScript(*scriptSelection, entity), false}
+            );
+            entity.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName = *scriptSelection});
+        }
+    }
+}
+
+
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) {
@@ -106,6 +128,12 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
 
     if (entity.has<RenderComponent>()) {
         renderRenderComponentUI(entity);
+        ImGui::Separator();
+        ImGui::Spacing();
+    }
+
+    if (entity.has<NativeScriptComponent>()) {
+        renderNativeScriptComponentUI(entity);
         ImGui::Separator();
         ImGui::Spacing();
     }
@@ -161,7 +189,8 @@ void EditorComponentUI::renderComponentPopupList(ChaosEngine::Entity &entity) {
 }
 
 // ------------------------------------ ChaosEngine::Entity Helpers -----------------------------------------------------------------
-void EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const std::string &component) {
+void
+EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const std::string &component) {
     LOG_DEBUG("Adding Component {}", component.c_str());
     if (component == "Render Component") {
         if (entity.has<RenderComponent>()) {
@@ -189,6 +218,18 @@ void EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const 
                 .active = false,
                 .mainCamera = false,
         });
+    } else if (component == "Native Script Component") {
+        if (entity.has<NativeScriptComponent>()) {
+            LOG_ERROR("Can not add Native Script Component twice to the same entity! "\
+                    "Even if they reference different scripts!");
+            return;
+        }
+        entity.setComponent<NativeScriptComponent>(
+                NativeScriptComponent{
+                        std::make_unique<ChaosEngine::NativeScript>(entity),
+                        true
+                });
+        entity.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName = std::string{}});
     } else {
         assert("Component not implemented in EditorComponentUI::addComponentToEntity");
     }

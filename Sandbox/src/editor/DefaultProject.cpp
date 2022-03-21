@@ -35,7 +35,7 @@ namespace Editor {
         hexagon.setComponent<RenderComponent>(
                 assets.getTexturedMaterial().instantiate(
                         &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
-                assets.getHexMesh(), assets.TexturedMaterialID
+                assets.getHexMesh()
         );
         hexagon.setComponent<RenderComponentMeta>(assets.getHexMeshName(),
                                                   assets.getTexturedMaterial()->getName(),

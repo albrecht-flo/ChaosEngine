@@ -9,7 +9,7 @@ namespace Editor {
 
     class EditorComponentUI {
     public:
-        explicit EditorComponentUI(const AssetManager &assetManager, const EditorBaseAssets &baseAssets)
+        explicit EditorComponentUI(const ChaosEngine::AssetManager &assetManager, const EditorBaseAssets &baseAssets)
                 : assetManager(assetManager), editorAssets(baseAssets), assetSelector(assetManager) {}
 
         bool renderEntityComponentPanel(ChaosEngine::Entity &entity);
@@ -23,6 +23,8 @@ namespace Editor {
 
         void renderRenderComponentUI(ChaosEngine::Entity &entity);
 
+        void renderNativeScriptComponentUI(ChaosEngine::Entity &entity);
+
     private:
 
         void renderComponentPopupList(ChaosEngine::Entity &entity);
@@ -32,7 +34,7 @@ namespace Editor {
         void updateMaterialInstance(ChaosEngine::Entity &entity, glm::vec4 color, const RenderComponentMeta &rcMeta);
 
     private:
-        const AssetManager &assetManager;
+        const ChaosEngine::AssetManager &assetManager;
         const EditorBaseAssets &editorAssets;
         EditorAssetSelector assetSelector;
         glm::vec4 editTintColor = glm::vec4(1, 1, 1, 1);
@@ -40,6 +42,6 @@ namespace Editor {
         std::string componentMenuInput{};
         int selectedComponent = 0;
     public:
-        static const std::array<std::string, 2> componentList;
+        static const std::array<std::string, 3> componentList;
     };
 }

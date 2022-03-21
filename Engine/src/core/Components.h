@@ -38,10 +38,6 @@ struct RenderComponent {
                     std::shared_ptr<Renderer::RenderMesh> mesh)
             : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)) {}
 
-    RenderComponent(std::shared_ptr<Renderer::MaterialInstance> materialInstance,
-                    std::shared_ptr<Renderer::RenderMesh> mesh, uint32_t materialType)
-            : materialInstance(std::move(materialInstance)), mesh(std::move(mesh)) {}
-
     // The Material Instance can't be stored here because depending on the used Graphics API the storage of a Material
     // Instance might change. So we need to store a pointer for now.
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
@@ -60,7 +56,8 @@ namespace ChaosEngine { class NativeScriptSystem; }
 struct NativeScriptComponent {
     friend class ChaosEngine::NativeScriptSystem;
 
-    explicit NativeScriptComponent(std::unique_ptr<ChaosEngine::NativeScript> &&script) : script(std::move(script)) {}
+    NativeScriptComponent(std::unique_ptr<ChaosEngine::NativeScript> &&script, bool active)
+            : script(std::move(script)), active(active) {}
 
     ~NativeScriptComponent() = default;
 
@@ -69,19 +66,20 @@ struct NativeScriptComponent {
     NativeScriptComponent &operator=(const NativeScriptComponent &o) = delete;
 
     NativeScriptComponent(NativeScriptComponent &&o) noexcept
-            : script(std::move(o.script)), initialized(o.initialized) {}
+            : script(std::move(o.script)), active(o.active), initialized(o.initialized) {}
 
     NativeScriptComponent &operator=(NativeScriptComponent &&o) noexcept {
         if (this == &o)
             return *this;
         script = std::move(o.script);
+        active = o.active;
         initialized = o.initialized;
         return *this;
     }
 
 public:
     std::unique_ptr<ChaosEngine::NativeScript> script;
-
+    bool active;
 private:
     bool initialized = false;
 };

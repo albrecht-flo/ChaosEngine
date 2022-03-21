@@ -21,4 +21,8 @@ namespace Editor {
         std::optional<std::vector<TextureMeta>> textures;
     };
 
+    struct NativeScriptComponentMeta {
+        std::string scriptName;
+    };
+
 }

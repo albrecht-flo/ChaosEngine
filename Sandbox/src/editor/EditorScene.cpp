@@ -31,6 +31,7 @@ void EditorScene::load() {
     baseAssets->loadBaseMeshes();
     baseAssets->loadBaseMaterials();
     baseAssets->loadBaseTextures();
+    baseAssets->loadBaseScripts();
 
     editorCamera = createEntity();
     editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
@@ -42,7 +43,7 @@ void EditorScene::load() {
             .mainCamera = true,
     });
     auto script = std::unique_ptr<ChaosEngine::NativeScript>(new EditorCameraScript(editorCamera));
-    editorCamera.setComponent<NativeScriptComponent>(std::move(script));
+    editorCamera.setComponent<NativeScriptComponent>(std::move(script), true);
 
     Editor::loadDefaultSceneEntities(*this, *baseAssets);
 
