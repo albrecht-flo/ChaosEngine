@@ -38,3 +38,6 @@
 [submodule ".\\dep\\nativefiledialog-extended"]
 	path = .\\dep\\nativefiledialog-extended
 	url = git@github.com:btzy/nativefiledialog-extended.git
+[submodule "dep/freetype"]
+	path = dep/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype.git

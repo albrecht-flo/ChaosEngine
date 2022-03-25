@@ -15,6 +15,7 @@
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/core/scriptSystem/NativeScript.h"
+#include "Engine/src/core/uiSystem/FontManager.h"
 
 struct Meta {
     std::string name;
@@ -82,4 +83,12 @@ public:
     bool active;
 private:
     bool initialized = false;
+};
+
+
+struct UITextComponent {
+    std::shared_ptr<ChaosEngine::Font> font; // = assetManager.getFont("OpenSauceSans"),
+    ChaosEngine::FontStyle style; // = "regular",
+    glm::vec4 textColor; // = glm::vec4(0, 0, 0, 1),
+    std::string text; // = "This it some test text in a single line!",
 };
