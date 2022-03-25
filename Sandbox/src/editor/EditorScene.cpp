@@ -1,5 +1,7 @@
 #include "EditorScene.h"
 
+#include "Engine/src/core/uiSystem/FontManager.h"
+
 #include "Sandbox/src/common/CustomImGui.h"
 #include "Sandbox/src/common/AssetView.h"
 
@@ -46,6 +48,22 @@ void EditorScene::load() {
     editorCamera.setComponent<NativeScriptComponent>(std::move(script), true);
 
     Editor::loadDefaultSceneEntities(*this, *baseAssets);
+
+    auto openSansFont = FontManager::Create({
+        {"fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular},
+        {"fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic},
+        {"fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold}}
+    );
+//    assetManager.registerFont("OpenSauceSans", openSansFont);
+
+    auto textTester = createEntity();
+    textTester.setComponent<Meta>("Text Tester");
+    textTester.setComponent<UITextComponent>(UITextComponent{
+        .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
+        .style = FontStyle::Regular,
+        .textColor = glm::vec4(0, 0, 0, 1),
+        .text = "This it some test text in a single line!",
+    });
 
 }
 

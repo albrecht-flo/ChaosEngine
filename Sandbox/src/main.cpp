@@ -9,11 +9,6 @@
 #include <iostream>
 
 /* TODOs:
- *
- * TODO(Current):
- *       - MSVC: Breaks with designated initializers
- *       - Delete Entity at Runtime
- *       - Create Entity at Runtime
 
     To Think:
 		- use factory Create() instead of init (https://abseil.io/tips/42)
@@ -54,18 +49,28 @@
 
 
 int main() {
-    Logger::Init(LogLevel::Debug);
-    Logger::I("Main", "Engine starting...");
+    try {
+        Logger::Init(LogLevel::Debug);
+        Logger::I("Main", "Engine starting...");
 
-//    auto scene = std::make_unique<TestScene>();
-//    auto scene = std::make_unique<EmptyScene>();
-    ChaosEngine::Engine engine{};
-    auto scene = std::make_unique<Editor::EditorScene>();
-    engine.loadScene(std::move(scene));
+//      auto scene = std::make_unique<TestScene>();
+//      auto scene = std::make_unique<EmptyScene>();
+        ChaosEngine::Engine engine{};
+        auto scene = std::make_unique<Editor::EditorScene>();
+        engine.loadScene(std::move(scene));
 
-    NFD_Init();
-    engine.run();
-    NFD_Quit();
-
+        NFD_Init();
+        engine.run();
+        NFD_Quit();
+    } catch (const std::exception& ex) {
+        std::cerr << "[FATAL] Unhandled exception!" << std::endl;
+        std::cerr << ex.what() << std::endl;
+        std::cerr << "[FATAL] Aborting!" << std::endl;
+        return EXIT_FAILURE;
+    } catch (...) {
+        std::cerr << "[FATAL] Unhandled AND Unknown exception!" << std::endl;
+        std::cerr << "[FATAL] Aborting!" << std::endl;
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }

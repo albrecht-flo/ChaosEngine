@@ -2,7 +2,7 @@ set(ENGINE_SOURCES
         #       External vendor files
         src/vendor/vk_mem_allocator.cpp
         src/vendor/imgui.cpp
-        src/vendor/std_image.cpp
+        src/vendor/stb.cpp
         #       Core classes
         src/core/Engine.cpp
         src/core/Scene.cpp
@@ -68,6 +68,7 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
+        src/core/uiSystem/FontManager.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
@@ -76,6 +77,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/vulkan
         ../dep/VulkanMemoryAllocator/src
         ../dep/imgui
+        ../dep/freetype/include
         ../dep/entt/src
         ../dep/tinyply/source
         ../dep/tinyobjloader
@@ -89,10 +91,10 @@ target_include_directories(Engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUD
 
 if (WIN32)
     target_link_directories(Engine PUBLIC ../dep/lib/win)
-    target_link_libraries(Engine vulkan-1 glfw3)
+    target_link_libraries(Engine vulkan-1 glfw3 freetype)
 elseif (UNIX AND NOT APPLE)
     target_link_directories(Engine PUBLIC ../dep/lib/linux)
-    target_link_libraries(Engine X11 dl pthread vulkan glfw3)
+    target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()

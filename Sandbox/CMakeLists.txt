@@ -38,6 +38,10 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/res/textures
         ${CMAKE_CURRENT_BINARY_DIR}/textures
+
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/res/fonts
+        ${CMAKE_CURRENT_BINARY_DIR}/fonts
 )
 
 # ------------------------------------- Shaders ---------------------------------------------------

@@ -1,13 +1,13 @@
-//
-// Created by flori on 08.03.2022.
-//
-
 #pragma once
 
+#include <string>
+#include <vector>
 
-class AssetLoader {
+namespace ChaosEngine::AssetLoader {
+    std::string loadString(const std::string& filePath);
 
-};
+    std::vector<char> loadBinary(const std::string &filePath);
+}
 
 
 
