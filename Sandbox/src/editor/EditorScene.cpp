@@ -49,10 +49,10 @@ void EditorScene::load() {
 
     Editor::loadDefaultSceneEntities(*this, *baseAssets);
 
-    auto openSansFont = FontManager::Create({
-        {"fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular},
-        {"fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic},
-        {"fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold}}
+    auto openSansFont = FontManager::Create("OpenSauceSans", {
+            {"fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular},
+            {"fonts/OpenSauceSans-Italic.ttf",  FontStyle::Italic},
+            {"fonts/OpenSauceSans-Bold.ttf",    FontStyle::Bold}}
     );
 //    assetManager.registerFont("OpenSauceSans", openSansFont);
 
