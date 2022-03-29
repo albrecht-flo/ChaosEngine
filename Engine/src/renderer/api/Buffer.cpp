@@ -38,7 +38,7 @@ std::unique_ptr<Buffer> Renderer::Buffer::CreateStreaming(const void *data, uint
     switch (GraphicsContext::currentAPI) {
         case GraphicsAPI::Vulkan: {
             auto &memory = dynamic_cast<VulkanContext &>(ChaosEngine::RenderingSystem::GetContext()).getMemory();
-            VulkanBuffer buffer = memory.createInputBuffer(size, data, getVulkanBufferType(bufferType));
+            VulkanBuffer buffer = memory.createStreamingBuffer(size, data, getVulkanBufferType(bufferType));
             return std::make_unique<VulkanBuffer>(std::move(buffer));
         }
         default:

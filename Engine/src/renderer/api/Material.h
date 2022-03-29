@@ -12,6 +12,25 @@
 #include <cassert>
 
 namespace Renderer {
+// ----------------------------- Vertex Input Configuration ------------------------------------------------------------
+    enum class VertexFormat {
+        R_FLOAT, RG_FLOAT, RGB_FLOAT, RGBA_FLOAT
+    };
+    enum class InputRate {
+        Vertex, Instance
+    };
+    struct VertexAttribute {
+        uint32_t location;
+        VertexFormat format;
+        uint32_t offset;
+    };
+    struct VertexLayout {
+        uint32_t binding;
+        uint32_t stride;
+        InputRate inputRate;
+        std::vector<VertexAttribute> attributes;
+    };
+
 // ----------------------------- Fixed Function Configuration ----------------------------------------------------------
     enum class ShaderPassStage {
         Opaque
@@ -80,6 +99,7 @@ namespace Renderer {
     struct MaterialCreateInfo {
         ShaderPassStage stage = ShaderPassStage::Opaque;
         // InputBindings
+        VertexLayout vertexLayout;
         FixedFunctionConfiguration fixedFunction;
         std::string vertexShader;
         std::string fragmentShader;
@@ -156,7 +176,7 @@ namespace Renderer {
         ~MaterialRef() = default;
 
         /**
-         * This method
+         * This method instantiates the contained material with the supplied material and texture data.
          */
         inline std::shared_ptr<MaterialInstance>
         instantiate(const void *materialData, uint32_t size, const std::vector<const Texture *> &textures) {

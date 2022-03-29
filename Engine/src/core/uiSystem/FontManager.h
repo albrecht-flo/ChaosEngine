@@ -20,9 +20,10 @@ namespace ChaosEngine {
 
     private:
         struct CharacterGlyph {
+            glm::vec2 size;
             glm::vec2 uvSize;
             glm::vec2 uvOffset;
-            uint32_t advance;
+            float advance;
         };
     public:
         Font(const std::string &name, FontStyle style, uint32_t size, std::map<wchar_t, CharacterGlyph> &&glyphs,
@@ -37,7 +38,7 @@ namespace ChaosEngine {
 
         [[nodiscard]] float getSize() const { return static_cast<float>(size); }
 
-        [[nodiscard]] float getLineHeight() const { return static_cast<float>(size + std::sqrt(size)); }
+        [[nodiscard]] float getLineHeight() const { return static_cast<float>(2 * size); }
 
     private:
         const std::string &name;

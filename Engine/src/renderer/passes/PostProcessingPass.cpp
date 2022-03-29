@@ -64,8 +64,8 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                                                                                       VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
     auto vertex_3P_2U = std::make_unique<VulkanVertexInput>(
             VertexAttributeBuilder(0, sizeof(Vertex), InputRate::Vertex)
-                    .addAttribute(0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos))
-                    .addAttribute(1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)).build());
+                    .addAttribute(0, VertexFormat::RGB_FLOAT, offsetof(Vertex, pos))
+                    .addAttribute(1, VertexFormat::RG_FLOAT, offsetof(Vertex, uv)).build());
 
 
     descriptorSetLayout = std::make_unique<VulkanDescriptorSetLayout>(

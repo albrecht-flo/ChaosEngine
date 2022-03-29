@@ -13,7 +13,7 @@ std::unique_ptr<GraphicsContext> RenderingSystem::Context = nullptr;
 std::unique_ptr<RendererAPI> RenderingSystem::Renderer = nullptr;
 
 RenderingSystem::RenderingSystem(Window &window, GraphicsAPI api)
-        : uiRenderSubSystem() {
+        : uiRenderSubSystem(std::make_unique<UIRenderSubSystem>()) {
     Context = Renderer::GraphicsContext::Create(window, api);
 }
 
@@ -21,6 +21,8 @@ RenderingSystem::~RenderingSystem() {
     // Wait for renderer to finish
     if (Renderer != nullptr)
         Renderer->join();
+
+    uiRenderSubSystem = nullptr;
     Renderer = nullptr;
     Context = nullptr;
 }
@@ -47,7 +49,7 @@ void RenderingSystem::createRenderer(RendererType rendererType) {
         assert("Unsupported API" && false);
     }
     Renderer->setup();
-    uiRenderSubSystem.init();
+    uiRenderSubSystem->init();
 }
 
 void RenderingSystem::updateComponents(ECS &/*ecs*/) {
@@ -60,6 +62,7 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
 
     Context->beginFrame();
+    Renderer->beginFrame();
 
     bool rendered = false;
     for (const auto&[entity, transform, camera]: cameras.each()) {
@@ -78,10 +81,11 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     for (const auto&[entity, transform, renderComp]: view.each()) {
         Renderer->draw(transform.getModelMatrix(), renderComp);
     }
-
-    uiRenderSubSystem.render(ecs, *Renderer);
-
     Renderer->endScene();
+
+    uiRenderSubSystem->render(ecs, *Renderer);
+
+    Renderer->endFrame();
 
     // Push render commands to GPU
     Renderer->flush();

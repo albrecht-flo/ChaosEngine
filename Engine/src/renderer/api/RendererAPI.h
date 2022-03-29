@@ -18,6 +18,7 @@ namespace Renderer {
         RENDERER2D
     };
 
+    // TODO Refactor using render pass approach (see Board 'March 29, 2022 1:05 PM')
     class RendererAPI {
     public:
         virtual ~RendererAPI() = default;
@@ -31,10 +32,22 @@ namespace Renderer {
 
         // Context commands
         /// Start recording commands with this renderer
+        virtual void beginFrame() = 0;
+
+        /// Finish this frame
+        virtual void endFrame() = 0;
+
+        /// Start recording commands to this renderers' scene
         virtual void beginScene(const glm::mat4 &viewMatrix, const CameraComponent &camera) = 0;
 
         /// Stop recording commands with this renderer
         virtual void endScene() = 0;
+
+        /// Start recording commands to this renderers UI command buffer
+        virtual void beginUI(const glm::mat4 &viewMat) = 0;
+
+        /// Finalize the UI command buffer
+        virtual void endUI() = 0;
 
         /// Submit recorded commands to gpu
         virtual void flush() = 0;
@@ -46,6 +59,10 @@ namespace Renderer {
         // Rendering commands
         /// Render an object with its material and model matrix
         virtual void draw(const glm::mat4 &viewMatrix, const RenderComponent &renderComponent) = 0;
+
+        /// Render an indexed vertex buffer with its material
+        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer, uint32_t indexCount,
+                            const glm::mat4 &modelMat, const MaterialInstance &materialInstance) = 0;
 
         /// Gets the appropriate render pass for the requested shader stage
         virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;

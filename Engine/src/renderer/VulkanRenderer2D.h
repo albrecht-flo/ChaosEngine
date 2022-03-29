@@ -4,6 +4,7 @@
 
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
+#include "Engine/src/renderer/passes/UIRenderingPass.h"
 #include "Engine/src/renderer/passes/ImGuiRenderingPass.h"
 #include "Engine/src/renderer/passes/PostProcessingPass.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
@@ -20,8 +21,11 @@
 class VulkanRenderer2D : public Renderer::RendererAPI {
 private:
 private:
-    VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &&spriteRenderingPass,
-                     PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass,
+    VulkanRenderer2D(VulkanContext &context,
+                     SpriteRenderingPass &&spriteRenderingPass,
+                     UIRenderingPass &&uiRenderPass,
+                     PostProcessingPass &&postProcessingPass,
+                     ImGuiRenderingPass &&imGuiRenderingPass,
                      bool renderingSceneToSwapchain);
 
 public:
@@ -38,6 +42,7 @@ public:
     static std::unique_ptr<VulkanRenderer2D> Create(Renderer::GraphicsContext &graphicsContext);
 
     // Lifecycle
+
     /// Setup for all dynamic resources
     void setup() override;
 
@@ -46,10 +51,22 @@ public:
 
     // Context commands
     /// Start recording commands with this renderer
+    void beginFrame() override;
+
+    /// Start recording commands with this renderer
+    void endFrame() override;
+
+    /// Start recording commands with this renderer
     void beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) override;
 
     /// Stop recording commands with this renderer
     void endScene() override;
+
+    /// Start recording commands to this renderers UI command buffer
+    virtual void beginUI(const glm::mat4 &viewMat) override;
+
+    /// Finalize the UI command buffer
+    virtual void endUI() override;
 
     /// Submit recorded commands to gpu
     void flush() override;
@@ -60,6 +77,10 @@ public:
     // Rendering commands
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
+
+    /// Render an indexed vertex buffer with its material
+    virtual void drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer, uint32_t indexCount,
+                        const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
 
     /// Gets the appropriate render pass for the requested shader stage
     const Renderer::RenderPass &getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
@@ -75,6 +96,7 @@ private:
     VulkanContext &context;
 
     SpriteRenderingPass spriteRenderingPass;
+    UIRenderingPass uiRenderingPass;
     PostProcessingPass postProcessingPass;
     ImGuiRenderingPass imGuiRenderingPass;
 

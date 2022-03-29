@@ -19,11 +19,27 @@ void TestRenderer::join() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
+void TestRenderer::beginFrame() {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
+void TestRenderer::endFrame() {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
 void TestRenderer::beginScene(const glm::mat4 &/*viewMatrix*/, const CameraComponent &/*camera*/) {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
 void TestRenderer::endScene() {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
+void TestRenderer::beginUI(const glm::mat4 &/*viewMatrix*/) {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
+void TestRenderer::endUI() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
@@ -36,6 +52,11 @@ void TestRenderer::requestViewportResize(const glm::vec2 &/*viewportSize*/) {
 }
 
 void TestRenderer::draw(const glm::mat4 &/*viewMatrix*/, const RenderComponent &/*renderComponent*/) {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
+void TestRenderer::drawUI(const Buffer &/*vertexBuffer*/, const Buffer &/*indexBuffer*/, uint32_t /*count*/,
+                          const glm::mat4 &/*modelMat*/, const MaterialInstance &/*materialInstance*/) {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 

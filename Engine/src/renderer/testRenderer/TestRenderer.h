@@ -32,10 +32,22 @@ namespace Renderer::TestRenderer {
 
         // Context commands
         /// Start recording commands with this renderer
+        void beginFrame() override;
+
+        /// Finish this frame
+        void endFrame() override;
+
+        /// Start recording commands with this renderer
         void beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) override;
 
         /// Stop recording commands with this renderer
         void endScene() override;
+
+        /// Start recording commands to this renderers UI command buffer
+        virtual void beginUI(const glm::mat4 &viewMat) override;
+
+        /// Finalize the UI command buffer
+        virtual void endUI() override;
 
         /// Submit recorded commands to gpu
         void flush() override;
@@ -46,6 +58,10 @@ namespace Renderer::TestRenderer {
         // Rendering commands
         /// Render an object with its material and model matrix
         void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
+
+        /// Render an indexed vertex buffer with its material
+        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer, uint32_t indexCount,
+                            const glm::mat4 &modelMat, const MaterialInstance &materialInstance) override;
 
         /// Gets the appropriate render pass for the requested shader stage
         [[nodiscard]] const Renderer::RenderPass &
