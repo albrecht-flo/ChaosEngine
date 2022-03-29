@@ -16,5 +16,5 @@ void main() {
     //if(color.r == 0)
     //    discard;
     // Combine calculated texture color with fragment color // used for tinting models
-    out_Color =  color * in_fragColor;
+    out_Color =  color.r * in_fragColor;
 }

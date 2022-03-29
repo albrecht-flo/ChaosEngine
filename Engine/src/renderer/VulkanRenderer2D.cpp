@@ -14,10 +14,11 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     auto spriteRenderingPass = SpriteRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                            context.getSwapChain().getHeight());
 
-    auto uiRenderPass = UIRenderingPass::Create(context, context.getSwapChain().getWidth(),
-                                                context.getSwapChain().getHeight());
+    auto uiRenderingPass = UIRenderingPass::Create(context, context.getSwapChain().getWidth(),
+                                                   context.getSwapChain().getHeight());
 
     auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getFramebuffer(),
+                                                         uiRenderingPass.getFramebuffer(),
                                                          renderingSceneToSwapchain,
                                                          context.getSwapChain().getWidth(),
                                                          context.getSwapChain().getHeight());
@@ -25,7 +26,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow());
 
     return std::unique_ptr<VulkanRenderer2D>(
-            new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(uiRenderPass),
+            new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(uiRenderingPass),
                                  std::move(postProcessingPass), std::move(imGuiRenderingPass),
                                  renderingSceneToSwapchain));
 }
@@ -102,13 +103,14 @@ void VulkanRenderer2D::recreateSwapChain() {
     if (renderingSceneToSwapchain) {
         spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
         uiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
-        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(),
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), uiRenderingPass.getFramebuffer(),
                                              context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     } else if (sceneResize != glm::uvec2{0, 0}) {
         Logger::D("VulkanRenderer2D", "Resizing scene viewport during swapchain recreation");
         spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         uiRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
-        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), uiRenderingPass.getFramebuffer(),
+                                             sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
 
     }
@@ -137,7 +139,8 @@ void VulkanRenderer2D::flush() {
         context.getDevice().waitIdle();
         spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         uiRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
-        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
+        postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), uiRenderingPass.getFramebuffer(),
+                                             sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
     }
 }
