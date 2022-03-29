@@ -7,6 +7,8 @@
 #include <string>
 #include <map>
 
+#include "Engine/src/renderer/api/Texture.h"
+
 namespace ChaosEngine {
 
     enum class FontStyle {
@@ -24,15 +26,25 @@ namespace ChaosEngine {
         };
     public:
         Font(const std::string &name, FontStyle style, uint32_t size, std::map<wchar_t, CharacterGlyph> &&glyphs,
-             std::unique_ptr<unsigned char[]> &&bitmap) :
-                name(name), style(style), size(size), glyphs(std::move(glyphs)), bitmap(std::move(bitmap)) {}
+             std::unique_ptr<Renderer::Texture> &&fontTex) :
+                name(name), style(style), size(size), glyphs(std::move(glyphs)), fontTex(std::move(fontTex)) {}
+
+        [[nodiscard]] CharacterGlyph getGlyph(wchar_t car) const {
+            return glyphs.contains(car) ? glyphs.at(car) : glyphs.at(0);
+        }
+
+        [[nodiscard]] Renderer::Texture const *getFontTexture() const { return fontTex.get(); };
+
+        [[nodiscard]] float getSize() const { return static_cast<float>(size); }
+
+        [[nodiscard]] float getLineHeight() const { return static_cast<float>(size + std::sqrt(size)); }
 
     private:
         const std::string &name;
         FontStyle style;
         uint32_t size;
         std::map<wchar_t, CharacterGlyph> glyphs;
-        std::unique_ptr<unsigned char[]> bitmap;
+        std::unique_ptr<Renderer::Texture> fontTex;
     };
 
     class FontManager {

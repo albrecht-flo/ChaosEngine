@@ -12,6 +12,7 @@ Engine *ChaosEngine::Engine::s_engineInstance = nullptr;
 Engine::Engine()
         : window(Window::Create("Chaos Engine", 1400, 800)),
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),
+          uiSystem(renderingSys),
           nativeScriptSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),
@@ -33,6 +34,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     scene->load();
 
     nativeScriptSystem.init(scene->ecs);
+    uiSystem.init(scene->ecs);
 }
 
 void Engine::run() {
@@ -65,6 +67,8 @@ void Engine::run() {
         scene->updateImGui();
         ImGui::Render();
 
+        // Handle user input on ui elements
+        uiSystem.update(scene->ecs);
         // Update render system
         renderingSys.renderEntities(scene->ecs);
 

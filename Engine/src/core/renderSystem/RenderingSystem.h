@@ -1,16 +1,17 @@
 #pragma once
 
 #include <memory>
-#include "Ecs.h"
-#include "Components.h"
-#include "renderer/api/RendererAPI.h"
-#include "renderer/api/GraphicsContext.h"
+#include "Engine/src/core/Ecs.h"
+#include "Engine/src/core/Components.h"
+#include "Engine/src/renderer/api/RendererAPI.h"
+#include "Engine/src/renderer/api/GraphicsContext.h"
+#include "UIRenderSubSystem.h"
 
 namespace ChaosEngine {
 
     class RenderingSystem {
     public:
-        explicit RenderingSystem(Window &window, Renderer::GraphicsAPI api);
+        RenderingSystem(Window &window, Renderer::GraphicsAPI api);
 
         ~RenderingSystem();
 
@@ -32,6 +33,8 @@ namespace ChaosEngine {
             return *Renderer;
         }
 
+    private:
+        UIRenderSubSystem uiRenderSubSystem;
     private:
         static std::unique_ptr<Renderer::GraphicsContext> Context;
         static std::unique_ptr<Renderer::RendererAPI> Renderer;

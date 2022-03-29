@@ -67,6 +67,9 @@ void VulkanRenderer2D::endScene() {
     spriteRenderingPass.end();
     postProcessingPass.draw();
 
+    // TODO: Move ImGui and UI into their seperate passes so that they can be done independently
+    uiPass.draw();
+
     imGuiRenderingPass.draw();
     context.getCurrentPrimaryCommandBuffer().end();
 }

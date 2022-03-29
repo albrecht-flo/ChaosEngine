@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
+#include "VulkanBuffer.h"
 
 
 class VulkanContext;
@@ -39,11 +40,14 @@ public:
 
     VulkanBuffer createInputBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const;
 
+    VulkanBuffer createStreamingBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const;
+
     [[nodiscard]] VulkanUniformBuffer
     createUniformBuffer(uint32_t elementSize, uint32_t count, bool aligned) const;
 
     [[nodiscard]] VulkanBuffer
-    createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage) const;
+    createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage,
+                 VmaAllocatorCreateFlags memoryFlags = 0) const;
 
     [[nodiscard]] VulkanImage
     createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
@@ -60,6 +64,12 @@ public:
     void destroyImage(VkImage image, VmaAllocation imageAllocation) const;
 
     void destroyBuffer(VkBuffer buffer, VmaAllocation bufferAllocation) const;
+
+// ------------------------------------- Mapping -----------------------------------------------------------------------
+
+    [[nodiscard]] void *mapBuffer(const VmaAllocation &allocation) const;
+
+    void unmapBuffer(const VmaAllocation &allocation) const;
 
 // ------------------------------------- Helpers -----------------------------------------------------------------------
 

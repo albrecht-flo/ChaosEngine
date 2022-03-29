@@ -8,7 +8,8 @@ set(ENGINE_SOURCES
         src/core/Scene.cpp
         src/core/Ecs.cpp
         src/core/Entity.cpp
-        src/core/RenderingSystem.cpp
+        src/core/renderSystem/RenderingSystem.cpp
+        src/core/renderSystem/UIRenderSubSystem.cpp
         src/core/assets/Mesh.cpp
         src/core/assets/ModelLoader.cpp
         src/core/assets/RawImage.cpp
@@ -18,6 +19,8 @@ set(ENGINE_SOURCES
         src/core/utils/STDExtensions.cpp
         src/core/scriptSystem/NativeScriptSystem.cpp
         src/core/scriptSystem/NativeScript.cpp
+        src/core/uiSystem/UISystem.cpp
+        src/core/uiSystem/FontManager.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
@@ -68,7 +71,6 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
-        src/core/uiSystem/FontManager.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

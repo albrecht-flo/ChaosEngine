@@ -4,8 +4,9 @@
 #include "Engine/src/renderer/window/Window.h"
 #include "Engine/src/renderer/api/GraphicsContext.h"
 #include "assets/AssetManager.h"
-#include "RenderingSystem.h"
+#include "Engine/src/core/renderSystem/RenderingSystem.h"
 #include "scriptSystem/NativeScriptSystem.h"
+#include "core/uiSystem/UISystem.h"
 
 
 namespace ChaosEngine {
@@ -53,6 +54,7 @@ namespace ChaosEngine {
 
         // Systems
         RenderingSystem renderingSys;
+        UISystem uiSystem;
         NativeScriptSystem nativeScriptSystem;
 
         // Scene Data
