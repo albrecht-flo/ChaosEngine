@@ -8,14 +8,21 @@
 #include "Engine/src/renderer/vulkan/rendering/VulkanRenderPass.h"
 #include "VulkanRenderMesh.h"
 
-
 using namespace Renderer;
+
+static VulkanVertexInput convertToVulkanVertexLayout(const VertexLayout &layout) {
+    auto builder = VertexAttributeBuilder(layout.binding, layout.stride, layout.inputRate);
+    for (const auto &attribute: layout.attributes) {
+        builder.addAttribute(attribute.location, attribute.format, attribute.offset);
+    }
+    return builder.build();
+}
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &renderer,
-                               MaterialCreateInfo pInfo)
-        : Material(pContext), info(std::move(pInfo)) {
+                               const MaterialCreateInfo &pInfo)
+        : Material(pContext), info(pInfo) {
     auto &vulkanContext = dynamic_cast<VulkanContext &>(pContext);
 
     // Setup FixedFunction state indicators
@@ -65,18 +72,19 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
     const auto &renderPass = dynamic_cast<const VulkanRenderPass &>(renderer.getRenderPassForShaderStage(info.stage));
 
     // Build Pipeline
-    pipeline = std::make_unique<VulkanPipeline>(VulkanPipelineBuilder(vulkanContext.getDevice(), renderPass,
-                                                                      std::move(pipelineLayout),
-                                                                      VulkanRenderMesh::vertex_3P_3C_3N_2U,
-                                                                      "")
-                                                        .setVertexShader(info.vertexShader)
-                                                        .setFragmentShader(info.fragmentShader)
-                                                        .setTopology(info.fixedFunction.topology)
-                                                        .setPolygonMode(info.fixedFunction.polygonMode)
-                                                        .setCullFace(info.fixedFunction.cullMode)
-                                                        .setDepthTestEnabled(info.fixedFunction.depthTest)
-                                                        .setDepthCompare(Renderer::CompareOp::Less)
-                                                        .build());
+    pipeline = std::make_unique<VulkanPipeline>(
+            VulkanPipelineBuilder(vulkanContext.getDevice(), renderPass,
+                                  std::move(pipelineLayout),
+                                  convertToVulkanVertexLayout(pInfo.vertexLayout),
+                                  pInfo.name)
+                    .setVertexShader(info.vertexShader)
+                    .setFragmentShader(info.fragmentShader)
+                    .setTopology(info.fixedFunction.topology)
+                    .setPolygonMode(info.fixedFunction.polygonMode)
+                    .setCullFace(info.fixedFunction.cullMode)
+                    .setDepthTestEnabled(info.fixedFunction.depthTest)
+                    .setDepthCompare(Renderer::CompareOp::Less)
+                    .build());
 
     // Build descriptor pool
     auto descriptorPoolBuilder = VulkanDescriptorPoolBuilder(vulkanContext.getDevice());
@@ -106,7 +114,8 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
 std::shared_ptr<MaterialInstance>
 VulkanMaterial::instantiate(std::shared_ptr<Material> &materialPtr, const void *materialData, uint32_t size,
                             const std::vector<const Texture *> &textures) {
-    assert("Instantiating a destroyed material is impossible" && materialBuffer != nullptr);
+    assert("Instantiating a destroyed material is impossible" &&
+           (materialBufferSize == 0 || materialBuffer != nullptr));
     assert("Material uniform buffer needs to be filled completely" && size == materialBufferSize);
     auto &vulkanContext = dynamic_cast<VulkanContext &>(context);
 

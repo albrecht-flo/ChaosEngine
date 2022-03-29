@@ -32,9 +32,19 @@ void EditorBaseAssets::loadBaseMeshes() {
 }
 
 void EditorBaseAssets::loadBaseMaterials() {
+    const auto BaseVertexLayout = VertexLayout{.binding = 0, .stride = sizeof(Vertex), .inputRate=InputRate::Vertex,
+            .attributes = std::vector<VertexAttribute>(
+                    {
+                            VertexAttribute{0, VertexFormat::RGB_FLOAT, offsetof(Vertex, pos)},
+                            VertexAttribute{1, VertexFormat::RGB_FLOAT, offsetof(Vertex, color)},
+                            VertexAttribute{2, VertexFormat::RGB_FLOAT, offsetof(Vertex, normal)},
+                            VertexAttribute{3, VertexFormat::RG_FLOAT, offsetof(Vertex, uv)},
+                    })};
+
     LOG_INFO("Creating materials");
     debugMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
+            .vertexLayout = BaseVertexLayout,
             .fixedFunction = FixedFunctionConfiguration{.topology = Topology::TriangleList, .polygonMode = PolygonMode::Line,
                     .depthTest = true, .depthWrite = true},
             .vertexShader = "2DDebug",
@@ -56,6 +66,7 @@ void EditorBaseAssets::loadBaseMaterials() {
 
     texturedMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
+            .vertexLayout = BaseVertexLayout,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
             .vertexShader = "2DSprite",
             .fragmentShader = "2DStaticTexturedSprite",

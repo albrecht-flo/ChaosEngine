@@ -59,10 +59,11 @@ void EditorScene::load() {
     auto textTester = createEntity();
     textTester.setComponent<Meta>("Text Tester");
     textTester.setComponent<UITextComponent>(UITextComponent{
-        .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
-        .style = FontStyle::Regular,
-        .textColor = glm::vec4(0, 0, 0, 1),
-        .text = "This it some test text in a single line!",
+            .position = glm::vec3{0, 0, -1},
+            .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
+            .style = FontStyle::Regular,
+            .textColor = glm::vec4(1, 1, 1, 1),
+            .text = "This is some\nTest text!",
     });
 
 }

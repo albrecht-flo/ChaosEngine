@@ -8,7 +8,7 @@ void *VulkanBuffer::map() {
 }
 
 void VulkanBuffer::flush() {
-    // TODO: This is only necessary for GPU_ONLY buffers!
+    // TODO: This is only necessary for GPU_ONLY buffers! NOT yet implemented
 }
 
 void VulkanBuffer::unmap() {
@@ -16,6 +16,27 @@ void VulkanBuffer::unmap() {
     mapping = nullptr;
 }
 
-void VulkanBuffer::copy(size_t bytes) {
+void VulkanBuffer::copy(void *data, size_t bytes) {
     memory.copyDataToBuffer(*this, mapping, bytes, 0);
 }
+
+void VulkanBuffer::destroy() {
+    if (buffer != 0) {
+        if (mapping != nullptr) {
+            unmap();
+        }
+        auto &vulkanContext = dynamic_cast<VulkanContext &>(ChaosEngine::RenderingSystem::GetContext());
+        vulkanContext.destroyBuffered(std::make_unique<VulkanBufferBufferedDestroy>(memory, buffer, allocation));
+        buffer = 0;
+        allocation = nullptr;
+    }
+}
+
+void VulkanBuffer::destroyImmediately() {
+    memory.destroyBuffer(buffer, allocation);
+    buffer = 0;
+    allocation = nullptr;
+    mapping = nullptr;
+}
+
+// ----------------------------Vulkan Uniform Buffer -------------------------------------------------------------------

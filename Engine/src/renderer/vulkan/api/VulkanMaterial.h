@@ -21,7 +21,7 @@ class VulkanMaterial : public Renderer::Material {
 
 private:
     VulkanMaterial(Renderer::GraphicsContext &pContext, const Renderer::RendererAPI &renderer,
-                   Renderer::MaterialCreateInfo pInfo);
+                   const Renderer::MaterialCreateInfo &pInfo);
 
 public:
     ~VulkanMaterial() override {
@@ -45,10 +45,11 @@ public:
 
     static std::shared_ptr<VulkanMaterial>
     Create(Renderer::GraphicsContext &pContext, const Renderer::RendererAPI &renderer,
-           Renderer::MaterialCreateInfo pInfo) {
+           const Renderer::MaterialCreateInfo &pInfo) {
         return std::make_shared<VulkanMaterial>(VulkanMaterial(std::forward<Renderer::GraphicsContext &>(pContext),
                                                                std::forward<const Renderer::RendererAPI &>(renderer),
-                                                               std::forward<Renderer::MaterialCreateInfo>(pInfo)));
+                                                               std::forward<const Renderer::MaterialCreateInfo &>(
+                                                                       pInfo)));
     }
 
     std::shared_ptr<Renderer::MaterialInstance>

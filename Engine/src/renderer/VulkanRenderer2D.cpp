@@ -14,6 +14,8 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     auto spriteRenderingPass = SpriteRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                            context.getSwapChain().getHeight());
 
+    auto uiRenderPass = UIRenderingPass::Create(context, context.getSwapChain().getWidth(),
+                                                context.getSwapChain().getHeight());
 
     auto postProcessingPass = PostProcessingPass::Create(context, spriteRenderingPass.getFramebuffer(),
                                                          renderingSceneToSwapchain,
@@ -23,14 +25,19 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow());
 
     return std::unique_ptr<VulkanRenderer2D>(
-            new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(postProcessingPass),
-                                 std::move(imGuiRenderingPass), renderingSceneToSwapchain));
+            new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(uiRenderPass),
+                                 std::move(postProcessingPass), std::move(imGuiRenderingPass),
+                                 renderingSceneToSwapchain));
 }
 
-VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context, SpriteRenderingPass &&spriteRenderingPass,
-                                   PostProcessingPass &&postProcessingPass, ImGuiRenderingPass &&imGuiRenderingPass,
+VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context,
+                                   SpriteRenderingPass &&spriteRenderingPass,
+                                   UIRenderingPass &&uiRenderPass,
+                                   PostProcessingPass &&postProcessingPass,
+                                   ImGuiRenderingPass &&imGuiRenderingPass,
                                    bool renderingSceneToSwapchain)
         : context(context), spriteRenderingPass(std::move(spriteRenderingPass)),
+          uiRenderingPass(std::move(uiRenderPass)),
           postProcessingPass(std::move(postProcessingPass)), imGuiRenderingPass(std::move(imGuiRenderingPass)),
           renderingSceneToSwapchain(renderingSceneToSwapchain) {}
 
@@ -58,6 +65,11 @@ void VulkanRenderer2D::join() {
 
 // ------------------------------------ Rendering methods --------------------------------------------------------------
 
+void VulkanRenderer2D::beginFrame() {
+    auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
+    commandBuffer.begin(VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+}
+
 void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponent &camera) {
     spriteRenderingPass.begin(viewMat, camera);
     postProcessingPass.updateConfiguration({camera});
@@ -65,13 +77,21 @@ void VulkanRenderer2D::beginScene(const glm::mat4 &viewMat, const CameraComponen
 
 void VulkanRenderer2D::endScene() {
     spriteRenderingPass.end();
-    postProcessingPass.draw();
+}
 
-    // TODO: Move ImGui and UI into their seperate passes so that they can be done independently
-    uiPass.draw();
+void VulkanRenderer2D::endFrame() {
+    postProcessingPass.draw();
 
     imGuiRenderingPass.draw();
     context.getCurrentPrimaryCommandBuffer().end();
+}
+
+void VulkanRenderer2D::beginUI(const glm::mat4 &viewMat) {
+    uiRenderingPass.begin(viewMat);
+}
+
+void VulkanRenderer2D::endUI() {
+    uiRenderingPass.end();
 }
 
 void VulkanRenderer2D::recreateSwapChain() {
@@ -81,11 +101,13 @@ void VulkanRenderer2D::recreateSwapChain() {
     // Update framebuffer attachments
     if (renderingSceneToSwapchain) {
         spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+        uiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(),
                                              context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
     } else if (sceneResize != glm::uvec2{0, 0}) {
         Logger::D("VulkanRenderer2D", "Resizing scene viewport during swapchain recreation");
         spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
+        uiRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
 
@@ -114,6 +136,7 @@ void VulkanRenderer2D::flush() {
         Logger::D("VulkanRenderer2D", "Resizing scene viewport");
         context.getDevice().waitIdle();
         spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
+        uiRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
     }
@@ -123,6 +146,15 @@ void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &re
     const auto &mesh = dynamic_cast<const VulkanRenderMesh &>(*(renderComponent.mesh));
     const auto &material = dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance));
     spriteRenderingPass.drawSprite(mesh, modelMat, material);
+}
+
+void
+VulkanRenderer2D::drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer, uint32_t indexCount,
+                         const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) {
+    const auto &vulkanVBuffer = dynamic_cast<const VulkanBuffer &>(vertexBuffer);
+    const auto &vulkanIBuffer = dynamic_cast<const VulkanBuffer &>(indexBuffer);
+    const auto &vulkanMaterialI = dynamic_cast<const VulkanMaterialInstance &>(materialInstance);
+    uiRenderingPass.drawUI(vulkanVBuffer, vulkanIBuffer, indexCount, modelMat, vulkanMaterialI);
 }
 
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {

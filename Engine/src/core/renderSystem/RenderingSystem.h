@@ -34,7 +34,7 @@ namespace ChaosEngine {
         }
 
     private:
-        UIRenderSubSystem uiRenderSubSystem;
+        std::unique_ptr<UIRenderSubSystem> uiRenderSubSystem;
     private:
         static std::unique_ptr<Renderer::GraphicsContext> Context;
         static std::unique_ptr<Renderer::RendererAPI> Renderer;

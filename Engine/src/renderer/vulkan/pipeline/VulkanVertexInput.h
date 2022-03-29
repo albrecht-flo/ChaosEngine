@@ -2,6 +2,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "Engine/src/renderer/api/Material.h"
 
 class VulkanVertexInput {
 public:
@@ -31,35 +32,23 @@ private:
     std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 };
 
-enum class InputRate {
-    Vertex, Instance
-};
-
 class VertexAttributeBuilder {
 public:
-    VertexAttributeBuilder(uint32_t binding, uint32_t stride, InputRate inputRate)
+    VertexAttributeBuilder(uint32_t binding, uint32_t stride, Renderer::InputRate inputRate)
             : binding(binding), stride(stride), inputRate(inputRate), attributes() {}
 
-    VertexAttributeBuilder &addAttribute(uint32_t location, VkFormat format, uint32_t offset) {
-        attributes.emplace_back(VkVertexInputAttributeDescription{
-                .location = location,
-                .binding = binding,
-                .format = format,
-                .offset = offset}
-        );
-        return *this;
-    }
+    VertexAttributeBuilder &addAttribute(uint32_t location, Renderer::VertexFormat format, uint32_t offset);
 
-    VulkanVertexInput build() {
-        auto vInputRate = (inputRate == InputRate::Vertex) ? VK_VERTEX_INPUT_RATE_VERTEX
-                                                           : VK_VERTEX_INPUT_RATE_INSTANCE;
-        return VulkanVertexInput{{VkVertexInputBindingDescription{binding, stride, vInputRate}},
-                                 std::move(attributes)};
-    }
+    VulkanVertexInput build();
 
 private:
     uint32_t binding;
     uint32_t stride;
-    InputRate inputRate;
+    Renderer::InputRate inputRate;
     std::vector<VkVertexInputAttributeDescription> attributes;
+private:
+    // ------------------------------------ Translation Helpers --------------------------------------------------------
+    static VkFormat getVkFormat(Renderer::VertexFormat format);
+
+    static VkVertexInputRate getVkInputRate(Renderer::InputRate inputRate);
 };

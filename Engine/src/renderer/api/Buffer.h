@@ -18,7 +18,7 @@ namespace Renderer {
 
         virtual void unmap() = 0;
 
-        virtual void copy(size_t bytes) = 0;
+        virtual void copy(void *data, size_t bytes) = 0;
 
         static std::unique_ptr<Buffer> Create(const void *data, uint64_t size, BufferType bufferType);
 

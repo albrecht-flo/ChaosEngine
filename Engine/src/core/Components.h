@@ -87,8 +87,9 @@ private:
 
 
 struct UITextComponent {
-    std::shared_ptr<ChaosEngine::Font> font; // = assetManager.getFont("OpenSauceSans"),
-    ChaosEngine::FontStyle style; // = "regular",
-    glm::vec4 textColor; // = glm::vec4(0, 0, 0, 1),
-    std::string text; // = "This it some test text in a single line!",
+    glm::vec3 position;
+    std::shared_ptr<ChaosEngine::Font> font;
+    ChaosEngine::FontStyle style;
+    glm::vec4 textColor;
+    std::string text;
 };

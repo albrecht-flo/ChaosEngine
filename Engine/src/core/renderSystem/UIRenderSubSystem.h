@@ -7,14 +7,14 @@
 namespace ChaosEngine {
 
     class UIRenderSubSystem {
-    private:
+    public:
         struct GlyphVertex {
-            glm::vec4 pos;
+            glm::vec3 pos;
             glm::vec4 color;
             glm::vec2 uv;
         };
     public:
-        ~UIRenderSubSystem();
+        ~UIRenderSubSystem() = default;
 
         void init();
 
@@ -22,8 +22,10 @@ namespace ChaosEngine {
 
     private:
         uint32_t currentBufferedFrame = 0;
-        std::vector<std::unique_ptr<Renderer::Buffer>> textVertexBuffers;
-        std::vector<std::unique_ptr<Renderer::Buffer>> textIndexBuffers;
+        std::vector<std::unique_ptr<Renderer::Buffer>> textVertexBuffers{};
+        std::vector<std::unique_ptr<Renderer::Buffer>> textIndexBuffers{};
+        Renderer::MaterialRef uiMaterial = Renderer::MaterialRef(nullptr);
+        std::shared_ptr<Renderer::MaterialInstance> fontMaterialInstance = nullptr;
     private:
         const uint32_t glyphCapacity = 2048;
     };

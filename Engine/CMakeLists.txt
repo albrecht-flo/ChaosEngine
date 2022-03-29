@@ -31,8 +31,9 @@ set(ENGINE_SOURCES
         src/renderer/api/Framebuffer.cpp
         src/renderer/api/GraphicsContext.cpp
         src/renderer/window/Window.cpp
-        #       General Rendering files
+        #       General Vulkan Rendering files
         src/renderer/passes/SpriteRenderingPass.cpp
+        src/renderer/passes/UIRenderingPass.cpp
         src/renderer/passes/PostProcessingPass.cpp
         src/renderer/passes/ImGuiRenderingPass.cpp
         src/renderer/VulkanRenderer2D.cpp

@@ -10,7 +10,7 @@
 #include <memory>
 
 class VulkanBuffer : public Renderer::Buffer {
-    friend class VulkanMemory;
+    friend VulkanMemory;
 
     /**
      * This class handles the buffered destruction of a VulkanBuffer.
@@ -49,25 +49,20 @@ public:
     VulkanBuffer &operator=(const VulkanBuffer &o) = delete;
 
     VulkanBuffer(VulkanBuffer &&o) noexcept
-            : Renderer::Buffer(), memory(o.memory), buffer(std::exchange(o.buffer, VK_NULL_HANDLE)),
+            : Renderer::Buffer(), memory(o.memory), buffer(std::exchange(o.buffer, nullptr)),
               allocation(std::exchange(o.allocation, nullptr)), mapping(std::exchange(o.mapping, nullptr)) {}
 
     VulkanBuffer &operator=(VulkanBuffer &&o) noexcept {
         if (&o == this)
             return *this;
         destroy();
-        buffer = std::exchange(o.buffer, VK_NULL_HANDLE);
+        buffer = std::exchange(o.buffer, nullptr);
         allocation = std::exchange(o.allocation, nullptr);
         mapping = std::exchange(o.mapping, nullptr);
         return *this;
     }
 
-    void destroyImmediately() {
-        memory.destroyBuffer(buffer, allocation);
-        buffer = VK_NULL_HANDLE;
-        allocation = nullptr;
-        mapping = nullptr;
-    }
+    void destroyImmediately();
 
     [[nodiscard]] inline VkBuffer vk() const { return buffer; }
 
@@ -77,20 +72,10 @@ public:
 
     void unmap() override;
 
-    void copy(size_t bytes) override;
+    void copy(void *data, size_t bytes) override;
 
 private:
-    void destroy() {
-        if (mapping != nullptr) {
-            unmap();
-        }
-        if (buffer != VK_NULL_HANDLE) {
-            auto &vulkanContext = dynamic_cast<VulkanContext &>(ChaosEngine::RenderingSystem::GetContext());
-            vulkanContext.destroyBuffered(std::make_unique<VulkanBufferBufferedDestroy>(memory, buffer, allocation));
-            buffer = VK_NULL_HANDLE;
-            allocation = nullptr;
-        }
-    }
+    void destroy();
 
 private:
     const VulkanMemory &memory;
@@ -122,8 +107,15 @@ public:
         return *this;
     }
 
-
     inline void destroyImmediately() { buffer.destroyImmediately(); }
+
+    void *map() override { return buffer.map(); }
+
+    void flush() override { buffer.flush(); }
+
+    void unmap() override { buffer.unmap(); }
+
+    void copy(void *data, size_t bytes) override { buffer.copy(data, bytes); }
 
     [[nodiscard]] inline const VulkanBuffer &getBuffer() const { return buffer; }
 
