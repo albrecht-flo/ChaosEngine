@@ -145,6 +145,9 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
+    using namespace Renderer;
+    auto fontTexture = Texture::Create(RawImage(std::move(mapBuffer), width, width, width * width, ImageFormat::R8),
+                                       ttfFile);
 
-    return std::make_shared<Font>(name, style, glyphSize, std::move(charGlyphs), std::move(mapBuffer));
+    return std::make_shared<Font>(name, style, glyphSize, std::move(charGlyphs), std::move(fontTexture));
 }

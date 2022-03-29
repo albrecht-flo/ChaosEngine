@@ -12,9 +12,18 @@ namespace Renderer {
     public:
         virtual ~Buffer() = default;
 
-        static std::unique_ptr<Buffer> Create(const void *data, uint64_t size, BufferType bufferType);
-    };
+        virtual void *map() = 0;
 
+        virtual void flush() = 0;
+
+        virtual void unmap() = 0;
+
+        virtual void copy(size_t bytes) = 0;
+
+        static std::unique_ptr<Buffer> Create(const void *data, uint64_t size, BufferType bufferType);
+
+        static std::unique_ptr<Buffer> CreateStreaming(const void *data, uint64_t size, BufferType bufferType);
+    };
 
     template<typename T>
     class UniformBufferContent {

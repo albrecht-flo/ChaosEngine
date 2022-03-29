@@ -1,6 +1,6 @@
 #include "RenderingSystem.h"
 
-#include "Engine.h"
+#include "Engine/src/core/Engine.h"
 #include "renderer/VulkanRenderer2D.h"
 #include "renderer/testRenderer/TestRenderer.h"
 
@@ -12,7 +12,8 @@ using namespace Renderer;
 std::unique_ptr<GraphicsContext> RenderingSystem::Context = nullptr;
 std::unique_ptr<RendererAPI> RenderingSystem::Renderer = nullptr;
 
-RenderingSystem::RenderingSystem(Window &window, GraphicsAPI api) {
+RenderingSystem::RenderingSystem(Window &window, GraphicsAPI api)
+        : uiRenderSubSystem() {
     Context = Renderer::GraphicsContext::Create(window, api);
 }
 
@@ -46,6 +47,7 @@ void RenderingSystem::createRenderer(RendererType rendererType) {
         assert("Unsupported API" && false);
     }
     Renderer->setup();
+    uiRenderSubSystem.init();
 }
 
 void RenderingSystem::updateComponents(ECS &/*ecs*/) {
@@ -76,6 +78,9 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     for (const auto&[entity, transform, renderComp]: view.each()) {
         Renderer->draw(transform.getModelMatrix(), renderComp);
     }
+
+    uiRenderSubSystem.render(ecs, *Renderer);
+
     Renderer->endScene();
 
     // Push render commands to GPU

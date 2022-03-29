@@ -1,7 +1,7 @@
 #include "Engine/src/renderer/api/Material.h"
 
 #include "GraphicsContext.h"
-#include "Engine/src/core/RenderingSystem.h"
+#include "Engine/src/core/renderSystem/RenderingSystem.h"
 #include "Engine/src/renderer/vulkan/api/VulkanMaterial.h"
 
 using namespace Renderer;

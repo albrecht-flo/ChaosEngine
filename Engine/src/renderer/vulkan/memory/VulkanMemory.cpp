@@ -39,7 +39,8 @@ VulkanMemory::VulkanMemory(VulkanMemory &&o) noexcept
 /* Creates a new buffer with dedicated device memory ! bad !
 	Optimal should be few big device memory regions and buffers into these regions */
 VulkanBuffer
-VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage) const {
+VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage, VmaMemoryUsage memoryUsage,
+                           VmaAllocatorCreateFlags memoryFlags) const {
     // Create buffer
     VkBufferCreateInfo bufferInfo = {};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -61,6 +62,8 @@ VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage,
 
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = memoryUsage;
+    if (memoryFlags)
+        allocInfo.flags = memoryFlags;
 
     VkBuffer buffer{};
     VmaAllocation allocation{};
@@ -156,6 +159,16 @@ VulkanBuffer VulkanMemory::createInputBuffer(VkDeviceSize size, const void *data
     return inputBuffer;
 }
 
+/* Creates a buffer containing 'size' bytes from 'data'.
+	The buffer is a CPU_TO_GPU so easily mappable.
+	*/
+VulkanBuffer VulkanMemory::createStreamingBuffer(VkDeviceSize size, const void *data, VkBufferUsageFlags flags) const {
+    // Create vertex buffer, usage=transfer_dst | vertexbuffer, it is device local
+    VulkanBuffer buffer = createBuffer(size, static_cast<VkBufferUsageFlagBits>(flags), VMA_MEMORY_USAGE_CPU_TO_GPU);
+    copyDataToBuffer(buffer, data, size, 0);
+    return buffer;
+}
+
 VulkanImage VulkanMemory::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
                                       VkImageUsageFlags usage, VmaMemoryUsage memoryUsage, bool dedicatedAllocation)
 const {
@@ -200,6 +213,18 @@ const {
     }
 
     return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height), format};
+}
+
+// ------------------------------------- Mapping -----------------------------------------------------------------------
+
+void *VulkanMemory::mapBuffer(const VmaAllocation &allocation) const {
+    void *mapping;
+    vmaMapMemory(allocator, allocation, &mapping);
+    return mapping;
+}
+
+void VulkanMemory::unmapBuffer(const VmaAllocation &allocation) const {
+    vmaUnmapMemory(allocator, allocation);
 }
 
 // --------------------------------- Resource Destruction --------------------------------------------------------------
