@@ -49,7 +49,7 @@ void RenderingSystem::createRenderer(RendererType rendererType) {
         assert("Unsupported API" && false);
     }
     Renderer->setup();
-    uiRenderSubSystem->init();
+    uiRenderSubSystem->init(2048);
 }
 
 void RenderingSystem::updateComponents(ECS &/*ecs*/) {
