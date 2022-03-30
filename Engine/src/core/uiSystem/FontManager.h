@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 
 #include "Engine/src/renderer/api/Texture.h"
 
@@ -28,12 +28,12 @@ namespace ChaosEngine {
         };
     public:
         Font(const std::string &name, FontStyle style, float size, float lineHeight,
-             std::map<wchar_t, CharacterGlyph> &&glyphs,
+             std::unordered_map<uint32_t, CharacterGlyph> &&glyphs,
              std::unique_ptr<Renderer::Texture> &&fontTex) :
                 name(name), style(style), size(size), lineHeight(lineHeight),
                 glyphs(std::move(glyphs)), fontTex(std::move(fontTex)) {}
 
-        [[nodiscard]] CharacterGlyph getGlyph(wchar_t car) const {
+        [[nodiscard]] CharacterGlyph getGlyph(uint32_t car) const {
             return glyphs.contains(car) ? glyphs.at(car) : glyphs.at(0);
         }
 
@@ -48,7 +48,7 @@ namespace ChaosEngine {
         FontStyle style;
         float size;
         float lineHeight;
-        std::map<wchar_t, CharacterGlyph> glyphs;
+        std::unordered_map<uint32_t, CharacterGlyph> glyphs;
         std::unique_ptr<Renderer::Texture> fontTex;
     };
 

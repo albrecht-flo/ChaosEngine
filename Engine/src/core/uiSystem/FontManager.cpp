@@ -63,7 +63,7 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
         throw std::runtime_error("ERROR::FREETYPE: Failed to set pixel size");
     }
 
-    std::map<wchar_t, Font::CharacterGlyph> charGlyphs;
+    std::unordered_map<uint32_t, Font::CharacterGlyph> charGlyphs;
     FT_UInt cIndex = 0;
     uint32_t i = 0;
     auto ftChar = FT_Get_First_Char(face, &cIndex);
@@ -93,7 +93,7 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
 //            LOG_INFO("Skipping non renderable character {} in font", ftChar);
         }
 
-        charGlyphs.insert_or_assign((wchar_t) ftChar, Font::CharacterGlyph{
+        charGlyphs.insert_or_assign((uint32_t) ftChar, Font::CharacterGlyph{
                 .size = glm::vec2(slot->metrics.width >> 6, slot->metrics.height >> 6),
                 .uvSize = glm::vec2((float) slot->bitmap.width / ((float) width),
                                     (float) slot->bitmap.rows / ((float) width)),
