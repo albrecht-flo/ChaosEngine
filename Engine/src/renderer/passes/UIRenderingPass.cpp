@@ -177,7 +177,8 @@ void UIRenderingPass::resizeAttachments(uint32_t width, uint32_t height) {
 }
 
 void
-UIRenderingPass::drawUI(const VulkanBuffer &vertexBuffer, const VulkanBuffer &indexBuffer, uint32_t indexCount,
+UIRenderingPass::drawUI(const VulkanBuffer &vertexBuffer, const VulkanBuffer &indexBuffer,
+                        uint32_t indexCount, uint32_t indexOffset,
                         const glm::mat4 &modelMat, const VulkanMaterialInstance &material) {
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();
 
@@ -215,5 +216,5 @@ UIRenderingPass::drawUI(const VulkanBuffer &vertexBuffer, const VulkanBuffer &in
     vkCmdBindVertexBuffers(commandBuffer.vk(), 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer.vk(), indexBuffer.vk(), 0, VK_INDEX_TYPE_UINT32);
     // Draw a fullscreen quad and composite the final image
-    vkCmdDrawIndexed(commandBuffer.vk(), indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer.vk(), indexCount, 1, indexOffset, 0, 0);
 }

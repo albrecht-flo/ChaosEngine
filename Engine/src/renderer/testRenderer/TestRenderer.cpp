@@ -55,7 +55,8 @@ void TestRenderer::draw(const glm::mat4 &/*viewMatrix*/, const RenderComponent &
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
-void TestRenderer::drawUI(const Buffer &/*vertexBuffer*/, const Buffer &/*indexBuffer*/, uint32_t /*count*/,
+void TestRenderer::drawUI(const Buffer &/*vertexBuffer*/, const Buffer &/*indexBuffer*/,
+                          uint32_t /*indexCount*/, uint32_t /*indexOffset*/,
                           const glm::mat4 &/*modelMat*/, const MaterialInstance &/*materialInstance*/) {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }

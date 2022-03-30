@@ -152,12 +152,13 @@ void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &re
 }
 
 void
-VulkanRenderer2D::drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer, uint32_t indexCount,
+VulkanRenderer2D::drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
+                         uint32_t indexCount, uint32_t indexOffset,
                          const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) {
     const auto &vulkanVBuffer = dynamic_cast<const VulkanBuffer &>(vertexBuffer);
     const auto &vulkanIBuffer = dynamic_cast<const VulkanBuffer &>(indexBuffer);
     const auto &vulkanMaterialI = dynamic_cast<const VulkanMaterialInstance &>(materialInstance);
-    uiRenderingPass.drawUI(vulkanVBuffer, vulkanIBuffer, indexCount, modelMat, vulkanMaterialI);
+    uiRenderingPass.drawUI(vulkanVBuffer, vulkanIBuffer, indexCount, indexOffset, modelMat, vulkanMaterialI);
 }
 
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {

@@ -49,7 +49,7 @@ public:
     void resizeAttachments(uint32_t width, uint32_t height);
 
     void
-    drawUI(const VulkanBuffer &vertexBuffer, const VulkanBuffer &indexBuffer, uint32_t indexCount,
+    drawUI(const VulkanBuffer &vertexBuffer, const VulkanBuffer &indexBuffer, uint32_t indexCount, uint32_t indexOffset,
            const glm::mat4 &modelMat, const VulkanMaterialInstance &material);
 
     inline const VulkanRenderPass &getOpaquePass() const { return *opaquePass; }

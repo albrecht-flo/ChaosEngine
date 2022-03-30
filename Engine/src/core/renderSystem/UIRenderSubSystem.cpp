@@ -26,7 +26,7 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
                 Buffer::CreateStreaming(textIndexBufferCPU.data(), indexBufferCapacity, BufferType::Index));
     }
 
-    LOG_INFO("Creating materials");
+    LOG_INFO("UIRenderSubSystem: Creating materials");
     uiMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
             .vertexLayout = VertexLayout{.binding = 0, .stride = sizeof(GlyphVertex), .inputRate=InputRate::Vertex,
@@ -51,79 +51,98 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
     });
 }
 
+uint32_t
+UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, GlyphVertex *vBufferRef, uint32_t *iBufferRef,
+                                       const UITextComponent &text, glm::vec3 linePos) const {
+    glm::vec3 cursor{0, -text.font->getLineHeight(), 0};
+    uint32_t glyphCount = 0;
+    for (char car: text.text) {
+        if (car == '\n') {
+            cursor = {0, cursor.y - text.font->getLineHeight(), 0};
+            continue;
+        }
+        uint32_t totalGlyphCount = bufferOffsetInGlyphs + glyphCount;
+        if (totalGlyphCount >= glyphCapacity) {
+            LOG_ERROR("No more space in text buffers!");
+            break;
+        }
+        const auto glyph = text.font->getGlyph(car);
+        glm::vec3 glyphPos = linePos + cursor;
+        glyphPos.x += glyph.bearing.x;
+        glyphPos.y -= glyph.size.y - glyph.bearing.y;
+
+        glm::vec2 uvBoxLT = glyph.uvOffset;
+        glm::vec2 uvBoxRB = glyph.uvOffset + glyph.uvSize;
+        vBufferRef[4 * totalGlyphCount + 0] = GlyphVertex{
+                .pos = glyphPos,
+                .color = text.textColor,
+                .uv=glm::vec2(uvBoxLT.x, uvBoxRB.y)
+        };
+        vBufferRef[4 * totalGlyphCount + 1] = GlyphVertex{
+                .pos = glyphPos + glm::vec3(0, glyph.size.y, 0),
+                .color = text.textColor,
+                .uv=uvBoxLT
+        };
+        vBufferRef[4 * totalGlyphCount + 2] = GlyphVertex{
+                .pos = glyphPos + glm::vec3(glyph.size.x, 0, 0),
+                .color = text.textColor,
+                .uv=uvBoxRB
+        };
+        vBufferRef[4 * totalGlyphCount + 3] = GlyphVertex{
+                .pos = glyphPos + glm::vec3(glyph.size.x, glyph.size.y, 0),
+                .color = text.textColor,
+                .uv=glm::vec2(uvBoxRB.x, uvBoxLT.y)
+        };
+        cursor.x += static_cast<float>(glyph.advance);
+        iBufferRef[totalGlyphCount * 6 + 0] = (totalGlyphCount * 4) + 0;
+        iBufferRef[totalGlyphCount * 6 + 1] = (totalGlyphCount * 4) + 2;
+        iBufferRef[totalGlyphCount * 6 + 2] = (totalGlyphCount * 4) + 1;
+        iBufferRef[totalGlyphCount * 6 + 3] = (totalGlyphCount * 4) + 2;
+        iBufferRef[totalGlyphCount * 6 + 4] = (totalGlyphCount * 4) + 3;
+        iBufferRef[totalGlyphCount * 6 + 5] = (totalGlyphCount * 4) + 1;
+        ++glyphCount;
+    }
+    return glyphCount;
+}
+
+glm::mat4 calculateTextModelMatrix(const Transform &transform) {
+    auto linePos = transform.position;
+    linePos.y *= -1;
+    glm::mat4 modelMat = glm::translate(glm::mat4(1), linePos);
+    modelMat *= glm::toMat4(glm::quat({glm::radians(transform.rotation.x), glm::radians(transform.rotation.y),
+                                       glm::radians(transform.rotation.z)}));
+    return glm::scale(modelMat, transform.scale);;
+}
+
 void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     // Render Text
-    auto scripts = ecs.getRegistry().view<Transform, UITextComponent>();
-    uint32_t glyphCount = 0;
+    auto uiTexts = ecs.getRegistry().view<Transform, UITextComponent>();
+    uint32_t totalGlyphCount = 0;
     auto *vBufferRef = static_cast<GlyphVertex *>(textVertexBuffers[currentBufferedFrame]->map());
     auto *iBufferRef = static_cast<uint32_t *>(textIndexBuffers[currentBufferedFrame]->map());
-    for (auto&&[entity, transform, text]: scripts.each()) {
+
+    renderer.beginUI(glm::mat4(1.0f));
+    for (auto&&[entity, transform, text]: uiTexts.each()) {
         if (fontMaterialInstance == nullptr) {
             // TODO: Multi font support
             auto fontTexture = text.font->getFontTexture();
             fontMaterialInstance = uiMaterial.instantiate(nullptr, 0, {fontTexture});
         }
 
-        glm::vec3 cursor{0, -text.font->getLineHeight(), 0};
-        auto linePos = transform.position;
-        linePos.y *= -1;
-        for (char car: text.text) {
-            if (car == '\n') {
-                cursor = {0, cursor.y - text.font->getLineHeight(), 0};
-                continue;
-            }
-            if (glyphCount >= glyphCapacity) {
-                LOG_ERROR("No more space in text buffers!");
-                break;
-            }
-            const auto glyph = text.font->getGlyph(car);
-            glm::vec3 glyphPos = linePos + cursor;
-            glyphPos.x += glyph.bearing.x;
-            glyphPos.y -= glyph.size.y - glyph.bearing.y;
+        auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
+        glm::mat4 modelMat = calculateTextModelMatrix(transform);
+        renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
+                        glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstance);
 
-            glm::vec2 uvBoxLT = glyph.uvOffset;
-            glm::vec2 uvBoxRB = glyph.uvOffset + glyph.uvSize;
-            vBufferRef[4 * glyphCount + 0] = GlyphVertex{
-                    .pos = glyphPos,
-                    .color = text.textColor,
-                    .uv=glm::vec2(uvBoxLT.x, uvBoxRB.y)
-            };
-            vBufferRef[4 * glyphCount + 1] = GlyphVertex{
-                    .pos = glyphPos + glm::vec3(0, glyph.size.y, 0),
-                    .color = text.textColor,
-                    .uv=uvBoxLT
-            };
-            vBufferRef[4 * glyphCount + 2] = GlyphVertex{
-                    .pos = glyphPos + glm::vec3(glyph.size.x, 0, 0),
-                    .color = text.textColor,
-                    .uv=uvBoxRB
-            };
-            vBufferRef[4 * glyphCount + 3] = GlyphVertex{
-                    .pos = glyphPos + glm::vec3(glyph.size.x, glyph.size.y, 0),
-                    .color = text.textColor,
-                    .uv=glm::vec2(uvBoxRB.x, uvBoxLT.y)
-            };
-            cursor.x += static_cast<float>(glyph.advance);
-            iBufferRef[glyphCount * 6 + 0] = (glyphCount * 4) + 0;
-            iBufferRef[glyphCount * 6 + 1] = (glyphCount * 4) + 2;
-            iBufferRef[glyphCount * 6 + 2] = (glyphCount * 4) + 1;
-            iBufferRef[glyphCount * 6 + 3] = (glyphCount * 4) + 2;
-            iBufferRef[glyphCount * 6 + 4] = (glyphCount * 4) + 3;
-            iBufferRef[glyphCount * 6 + 5] = (glyphCount * 4) + 1;
-            ++glyphCount;
-        }
+        totalGlyphCount += glyphCount;
     }
     textVertexBuffers[currentBufferedFrame]->flush();
     textIndexBuffers[currentBufferedFrame]->flush();
 
-    renderer.beginUI(glm::mat4(1.0f));
-    if (glyphCount > 0) {
-        renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
-                        glyphCount * 6, glm::mat4(1.0f), *fontMaterialInstance);
-    }
     // Render UI elements
     // TODO
 
     renderer.endUI();
+
     currentBufferedFrame = (currentBufferedFrame + 1) % GraphicsContext::maxFramesInFlight;
 }
