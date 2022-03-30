@@ -109,8 +109,8 @@ void UIRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const glm::u
 
     CanvasUbo *ubo = uboContent->at(context.getCurrentFrame());
     ubo->view = viewMat;
-    ubo->proj = glm::ortho(-100.0f, (float) viewportDimensions.x,
-                           -100.0f, (float) viewportDimensions.y,
+    ubo->proj = glm::ortho(0.0f, (float) viewportDimensions.x * 2.0f,
+                           0.0f, (float) viewportDimensions.y * 2.0f,
                            0.1f, 10.0f);
     ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be flipped
 

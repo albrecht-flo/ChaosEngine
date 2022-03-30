@@ -79,21 +79,21 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
                     .pos = glyphPos,
                     .color = text.textColor, .uv=glyph.uvOffset};
             vBufferRef[4 * glyphCount + 1] = GlyphVertex{
-                    .pos = glyphPos + glm::vec3(0, glyph.size.y, 0),
+                    .pos = glyphPos + glm::vec3(0, -glyph.size.y, 0),
                     .color = text.textColor, .uv=glyph.uvOffset + glm::vec2(0, glyph.uvSize.y)};
             vBufferRef[4 * glyphCount + 2] = GlyphVertex{
                     .pos = glyphPos + glm::vec3(glyph.size.x, 0, 0),
                     .color = text.textColor, .uv=glyph.uvOffset + glm::vec2(glyph.uvSize.x, 0)};
             vBufferRef[4 * glyphCount + 3] = GlyphVertex{
-                    .pos = glyphPos + glm::vec3(glyph.size.x, glyph.size.y, 0),
+                    .pos = glyphPos + glm::vec3(glyph.size.x, -glyph.size.y, 0),
                     .color = text.textColor, .uv=glyph.uvOffset + glyph.uvSize};
             cursor.x += static_cast<float>(glyph.advance);
             iBufferRef[glyphCount * 6 + 0] = (glyphCount * 4) + 0;
-            iBufferRef[glyphCount * 6 + 1] = (glyphCount * 4) + 2;
-            iBufferRef[glyphCount * 6 + 2] = (glyphCount * 4) + 1;
+            iBufferRef[glyphCount * 6 + 1] = (glyphCount * 4) + 1;
+            iBufferRef[glyphCount * 6 + 2] = (glyphCount * 4) + 2;
             iBufferRef[glyphCount * 6 + 3] = (glyphCount * 4) + 2;
-            iBufferRef[glyphCount * 6 + 4] = (glyphCount * 4) + 3;
-            iBufferRef[glyphCount * 6 + 5] = (glyphCount * 4) + 1;
+            iBufferRef[glyphCount * 6 + 4] = (glyphCount * 4) + 1;
+            iBufferRef[glyphCount * 6 + 5] = (glyphCount * 4) + 3;
             ++glyphCount;
         }
     }

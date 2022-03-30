@@ -29,9 +29,12 @@ float LinearizeDepth(float depth) {
 void main() {
     vec4 color;
     color = texture(mainSceneTex, fragUVs);
+
+    // Overlay UI
     vec4 uiColor = texture(uiBufferTex, fragUVs);
-    if (uiColor.a != 0)
-    color = uiColor;
+    if (uiColor.a != 0) {
+        color = mix(color, uiColor, uiColor.a * uiColor.a);
+    }
 
     outColor = color;
 }
