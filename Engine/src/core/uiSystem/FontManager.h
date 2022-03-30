@@ -23,12 +23,15 @@ namespace ChaosEngine {
             glm::vec2 size;
             glm::vec2 uvSize;
             glm::vec2 uvOffset;
+            glm::vec2 bearing;
             float advance;
         };
     public:
-        Font(const std::string &name, FontStyle style, uint32_t size, std::map<wchar_t, CharacterGlyph> &&glyphs,
+        Font(const std::string &name, FontStyle style, float size, float lineHeight,
+             std::map<wchar_t, CharacterGlyph> &&glyphs,
              std::unique_ptr<Renderer::Texture> &&fontTex) :
-                name(name), style(style), size(size), glyphs(std::move(glyphs)), fontTex(std::move(fontTex)) {}
+                name(name), style(style), size(size), lineHeight(lineHeight),
+                glyphs(std::move(glyphs)), fontTex(std::move(fontTex)) {}
 
         [[nodiscard]] CharacterGlyph getGlyph(wchar_t car) const {
             return glyphs.contains(car) ? glyphs.at(car) : glyphs.at(0);
@@ -36,14 +39,15 @@ namespace ChaosEngine {
 
         [[nodiscard]] Renderer::Texture const *getFontTexture() const { return fontTex.get(); };
 
-        [[nodiscard]] float getSize() const { return static_cast<float>(size); }
+        [[nodiscard]] float getSize() const { return size; }
 
-        [[nodiscard]] float getLineHeight() const { return static_cast<float>(2 * size); }
+        [[nodiscard]] float getLineHeight() const { return lineHeight; }
 
     private:
         const std::string &name;
         FontStyle style;
-        uint32_t size;
+        float size;
+        float lineHeight;
         std::map<wchar_t, CharacterGlyph> glyphs;
         std::unique_ptr<Renderer::Texture> fontTex;
     };

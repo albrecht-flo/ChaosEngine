@@ -87,7 +87,6 @@ private:
 
 
 struct UITextComponent {
-    glm::vec3 position;
     std::shared_ptr<ChaosEngine::Font> font;
     ChaosEngine::FontStyle style;
     glm::vec4 textColor;

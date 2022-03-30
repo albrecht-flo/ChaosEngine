@@ -34,9 +34,11 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
 
     const std::string ttfFile = fontParts[0].ttfFile;
     const auto style = fontParts[0].style;
-    const int glyphSize = 48;
+    const double fontSizePT = 48.0;
+    const double resolutionDPI = 72.0;
+    const double pixelSize = fontSizePT * resolutionDPI / 72;
     const int padding = 16;
-    LOG_INFO("Loading Font from {}, with style {}", ttfFile.c_str(), style);
+    LOG_INFO("Loading Font from {}, with style {} and size {}pt", ttfFile.c_str(), style, fontSizePT);
 
     FT_Library ft;
     if (FT_Init_FreeType(&ft)) {
@@ -47,15 +49,17 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     if (FT_New_Face(ft, ttfFile.c_str(), 0, &face)) {
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
     }
+    const auto toPixelCoord = [=](double coord) { return coord * pixelSize / face->units_per_EM; };
+    LOG_DEBUG("Font info: pixelSize = {}", pixelSize);
 
     const auto mapSize = static_cast<uint32_t>(std::ceil(std::sqrt(face->num_glyphs + 1 /* Fallback Glyph */)));
-    const uint32_t width = mapSize * glyphSize + mapSize * padding;
+    const uint32_t width = (uint32_t) (mapSize * std::ceil(pixelSize)) + mapSize * padding;
     std::unique_ptr<unsigned char[]> mapBuffer{new unsigned char[width * width]};
     for (uint32_t i = 0; i < width * width; ++i) {
         mapBuffer.get()[i] = 0;
     }
 
-    if (FT_Set_Pixel_Sizes(face, 0, glyphSize)) {
+    if (FT_Set_Pixel_Sizes(face, 0, (uint32_t) pixelSize)) {
         throw std::runtime_error("ERROR::FREETYPE: Failed to set pixel size");
     }
 
@@ -70,32 +74,33 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
         if (FT_Load_Char(face, ftChar, FT_LOAD_RENDER)) {
             throw std::runtime_error("ERROR::FREETYPE: Failed to load glyph");
         }
-        const uint32_t yOffset = yBaseOffset + (i / mapSize) * glyphSize +
+        FT_GlyphSlot slot = face->glyph;
+        const uint32_t yOffset = yBaseOffset + (uint32_t) ((i / mapSize) * pixelSize) +
                                  (i / mapSize) * padding;
-        const uint32_t xOffset = xBaseOffset + (i % mapSize) * glyphSize +
+        const uint32_t xOffset = xBaseOffset + (uint32_t) ((i % mapSize) * pixelSize) +
                                  (i % mapSize) * padding;
-        if (face->glyph->bitmap.buffer != nullptr) {
-//            LOG_INFO("Rendered character {} in font. {}x{}", ftChar, face->glyph->bitmap.width,
-//                     face->glyph->bitmap.rows);
+        if (slot->bitmap.buffer != nullptr) {
+//            LOG_INFO("Rendered character {} in font. {}x{}", ftChar, slot->bitmap.width,
+//                     slot->bitmap.rows);
             const uint32_t memoryOffset = yOffset * width + xOffset;
-            for (uint32_t row = 0; row < face->glyph->bitmap.rows; ++row) {
+            for (uint32_t row = 0; row < slot->bitmap.rows; ++row) {
                 const uint32_t offset = memoryOffset + row * width;
-                const uint32_t glyphBufferOffset = row * face->glyph->bitmap.width;
-                std::memcpy(mapBuffer.get() + offset, face->glyph->bitmap.buffer + glyphBufferOffset,
-                            face->glyph->bitmap.width);
+                const uint32_t glyphBufferOffset = row * slot->bitmap.width;
+                std::memcpy(mapBuffer.get() + offset, slot->bitmap.buffer + glyphBufferOffset,
+                            slot->bitmap.width);
             }
         } else {
 //            LOG_INFO("Skipping non renderable character {} in font", ftChar);
         }
 
         charGlyphs.insert_or_assign((wchar_t) ftChar, Font::CharacterGlyph{
-                .size = glm::vec2(face->glyph->metrics.width * (1.0 / 26.6),
-                                  face->glyph->metrics.height * (1.0 / 26.6)),
-                .uvSize = glm::vec2((float) face->glyph->bitmap.width / ((float) width),
-                                    (float) face->glyph->bitmap.rows / ((float) width)),
+                .size = glm::vec2(slot->metrics.width >> 6, slot->metrics.height >> 6),
+                .uvSize = glm::vec2((float) slot->bitmap.width / ((float) width),
+                                    (float) slot->bitmap.rows / ((float) width)),
                 .uvOffset = glm::vec2((float) xOffset / ((float) width),
                                       (float) yOffset / ((float) width)),
-                .advance = static_cast<float>(face->glyph->advance.x * (1.0 / 26.6)),
+                .bearing = glm::vec2(slot->bitmap_left, slot->bitmap_top),
+                .advance = static_cast<float>(slot->advance.x >> 6),
         });
 
         // Next
@@ -104,35 +109,37 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     }
     // Append fallback Glyph
     {
-        const uint32_t yOffset = yBaseOffset / 2 + (i / mapSize) * glyphSize +
+        const uint32_t yOffset = yBaseOffset / 2 + (uint32_t) ((i / mapSize) * pixelSize) +
                                  (i / mapSize) * padding;
-        const uint32_t xOffset = xBaseOffset + (i % mapSize) * glyphSize +
+        const uint32_t xOffset = xBaseOffset + (uint32_t) ((i % mapSize) * pixelSize) +
                                  (i % mapSize) * padding;
         const uint32_t baseOffset = yOffset * width + xOffset;
-        const auto localPadding = (uint32_t) std::ceil(glyphSize * 0.1);
-        const auto borderWidth = (uint32_t) std::ceil(std::sqrt(glyphSize) / 2.0);
-        for (uint32_t row = localPadding; row < glyphSize - localPadding; ++row) {
-            if (row < localPadding + borderWidth || row > glyphSize - localPadding - borderWidth) {
+        const auto localPadding = (uint32_t) std::ceil(pixelSize * 0.1);
+        const auto borderWidth = (uint32_t) std::ceil(std::sqrt(pixelSize) / 2.0);
+        for (uint32_t row = localPadding; row < pixelSize - localPadding; ++row) {
+            if (row < localPadding + borderWidth || row > pixelSize - localPadding - borderWidth) {
                 // Top/Bottom
-                for (auto cell = localPadding; cell < glyphSize - localPadding; ++cell) {
+                for (auto cell = localPadding; cell < pixelSize - localPadding; ++cell) {
                     const uint32_t offset = baseOffset + row * width + cell;
                     mapBuffer.get()[offset] = 255;
                 }
             } else {
                 // Sides
-                for (auto cell = localPadding; cell < glyphSize - localPadding; ++cell) {
+                for (auto cell = localPadding; cell < pixelSize - localPadding; ++cell) {
                     const uint32_t offset = baseOffset + row * width + cell;
                     mapBuffer.get()[offset] = (cell < localPadding + borderWidth ||
-                                               cell >= glyphSize - localPadding - borderWidth) ? 255 : 0;
+                                               cell >= pixelSize - localPadding - borderWidth) ? 255 : 0;
                 }
             }
         }
         charGlyphs.insert_or_assign(0, Font::CharacterGlyph{
-                .uvSize = glm::vec2((float) (glyphSize - 2 * localPadding) / ((float) width),
-                                    (float) (glyphSize - 2 * localPadding) / ((float) width)),
+                .size = glm::vec2(pixelSize - 2 * localPadding, pixelSize - 2 * localPadding),
+                .uvSize = glm::vec2((float) (pixelSize - 2 * localPadding) / ((float) width),
+                                    (float) (pixelSize - 2 * localPadding) / ((float) width)),
                 .uvOffset = glm::vec2((float) (xOffset + localPadding) / ((float) width),
                                       (float) (yOffset + localPadding) / ((float) width)),
-                .advance = static_cast<float>(glyphSize - 2 * localPadding),
+                .bearing = glm::vec2(localPadding, pixelSize - 2 * localPadding),
+                .advance = static_cast<float>(pixelSize),
         });
     }
 
@@ -146,6 +153,9 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
 //    stbi_write_png("out.png", width, width, 1, mapBuffer.get(), width);
     // TEST ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    const auto lineHeight = (float) toPixelCoord(face->height);
+    LOG_DEBUG("Found lineHeight: {}", lineHeight);
+
     FT_Done_Face(face);
     FT_Done_FreeType(ft);
 
@@ -153,5 +163,6 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     auto fontTexture = Texture::Create(RawImage(std::move(mapBuffer), width, width, width * width, ImageFormat::R8),
                                        ttfFile);
 
-    return std::make_shared<Font>(name, style, glyphSize, std::move(charGlyphs), std::move(fontTexture));
+    return std::make_shared<Font>(name, style, (float) pixelSize, (float) lineHeight,
+                                  std::move(charGlyphs), std::move(fontTexture));
 }
