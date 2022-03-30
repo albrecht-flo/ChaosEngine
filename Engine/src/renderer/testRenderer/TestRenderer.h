@@ -60,7 +60,8 @@ namespace Renderer::TestRenderer {
         void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
         /// Render an indexed vertex buffer with its material
-        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer, uint32_t indexCount,
+        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer,
+                            uint32_t indexCount, uint32_t indexOffset,
                             const glm::mat4 &modelMat, const MaterialInstance &materialInstance) override;
 
         /// Gets the appropriate render pass for the requested shader stage

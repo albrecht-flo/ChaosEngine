@@ -21,6 +21,10 @@ namespace ChaosEngine {
         void render(ECS &ecs, Renderer::RendererAPI &renderer);
 
     private:
+        uint32_t renderTextToBuffers(uint32_t bufferOffsetInGlyphs, GlyphVertex *vBufferRef, uint32_t *iBufferRef,
+                                     const UITextComponent &text, glm::vec3 linePos) const;
+
+    private:
         uint32_t currentBufferedFrame = 0;
         uint32_t glyphCapacity = 0;
         std::vector<std::unique_ptr<Renderer::Buffer>> textVertexBuffers{};

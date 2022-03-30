@@ -55,35 +55,14 @@ void EditorScene::load() {
             {"fonts/OpenSauceSans-Bold.ttf",    FontStyle::Bold}}
     );
 //    assetManager.registerFont("OpenSauceSans", openSansFont);
-
-    auto textTester1 = createEntity();
-    textTester1.setComponent<Meta>("Text Tester unknown char");
-    textTester1.setComponent<Transform>(Transform{glm::vec3{16, 64, -1}, glm::vec3(), glm::vec3(1, 1, 1)});
-    textTester1.setComponent<UITextComponent>(UITextComponent{
-            .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
-            .style = FontStyle::Regular,
-            .textColor = glm::vec4(1, 1, 1, 1),
-            .text = "Tise\3 äöü",
-    });
-
-    auto textTester2 = createEntity();
-    textTester2.setComponent<Meta>("Text Tester Fox");
-    textTester2.setComponent<Transform>(Transform{glm::vec3{16, 128, -1}, glm::vec3(), glm::vec3(1, 1, 1)});
-    textTester2.setComponent<UITextComponent>(UITextComponent{
-            .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
-            .style = FontStyle::Regular,
-            .textColor = glm::vec4(1, 1, 1, 1),
-            .text = "the quick brown fox jumps over the lazy dog! 0123456789",
-    });
-
-    auto textTester3 = createEntity();
-    textTester3.setComponent<Meta>("Text Tester Multiline");
-    textTester3.setComponent<Transform>(Transform{glm::vec3{16, 256, -1}, glm::vec3(), glm::vec3(1, 1, 1)});
-    textTester3.setComponent<UITextComponent>(UITextComponent{
+    auto textTester = createEntity();
+    textTester.setComponent<Meta>("Text Tester Multiline");
+    textTester.setComponent<Transform>(Transform{glm::vec3{64, 256, -1}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
+    textTester.setComponent<UITextComponent>(UITextComponent{
             .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
             .style = FontStyle::Regular,
             .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
-            .text = "This is some Text with,\nmore than 1 lines :)\nAnd Special Character xD\n!@#$%^&*()-_=+[]{}'\":;,.<>/?",
+            .text = "This is some Text with,\nmore than 1 lines :)\nAnd Special Characters xD\n!@#$%^&*()-_=+[]{}'\":;,.<>/?",
     });
 
 }
