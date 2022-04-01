@@ -1,7 +1,7 @@
 #include "VulkanDescriptorPoolBuilder.h"
 
 VulkanDescriptorPool VulkanDescriptorPoolBuilder::build() const {
-    assert(("MaxSets must be more than 0", maxSets > 0));
+    assert("MaxSets must be more than 0" && maxSets > 0);
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

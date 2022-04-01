@@ -66,7 +66,7 @@ void VulkanDescriptorSetOperation::commit() {
             writes.back().pBufferInfo = &desc.bufferInfo;
         } else if (desc.type == DescriptorInfoType::Image) {
             writes.back().pImageInfo = &desc.imageInfo;
-        } else { assert(("Missing branch for type in commit!", false)); }
+        } else { assert("Missing branch for type in commit!" && false); }
     }
 
     vkUpdateDescriptorSets(device.vk(), static_cast<uint32_t>(writes.size()), writes.data(),
