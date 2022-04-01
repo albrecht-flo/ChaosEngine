@@ -19,7 +19,7 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
 
     textVertexBuffers.reserve(GraphicsContext::maxFramesInFlight);
     textIndexBuffers.reserve(GraphicsContext::maxFramesInFlight);
-    for (int i = 0; i < GraphicsContext::maxFramesInFlight; ++i) {
+    for (uint32_t i = 0; i < GraphicsContext::maxFramesInFlight; ++i) {
         textVertexBuffers.emplace_back(
                 Buffer::CreateStreaming(textVertexBufferCPU.data(), vertexBufferCapacity, BufferType::Vertex));
         textIndexBuffers.emplace_back(
