@@ -51,7 +51,9 @@ static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice phdevice, VkSurface
 
         // Get present queue
         VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(phdevice, i, surface, &presentSupport);
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(phdevice, i, surface, &presentSupport) != VK_SUCCESS) {
+            throw std::runtime_error("[Vulkan Device] vkGetPhysicalDeviceSurfaceSupportKHR Failed");
+        }
         if (queueFamily.queueCount > 0 && presentSupport) {
             indices.presentFamily = i;
         }
@@ -237,7 +239,7 @@ createLogicalDevice(VkPhysicalDevice physicalDevice, const VulkanInstance &insta
     // Create the queues
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     std::set<uint32_t> uniqueQueueFamilies;
-    if(indices.transferFamily.has_value())
+    if (indices.transferFamily.has_value())
         uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily, *indices.transferFamily};
     else
         uniqueQueueFamilies = {*indices.graphicsFamily, *indices.presentFamily};
@@ -313,7 +315,7 @@ static std::tuple<VkQueue, uint32_t> getTransferQueue(VkDevice device, QueueFami
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
 const std::vector<const char *> VulkanDevice::requiredDeviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
 const std::vector<VkFormat> VulkanDevice::requiredTextureFormats = {
@@ -336,7 +338,7 @@ VulkanDevice VulkanDevice::Create(const VulkanInstance &instance, VkSurfaceKHR s
     auto[presentQueue, presentQueueFamilyIndex] = ::getPresentQueue(device, indices);
     VkQueue transferQueue{};
     uint32_t transferQueueFamilyIndex = 0;
-    if(!indices.transferFamily) {
+    if (!indices.transferFamily) {
         transferQueue = graphicsQueue;
         transferQueueFamilyIndex = graphicsQueueFamilyIndex;
     } else {

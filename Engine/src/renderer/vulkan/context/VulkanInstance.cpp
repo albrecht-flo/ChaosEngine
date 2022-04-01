@@ -64,6 +64,11 @@ static std::vector<const char *> getRequiredExtensions(bool enableValidationLaye
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
+    LOG_INFO("[VulkanInstance] Required extensions:");
+    for (const char *str: extensions) {
+        LOG_INFO("[VulkanInstance] \t{}", str);
+    }
+
     return extensions;
 }
 
@@ -175,14 +180,14 @@ VulkanInstance::Create(const std::vector<const char *> &validationLayers, const 
 
     VkInstance newInstance{};
     if (vkCreateInstance(&createInfo, nullptr, &newInstance) != VK_SUCCESS) {
-        throw std::runtime_error("[VULKAN] Failed to create newInstance!");
+        throw std::runtime_error("[VulkanInstance] Failed to create newInstance!");
     }
 
     VkDebugUtilsMessengerEXT newDebugMessenger = VK_NULL_HANDLE;
     if (!validationLayers.empty())
         setupDebugMessenger(newInstance, newDebugMessenger, debugCreateInfo);
 
-    return VulkanInstance(newInstance, newDebugMessenger, validationLayers);
+    return VulkanInstance{newInstance, newDebugMessenger, validationLayers};
 }
 
 VulkanInstance::VulkanInstance(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,

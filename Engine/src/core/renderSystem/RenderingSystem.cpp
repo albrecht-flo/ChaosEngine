@@ -28,7 +28,7 @@ RenderingSystem::~RenderingSystem() {
 }
 
 void RenderingSystem::createRenderer(RendererType rendererType) {
-    LOG_DEBUG("api {}", Context->currentAPI);
+    LOG_DEBUG("[RenderingSystem] currentAPI {}", Context->currentAPI);
     if (Context->currentAPI == Renderer::GraphicsAPI::Vulkan) {
         switch (rendererType) {
             case Renderer::RendererType::RENDERER2D :
