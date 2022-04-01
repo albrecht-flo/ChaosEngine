@@ -5,6 +5,7 @@
 #include "Engine/src/renderer/window/Window.h"
 
 namespace ChaosEngine {
+    class Engine;
 
     /// Via this struct the scene is able to configure the engine runtime.
     struct SceneConfiguration {

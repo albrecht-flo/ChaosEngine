@@ -10,7 +10,7 @@ namespace ChaosEngine {
         explicit NativeScript(Entity entity) : entity(entity) {}
 
         /// This doubles as `onDestroy()` because it is the only function guaranteed to run at destroy.
-        virtual ~NativeScript() = default;;
+        virtual ~NativeScript() = default;
 
         NativeScript(const NativeScript &o) = delete;
 
@@ -26,11 +26,10 @@ namespace ChaosEngine {
         virtual void onStart() {};
 
         /// This function is called once per frame.
-        virtual void onUpdate(float deltaTime) {};
+        virtual void onUpdate(float /*deltaTime*/) {};
 
     protected:
         // ------------------------------------ Script Helper Functions ------------------------------------------------
-
 
         /**
          * Adds or overwrites the component of type <i>Component</i> to the entity this script belongs to.
