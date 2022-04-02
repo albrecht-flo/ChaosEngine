@@ -103,3 +103,9 @@ void EditorBaseAssets::loadBaseScripts() {
                                       AssetManager::ScriptInfo{}
     );
 }
+
+void EditorBaseAssets::loadBaseFonts() {
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold);
+}

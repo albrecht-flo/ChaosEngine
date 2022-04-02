@@ -123,16 +123,15 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
 
     renderer.beginUI(glm::mat4(1.0f));
     for (auto&&[entity, transform, text]: uiTexts.each()) {
-        if (fontMaterialInstance == nullptr) {
-            // TODO: Multi font support
+        if (!fontMaterialInstances.contains(text.font.get())) {
             auto fontTexture = text.font->getFontTexture();
-            fontMaterialInstance = uiMaterial.instantiate(nullptr, 0, {fontTexture});
+            fontMaterialInstances[text.font.get()] = uiMaterial.instantiate(nullptr, 0, {fontTexture});
         }
 
         auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
         glm::mat4 modelMat = calculateTextModelMatrix(transform);
         renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
-                        glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstance);
+                        glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
 
         totalGlyphCount += glyphCount;
     }

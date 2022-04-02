@@ -31,6 +31,8 @@ namespace Editor {
 
         void loadBaseTextures();
 
+        void loadBaseFonts();
+
         void loadBaseScripts();
 
         // --------------------------------------- Materials -----------------------------------------------------------

@@ -13,7 +13,7 @@ using namespace Renderer;
 static VulkanVertexInput convertToVulkanVertexLayout(const VertexLayout &layout) {
     auto builder = VertexAttributeBuilder(layout.binding, layout.stride, layout.inputRate);
     for (const auto &attribute: layout.attributes) {
-        builder.addAttribute(attribute.location, attribute.format, attribute.offset);
+        builder.addAttribute(attribute.location, attribute.format, (uint32_t) attribute.offset);
     }
     return builder.build();
 }

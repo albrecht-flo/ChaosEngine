@@ -15,12 +15,13 @@ set(ENGINE_SOURCES
         src/core/assets/RawImage.cpp
         src/core/assets/AssetManager.cpp
         src/core/assets/AssetLoader.cpp
+        src/core/assets/FontManager.cpp
         src/core/utils/Logger.cpp
         src/core/utils/STDExtensions.cpp
         src/core/scriptSystem/NativeScriptSystem.cpp
         src/core/scriptSystem/NativeScript.cpp
         src/core/uiSystem/UISystem.cpp
-        src/core/uiSystem/FontManager.cpp
+        src/core/uiSystem/Font.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp

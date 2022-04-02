@@ -1,6 +1,6 @@
 #include "EditorScene.h"
 
-#include "Engine/src/core/uiSystem/FontManager.h"
+#include "Engine/src/core/assets/FontManager.h"
 
 #include "Sandbox/src/common/CustomImGui.h"
 #include "Sandbox/src/common/AssetView.h"
@@ -33,6 +33,7 @@ void EditorScene::load() {
     baseAssets->loadBaseMeshes();
     baseAssets->loadBaseMaterials();
     baseAssets->loadBaseTextures();
+    baseAssets->loadBaseFonts();
     baseAssets->loadBaseScripts();
 
     editorCamera = createEntity();
@@ -47,23 +48,7 @@ void EditorScene::load() {
     auto script = std::unique_ptr<ChaosEngine::NativeScript>(new EditorCameraScript(editorCamera));
     editorCamera.setComponent<NativeScriptComponent>(std::move(script), true);
 
-    Editor::loadDefaultSceneEntities(*this, *baseAssets);
-
-    auto openSansFont = FontManager::Create("OpenSauceSans", {
-            {"fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular},
-            {"fonts/OpenSauceSans-Italic.ttf",  FontStyle::Italic},
-            {"fonts/OpenSauceSans-Bold.ttf",    FontStyle::Bold}}
-    );
-//    assetManager.registerFont("OpenSauceSans", openSansFont);
-    auto textTester = createEntity();
-    textTester.setComponent<Meta>("Text Tester Multiline");
-    textTester.setComponent<Transform>(Transform{glm::vec3{64, 256, -1}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
-    textTester.setComponent<UITextComponent>(UITextComponent{
-            .font = openSansFont, // assetManager.getFont("OpenSauceSans"),
-            .style = FontStyle::Regular,
-            .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
-            .text = "This is some Text with,\nmore than 1 lines :)\nAnd Special Characters xD\n!@#$%^&*()-_=+[]{}'\":;,.<>/?",
-    });
+    Editor::loadDefaultSceneEntities(*this, *baseAssets, *assetManager);
 
 }
 

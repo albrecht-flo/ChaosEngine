@@ -11,6 +11,8 @@
 #include "Engine/src/core/Entity.h"
 #include "Engine/src/core/Components.h"
 
+#include "FontManager.h"
+
 namespace ChaosEngine {
 
     class AssetManager {
@@ -95,11 +97,24 @@ namespace ChaosEngine {
         [[nodiscard]] const std::unordered_map<std::string, std::pair<NativeScriptCreator, ScriptInfo>> &
         getAllScripts() const { return scripts; }
 
+        // ------------------------------------ Fonts ------------------------------------------------------------------
+
+        std::shared_ptr<Font> loadFont(const std::string &name, const std::string &ttfFile, FontStyle style,
+                                       double size = 42, double resolution = 72.0) {
+            return fontManager.loadFont(name, ttfFile, style, size, resolution);
+        }
+
+        std::optional<std::shared_ptr<Font>> getFont(const std::string &name, FontStyle style,
+                                                     double size = 42, double resolution = 72.0) {
+            return fontManager.getFont(name, style, size, resolution);
+        }
+
     private:
         std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> meshes{};
         std::unordered_map<std::string, std::pair<Renderer::MaterialRef, MaterialInfo>> materials{};
         std::unordered_map<std::string, std::pair<std::unique_ptr<Renderer::Texture>, TextureInfo>> textures{};
         std::unordered_map<std::string, std::pair<NativeScriptCreator, ScriptInfo>> scripts{};
+        FontManager fontManager;
     };
 
 }
