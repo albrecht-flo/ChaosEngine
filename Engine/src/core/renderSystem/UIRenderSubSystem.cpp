@@ -139,7 +139,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     textIndexBuffers[currentBufferedFrame]->flush();
 
     // Render UI elements
-    // TODO
+    // TOBE
 
     renderer.endUI();
 

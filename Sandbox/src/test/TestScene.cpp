@@ -170,10 +170,10 @@ void TestScene::update(float deltaTime) {
         if (window->isKeyDown(GLFW_KEY_D)) { origin.x -= cameraSpeed * deltaTime; }
         if (window->isKeyDown(GLFW_KEY_KP_ADD)) {
             editorCamera.get<CameraComponent>().fieldOfView -= 5 * deltaTime;
-        } // TODO: Remove delta time after input refactor
+        }
         if (window->isKeyDown(GLFW_KEY_KP_SUBTRACT)) {
             editorCamera.get<CameraComponent>().fieldOfView += 5 * deltaTime;
-        } // TODO: Remove delta time after input refactor
+        }
 
         editorCamera.get<Transform>().position = origin;
     }

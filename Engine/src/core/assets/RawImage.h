@@ -4,7 +4,6 @@
 #include <memory>
 
 namespace ChaosEngine {
-    // TODO: Mappings of unsupported image Formats
     // Note: 3 Component Image Formats are often not supported on Vulkan Hardware
     enum class ImageFormat {
         R8, R8G8B8A8,

@@ -62,7 +62,7 @@ int main() {
         NFD_Init();
         engine.run();
         NFD_Quit();
-    } catch (const std::exception& ex) {
+    } catch (const std::exception &ex) {
         std::cerr << "[FATAL] Unhandled exception!" << std::endl;
         std::cerr << ex.what() << std::endl;
         std::cerr << "[FATAL] Aborting!" << std::endl;

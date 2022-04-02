@@ -8,10 +8,10 @@ layout(location = 2) in vec2 fragUVs;
 // Output
 layout(location = 0) out vec4 outColor;
 // Uniforms for textures
-layout(set = 0, binding = 0) uniform sampler2D mainSceneTex; // Main scene framebuffer image
-layout(set = 0, binding = 1) uniform sampler2D depthBufferTex; // Depth buffer image
-layout(set = 0, binding = 2) uniform sampler2D backgroundTex; // Background image
-layout(set = 0, binding = 3) uniform sampler2D imGuiTex; // ImGui framebuffer image
+layout(set = 0, binding = 0) uniform sampler2D mainSceneTex;// Main scene framebuffer image
+layout(set = 0, binding = 1) uniform sampler2D depthBufferTex;// Depth buffer image
+layout(set = 0, binding = 2) uniform sampler2D backgroundTex;// Background image
+layout(set = 0, binding = 3) uniform sampler2D imGuiTex;// ImGui framebuffer image
 // Uniforms of camera settings
 layout(push_constant) uniform CameraParams {
     float near;
@@ -30,10 +30,10 @@ layout(push_constant) uniform CameraParams {
 
 // From https://github.com/SaschaWillems/Vulkan/blob/master/data/shaders/shadowmapping/quad.frag
 float LinearizeDepth(float depth) {
-  float n = camera.near; // camera z near // ! NEEDS TO BE LIKE PROJECTION MATRIX
-  float f = camera.far; // camera z far // ! NEEDS TO BE LIKE PROJECTION MATRIX
-  float z = depth;
-  return (2.0 * n) / (f + n - z * (f - n));	
+    float n = camera.near;// camera z near // ! NEEDS TO BE LIKE PROJECTION MATRIX
+    float f = camera.far;// camera z far // ! NEEDS TO BE LIKE PROJECTION MATRIX
+    float z = depth;
+    return (2.0 * n) / (f + n - z * (f - n));
 }
 
 /*
@@ -54,8 +54,8 @@ void main() {
     // Left half color buffer, right half depth buffer
     else if (EFFECT == COLOR_HALF_DEPTH) {
         vec4 color;
-        if(fragUVs.x < 0.5)
-            color = texture(mainSceneTex, fragUVs);
+        if (fragUVs.x < 0.5)
+        color = texture(mainSceneTex, fragUVs);
         else {
             float depth = LinearizeDepth(texture(depthBufferTex, fragUVs).r);
             color = vec4(depth, depth, depth, 1.0);
@@ -66,10 +66,10 @@ void main() {
     else if (EFFECT == COLOR_BACKGROUND) {
         vec4 color;
         float depth = texture(depthBufferTex, fragUVs).r;
-        if(depth == 1.0)
-            color = texture(backgroundTex, fragUVs);
+        if (depth == 1.0)
+        color = texture(backgroundTex, fragUVs);
         else
-            color = texture(mainSceneTex, fragUVs);
+        color = texture(mainSceneTex, fragUVs);
         outColor = color;
     }
     // Only ImGui framebuffer
@@ -79,18 +79,18 @@ void main() {
     // Main scene framebuffer with backgorund image and ImGui overlay
     else if (EFFECT == COLOR_BACKGROUND_IMGUI) {
         vec4 color;
-        
+
         float depth = texture(depthBufferTex, fragUVs).r;
-        if(depth == 1.0)
-            color = texture(backgroundTex, fragUVs);
+        if (depth == 1.0)
+        color = texture(backgroundTex, fragUVs);
         else
-            color = texture(mainSceneTex, fragUVs);
+        color = texture(mainSceneTex, fragUVs);
 
         vec4 guiFragment = texture(imGuiTex, fragUVs);
 
-        if(guiFragment.a != 1)
-            color = vec4( mix(color.rgb, guiFragment.rgb, 0.8), 1.0);
-        
+        if (guiFragment.a != 1)
+        color = vec4(mix(color.rgb, guiFragment.rgb, 0.8), 1.0);
+
         outColor = color;
     }
 }

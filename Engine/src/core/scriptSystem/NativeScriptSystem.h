@@ -17,9 +17,9 @@ namespace ChaosEngine {
 
         NativeScriptSystem &operator=(NativeScriptSystem &&o) = delete;
 
-        void init(ECS& ecs);
+        void init(ECS &ecs);
 
-        void update(ECS& ecs, float deltaTime);
+        void update(ECS &ecs, float deltaTime);
 
     private:
     };
