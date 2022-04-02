@@ -23,14 +23,16 @@ namespace Renderer::TestRenderer {
 
         static std::unique_ptr<TestRenderer> Create(Renderer::GraphicsContext &graphicsContext);
 
-        // Lifecycle
+        // ------------------------------------ Lifecycle --------------------------------------------------------------
+
         /// Setup for all dynamic resources
         void setup() override;
 
         /// Wait for GPU tasks to finish
         void join() override;
 
-        // Context commands
+        // ------------------------------------ Context commands -------------------------------------------------------
+
         /// Start recording commands with this renderer
         void beginFrame() override;
 
@@ -44,10 +46,10 @@ namespace Renderer::TestRenderer {
         void endScene() override;
 
         /// Start recording commands to this renderers UI command buffer
-        virtual void beginUI(const glm::mat4 &viewMat) override;
+        void beginUI(const glm::mat4 &viewMat) override;
 
         /// Finalize the UI command buffer
-        virtual void endUI() override;
+        void endUI() override;
 
         /// Submit recorded commands to gpu
         void flush() override;
@@ -55,20 +57,26 @@ namespace Renderer::TestRenderer {
         /// Resizes the scene viewport
         void requestViewportResize(const glm::vec2 &viewportSize) override;
 
-        // Rendering commands
+        // ------------------------------------ Rendering commands -----------------------------------------------------
+
         /// Render an object with its material and model matrix
         void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
         /// Render an indexed vertex buffer with its material
-        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer,
-                            uint32_t indexCount, uint32_t indexOffset,
-                            const glm::mat4 &modelMat, const MaterialInstance &materialInstance) override;
+        void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer,
+                    uint32_t indexCount, uint32_t indexOffset,
+                    const glm::mat4 &modelMat, const MaterialInstance &materialInstance) override;
+
+        /// Render a mesh with a material and model matrix
+        void drawUI(const glm::mat4 &viewMatrix, const RenderMesh &mesh, const MaterialInstance &material) override;
+
+        // ------------------------------------ Getters ----------------------------------------------------------------
 
         /// Gets the appropriate render pass for the requested shader stage
         [[nodiscard]] const Renderer::RenderPass &
         getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
 
-        const Renderer::Framebuffer &getFramebuffer() override;
+        [[nodiscard]] const Renderer::Framebuffer &getFramebuffer() override;
 
     private:
         TestContext &context;

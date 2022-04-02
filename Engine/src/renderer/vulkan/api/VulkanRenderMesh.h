@@ -12,9 +12,9 @@ public:
 
     ~VulkanRenderMesh() override = default;
 
-    [[nodiscard]] inline const VulkanBuffer &getVertexBuffer() const { return vertexBuffer; }
+    [[nodiscard]] const Renderer::Buffer *getVertexBuffer() const override { return &vertexBuffer; }
 
-    [[nodiscard]] inline const VulkanBuffer &getIndexBuffer() const { return indexBuffer; }
+    [[nodiscard]] const Renderer::Buffer *getIndexBuffer() const override { return &indexBuffer; }
 
 public:
     static const VulkanVertexInput vertex_3P_3C_3N_2U;

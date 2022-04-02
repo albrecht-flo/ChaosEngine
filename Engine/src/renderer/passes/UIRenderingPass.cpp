@@ -55,10 +55,10 @@ void UIRenderingPass::createStandardPipeline() {
             VulkanPipelineBuilder(
                     context.getDevice(), *opaquePass,
                     std::move(pipelineLayout),
-                    VertexAttributeBuilder(0, sizeof(UIRenderSubSystem::GlyphVertex), InputRate::Vertex)
-                            .addAttribute(0, VertexFormat::RGB_FLOAT, offsetof(UIRenderSubSystem::GlyphVertex, pos))
-                            .addAttribute(1, VertexFormat::RGBA_FLOAT, offsetof(UIRenderSubSystem::GlyphVertex, color))
-                            .addAttribute(2, VertexFormat::RG_FLOAT, offsetof(UIRenderSubSystem::GlyphVertex, uv))
+                    VertexAttributeBuilder(0, sizeof(VertexPCU), InputRate::Vertex)
+                            .addAttribute(0, VertexFormat::RGB_FLOAT, offsetof(VertexPCU, pos))
+                            .addAttribute(1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color))
+                            .addAttribute(2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv))
                             .build(),
                     "UIBase")
                     .setFragmentShader("UIBase")

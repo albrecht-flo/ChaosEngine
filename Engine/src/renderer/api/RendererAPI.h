@@ -23,14 +23,16 @@ namespace Renderer {
     public:
         virtual ~RendererAPI() = default;
 
-        // Lifecycle
+        // ------------------------------------ Lifecycle --------------------------------------------------------------
+
         /// Setup for all dynamic resources
         virtual void setup() = 0;
 
         /// Wait for GPU tasks to finish
         virtual void join() = 0;
 
-        // Context commands
+        // ------------------------------------ Context commands -------------------------------------------------------
+
         /// Start recording commands with this renderer
         virtual void beginFrame() = 0;
 
@@ -53,10 +55,10 @@ namespace Renderer {
         virtual void flush() = 0;
 
         /// Resizes the scene viewport, after the next frame has been submited to the GPU
-
         virtual void requestViewportResize(const glm::vec2 &viewportSize) = 0;
 
-        // Rendering commands
+        // ------------------------------------ Rendering commands -----------------------------------------------------
+
         /// Render an object with its material and model matrix
         virtual void draw(const glm::mat4 &viewMatrix, const RenderComponent &renderComponent) = 0;
 
@@ -65,11 +67,15 @@ namespace Renderer {
                             uint32_t indexCount, uint32_t indexOffset,
                             const glm::mat4 &modelMat, const MaterialInstance &materialInstance) = 0;
 
-        /// Gets the appropriate render pass for the requested shader stage
-        virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;
+        /// Render a mesh with a material and model matrix
+        virtual void drawUI(const glm::mat4 &viewMatrix, const RenderMesh &mesh, const MaterialInstance &material) = 0;
 
-        // Getters
-        virtual const Renderer::Framebuffer &getFramebuffer() = 0;
+        // ------------------------------------ Getters ----------------------------------------------------------------
+
+        /// Gets the appropriate render pass for the requested shader stage
+        [[nodiscard]] virtual const RenderPass &getRenderPassForShaderStage(ShaderPassStage stage) const = 0;
+
+        [[nodiscard]] virtual const Renderer::Framebuffer &getFramebuffer() = 0;
 
 
     };

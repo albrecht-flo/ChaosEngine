@@ -161,6 +161,14 @@ VulkanRenderer2D::drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::B
     uiRenderingPass.drawUI(vulkanVBuffer, vulkanIBuffer, indexCount, indexOffset, modelMat, vulkanMaterialI);
 }
 
+void VulkanRenderer2D::drawUI(const glm::mat4 &modelMat, const Renderer::RenderMesh &mesh,
+                              const Renderer::MaterialInstance &material) {
+    const auto *vulkanVBuffer = dynamic_cast<const VulkanBuffer *>(mesh.getVertexBuffer());
+    const auto *vulkanIBuffer = dynamic_cast<const VulkanBuffer *>(mesh.getIndexBuffer());
+    const auto &vulkanMaterialI = dynamic_cast<const VulkanMaterialInstance &>(material);
+    uiRenderingPass.drawUI(*vulkanVBuffer, *vulkanIBuffer, mesh.getIndexCount(), 0, modelMat, vulkanMaterialI);
+}
+
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {
     switch (stage) {
         case Renderer::ShaderPassStage::Opaque:

@@ -12,7 +12,7 @@
 
 #include "Mesh.h"
 
-// TODO: Cleanup
+// TODO: Refactor
 class ModelLoader {
 public:
     ModelLoader() = default;
@@ -21,14 +21,16 @@ public:
 
     void cleanup();
 
-    static std::optional<std::unique_ptr<Mesh>> loadMeshFromOBJ(const std::string &filename);
+    static std::optional<std::unique_ptr<MeshPNCU>> loadMeshFromOBJ(const std::string &filename);
 
-    static std::optional<std::unique_ptr<Mesh>> loadMeshFromPLY(const std::string &filename);
+    static std::optional<std::unique_ptr<MeshPNCU>> loadMeshFromPLY(const std::string &filename);
 
 // ------------------------------------ Shapes -------------------------------------------------------------------------
 
-    static Mesh getQuad();
+    static MeshPNCU getQuad_PNCU();
 
-    static Mesh getHexagon();
+    static MeshPCU getQuad_PCU();
+
+    static MeshPNCU getHexagon();
 
 };
