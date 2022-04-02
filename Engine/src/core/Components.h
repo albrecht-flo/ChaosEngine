@@ -15,7 +15,7 @@
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/core/scriptSystem/NativeScript.h"
-#include "Engine/src/core/uiSystem/FontManager.h"
+#include "Engine/src/core/uiSystem/Font.h"
 
 struct Meta {
     std::string name;

@@ -22,7 +22,7 @@ namespace Renderer {
     struct VertexAttribute {
         uint32_t location;
         VertexFormat format;
-        uint32_t offset;
+        size_t offset;
     };
     struct VertexLayout {
         uint32_t binding;

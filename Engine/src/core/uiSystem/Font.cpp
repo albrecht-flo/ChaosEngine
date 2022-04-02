@@ -1,12 +1,10 @@
-#include "FontManager.h"
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include "Font.h"
 
 #include "stb_image_write.h"
 
-#include <cassert>
+#include <vector>
 
+#include "Engine/src/renderer/api/Texture.h"
 #include "Engine/src/core/assets/AssetLoader.h"
 #include "Engine/src/core/utils/Logger.h"
 
@@ -29,28 +27,18 @@ renderUVRect(const glm::vec2 &uvSize, const glm::vec2 &uvOffset, unsigned char *
 }
 
 std::shared_ptr<Font>
-FontManager::Create(const std::string &name, const std::vector<FontManager::FontDefinition> &fontParts) {
-    assert("List of font file MUST NOT be empty!" && !fontParts.empty());
+Font::Create(FT_Library &freetype, const std::string &name, const std::string &ttfFile, FontStyle style,
+             double size, double resolution) {
+    LOG_INFO("Loading Font from {}, with style {} and size {}pt", ttfFile.c_str(), style, size);
 
-    const std::string ttfFile = fontParts[0].ttfFile;
-    const auto style = fontParts[0].style;
-    const double fontSizePT = 48.0;
-    const double resolutionDPI = 72.0;
-    const double pixelSize = fontSizePT * resolutionDPI / 72;
+    const double pixelSize = size * resolution / 72;
     const int padding = 16;
-    LOG_INFO("Loading Font from {}, with style {} and size {}pt", ttfFile.c_str(), style, fontSizePT);
-
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft)) {
-        throw std::runtime_error("ERROR::FREETYPE: Could not init FreeType Library");
-    }
 
     FT_Face face;
-    if (FT_New_Face(ft, ttfFile.c_str(), 0, &face)) {
+    if (FT_New_Face(freetype, ttfFile.c_str(), 0, &face)) {
         throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
     }
     const auto toPixelCoord = [=](double coord) { return coord * pixelSize / face->units_per_EM; };
-    LOG_DEBUG("Font info: pixelSize = {}", pixelSize);
 
     const auto mapSize = static_cast<uint32_t>(std::ceil(std::sqrt(face->num_glyphs + 1 /* Fallback Glyph */)));
     const uint32_t width = (uint32_t) (mapSize * std::ceil(pixelSize)) + mapSize * padding;
@@ -67,21 +55,19 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     FT_UInt cIndex = 0;
     uint32_t i = 0;
     auto ftChar = FT_Get_First_Char(face, &cIndex);
-    const uint32_t yBaseOffset = padding;
-    const uint32_t xBaseOffset = padding;
     while (ftChar != 0) {
-//        LOG_INFO("Found character {} in font", ftChar);
         if (FT_Load_Char(face, ftChar, FT_LOAD_RENDER)) {
             throw std::runtime_error("ERROR::FREETYPE: Failed to load glyph");
         }
+
         FT_GlyphSlot slot = face->glyph;
-        const uint32_t yOffset = yBaseOffset + (uint32_t) ((i / mapSize) * pixelSize) +
+        const uint32_t yOffset = padding + (uint32_t) ((i / mapSize) * pixelSize) +
                                  (i / mapSize) * padding;
-        const uint32_t xOffset = xBaseOffset + (uint32_t) ((i % mapSize) * pixelSize) +
+        const uint32_t xOffset = padding + (uint32_t) ((i % mapSize) * pixelSize) +
                                  (i % mapSize) * padding;
+
         if (slot->bitmap.buffer != nullptr) {
-//            LOG_INFO("Rendered character {} in font. {}x{}", ftChar, slot->bitmap.width,
-//                     slot->bitmap.rows);
+            // Render glyph to bitmap
             const uint32_t memoryOffset = yOffset * width + xOffset;
             for (uint32_t row = 0; row < slot->bitmap.rows; ++row) {
                 const uint32_t offset = memoryOffset + row * width;
@@ -89,8 +75,6 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
                 std::memcpy(mapBuffer.get() + offset, slot->bitmap.buffer + glyphBufferOffset,
                             slot->bitmap.width);
             }
-        } else {
-//            LOG_INFO("Skipping non renderable character {} in font", ftChar);
         }
 
         charGlyphs.insert_or_assign((uint32_t) ftChar, Font::CharacterGlyph{
@@ -109,9 +93,9 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
     }
     // Append fallback Glyph
     {
-        const uint32_t yOffset = yBaseOffset / 2 + (uint32_t) ((i / mapSize) * pixelSize) +
+        const uint32_t yOffset = padding / 2 + (uint32_t) ((i / mapSize) * pixelSize) +
                                  (i / mapSize) * padding;
-        const uint32_t xOffset = xBaseOffset + (uint32_t) ((i % mapSize) * pixelSize) +
+        const uint32_t xOffset = padding + (uint32_t) ((i % mapSize) * pixelSize) +
                                  (i % mapSize) * padding;
         const uint32_t baseOffset = yOffset * width + xOffset;
         const auto localPadding = (uint32_t) std::ceil(pixelSize * 0.1);
@@ -153,16 +137,14 @@ FontManager::Create(const std::string &name, const std::vector<FontManager::Font
 //    stbi_write_png("out.png", width, width, 1, mapBuffer.get(), width);
     // TEST ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    const auto lineHeight = (float) toPixelCoord(face->height);
-    LOG_DEBUG("Found lineHeight: {}", lineHeight);
+    const auto lineHeight = toPixelCoord(face->height);
 
     FT_Done_Face(face);
-    FT_Done_FreeType(ft);
 
     using namespace Renderer;
     auto fontTexture = Texture::Create(RawImage(std::move(mapBuffer), width, width, width * width, ImageFormat::R8),
                                        ttfFile);
 
-    return std::make_shared<Font>(name, style, (float) pixelSize, (float) lineHeight,
+    return std::make_shared<Font>(name, style, pixelSize, resolution, lineHeight,
                                   std::move(charGlyphs), std::move(fontTexture));
 }

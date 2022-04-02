@@ -30,7 +30,7 @@ namespace ChaosEngine {
         std::vector<std::unique_ptr<Renderer::Buffer>> textVertexBuffers{};
         std::vector<std::unique_ptr<Renderer::Buffer>> textIndexBuffers{};
         Renderer::MaterialRef uiMaterial = Renderer::MaterialRef(nullptr);
-        std::shared_ptr<Renderer::MaterialInstance> fontMaterialInstance = nullptr;
+        std::unordered_map<const Font *, std::shared_ptr<Renderer::MaterialInstance>> fontMaterialInstances{};
     };
 
 }

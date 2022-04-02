@@ -3,9 +3,12 @@
 #include "core/utils/Logger.h"
 #include "EditorComponents.h"
 
+using namespace ChaosEngine;
+
 namespace Editor {
 
-    void loadDefaultSceneEntities(ChaosEngine::Scene &scene, EditorBaseAssets &assets) {
+    void loadDefaultSceneEntities(ChaosEngine::Scene &scene, EditorBaseAssets &assets,
+                                  ChaosEngine::AssetManager &assetManager) {
         LOG_INFO("Loading entities");
 
         auto camera = scene.createEntity();
@@ -52,5 +55,38 @@ namespace Editor {
         );
         hexagonD.setComponent<RenderComponentMeta>(assets.getHexMeshName(), assets.getDebugMaterial()->getName(),
                                                    std::nullopt);
+
+        { // UI elements
+            auto textTester = scene.createEntity();
+            textTester.setComponent<Meta>("Text Tester Multiline");
+            textTester.setComponent<Transform>(
+                    Transform{glm::vec3{64, 256, -1}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
+            textTester.setComponent<UITextComponent>(UITextComponent{
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Regular)),
+                    .style = FontStyle::Regular,
+                    .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
+                    .text = "This is some Text with,\nmore than 1 line :)\nAnd Special Characters xD\n!@#$%^&*()-_=+[]{}'\":;,.<>/?",
+            });
+            auto textTesterI = scene.createEntity();
+            textTesterI.setComponent<Meta>("Text Tester Italic");
+            textTesterI.setComponent<Transform>(
+                    Transform{glm::vec3{64, 432, -1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+            textTesterI.setComponent<UITextComponent>(UITextComponent{
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Italic)),
+                    .style = FontStyle::Regular,
+                    .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
+                    .text = "This is some italic Text about some quick brown foxes xD",
+            });
+            auto textTesterB = scene.createEntity();
+            textTesterB.setComponent<Meta>("Text Tester Bold");
+            textTesterB.setComponent<Transform>(
+                    Transform{glm::vec3{64, 500, -1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+            textTesterB.setComponent<UITextComponent>(UITextComponent{
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Bold)),
+                    .style = FontStyle::Regular,
+                    .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
+                    .text = "This is some bold Text about a lazy dog xD",
+            });
+        }
     }
 }
