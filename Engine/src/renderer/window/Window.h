@@ -59,7 +59,7 @@ public:
 
     void setScrollDelta(MousePos delta) { scrollDelta = delta; }
 
-    MousePos getScrollDelta() const { return scrollDelta; }
+    [[nodiscard]] MousePos getScrollDelta() const { return scrollDelta; }
 
     // Rendering specific code
     void setFrameBufferResized(bool b);
@@ -71,8 +71,6 @@ public:
     // Vulkan specific code
     [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
 
-    // ImGui Viewport code TODO: Input switch
-    // void attachKeyBindingsToAdditionalWindow(GLFWwindow *additionalWindow) const;
 private:
     GLFWwindow *window = nullptr;
 

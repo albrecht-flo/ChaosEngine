@@ -10,26 +10,26 @@ layout(set = 0, binding = 0) uniform UniformBufferObject {
 } ubo;
 
 // Input from vertex shader
-layout(location = 0) in vec3 fragColor; // Interpolated per vertex color
-layout(location = 1) in vec3 fragNormal; // Interpolated normal vector
-layout(location = 2) in vec2 fragUVs; // Interpolated texture coordinate
-layout(location = 3) in vec3 fragWorldPos; // Interpolated world position of fragment
+layout(location = 0) in vec3 fragColor;// Interpolated per vertex color
+layout(location = 1) in vec3 fragNormal;// Interpolated normal vector
+layout(location = 2) in vec2 fragUVs;// Interpolated texture coordinate
+layout(location = 3) in vec3 fragWorldPos;// Interpolated world position of fragment
 // Output to framebuffer
 layout(location = 0) out vec4 outColor;
 
 // Lighting parameters, need to be alligned to 4 floats -> vec4 with 'w' component as special parameter
 struct LightSource {
-    vec4  lightPos; // w = lightRadius
-    vec4  lightColor; // w = ambient amount
+    vec4  lightPos;// w = lightRadius
+    vec4  lightColor;// w = ambient amount
 };
 
 layout(set = 1, binding = 0) uniform Lights {
-    vec4 lightCount; // x = count; yzw unused because of alignment
+    vec4 lightCount;// x = count; yzw unused because of alignment
     LightSource[3] sources;
 } lights;
 
 // Material Parameters
-layout(set = 2, binding = 0) uniform sampler2D texSampler; // Model texture
+layout(set = 2, binding = 0) uniform sampler2D texSampler;// Model texture
 layout(set = 2, binding = 1) uniform MaterialData { // Material properties
     float shininess;
 } material;
@@ -64,19 +64,21 @@ void main() {
 
     // Calculate world light
     vec3 rgbColor = calcLighting(
-        ubo.worldLightPosition.xyz + fragWorldPos,
-        ubo.worldLightColor.xyz,
-        ubo.worldLightPosition.w,
-        ubo.worldLightColor.w,
-        color.rgb);
+    ubo.worldLightPosition.xyz + fragWorldPos,
+    ubo.worldLightColor.xyz,
+    ubo.worldLightPosition.w,
+    ubo.worldLightColor.w,
+    color.rgb
+    );
     // Calculate dynamic lights
-    for(int i = 0; i < int(lights.lightCount.x); i++){
+    for (int i = 0; i < int(lights.lightCount.x); i++){
         rgbColor += calcLighting(
-            lights.sources[i].lightPos.xyz,
-            lights.sources[i].lightColor.xyz,
-            lights.sources[i].lightPos.w,
-            lights.sources[i].lightColor.w,
-            color.rgb);
+        lights.sources[i].lightPos.xyz,
+        lights.sources[i].lightColor.xyz,
+        lights.sources[i].lightPos.w,
+        lights.sources[i].lightColor.w,
+        color.rgb
+        );
     }
     // Combine calculated texture color with fragment color // used for tinting models
     outColor = vec4(rgbColor * fragColor, color.a);

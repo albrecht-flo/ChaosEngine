@@ -37,22 +37,21 @@ public:
 
     // Debug calls
 #ifndef NDEBUG
-public:
-    void
-    setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const;
-
-private:
-    inline void setDebugUtilsObjectNameEXT(VkDevice device, VkDebugUtilsObjectNameInfoEXT *objectNameInfo) const {
-        auto pfnSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)
-                vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
-        pfnSetDebugUtilsObjectNameEXT(device, objectNameInfo);
-    }
-
-#else
     public:
         void
-        setDebugName(VkDevice, VkObjectType, uint64_t, const std::optional<std::string>&) const
-        {}
+        setDebugName(VkDevice device, VkObjectType type, uint64_t handle, const std::optional<std::string> &name) const;
+
+    private:
+        inline void setDebugUtilsObjectNameEXT(VkDevice device, VkDebugUtilsObjectNameInfoEXT *objectNameInfo) const {
+            auto pfnSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)
+                    vkGetInstanceProcAddr(instance, "vkSetDebugUtilsObjectNameEXT");
+            pfnSetDebugUtilsObjectNameEXT(device, objectNameInfo);
+        }
+
+#else
+public:
+    void
+    setDebugName(VkDevice, VkObjectType, uint64_t, const std::optional<std::string> &) const {}
 
 #endif
 
