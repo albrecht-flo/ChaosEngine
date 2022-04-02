@@ -213,10 +213,11 @@ SpriteRenderingPass::drawSprite(const VulkanRenderMesh &renderMesh, const glm::m
     vkCmdPushConstants(commandBuffer.vk(), pipeline->getPipelineLayout(),
                        VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(modelMat), &modelMat);
 
-    VkBuffer vertexBuffers[]{renderMesh.getVertexBuffer().vk()};
+    VkBuffer vertexBuffers[]{dynamic_cast<const VulkanBuffer *>(renderMesh.getVertexBuffer())->vk()};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer.vk(), 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer.vk(), renderMesh.getIndexBuffer().vk(), 0, VK_INDEX_TYPE_UINT32);
+    auto vIndexBuffer = dynamic_cast<const VulkanBuffer *>(renderMesh.getIndexBuffer())->vk();
+    vkCmdBindIndexBuffer(commandBuffer.vk(), vIndexBuffer, 0, VK_INDEX_TYPE_UINT32);
     // Draw a fullscreen quad and composite the final image
     vkCmdDrawIndexed(commandBuffer.vk(), renderMesh.getIndexCount(), 1, 0, 0, 0);
 }

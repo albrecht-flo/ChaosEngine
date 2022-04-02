@@ -1,6 +1,6 @@
 #pragma once
 
-#include <freetype/freetype.h>
+#include "dep/freetype/include/freetype/freetype.h"
 
 #include "glm/glm.hpp"
 

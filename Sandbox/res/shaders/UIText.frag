@@ -9,13 +9,13 @@ layout(location = 0) out vec4 out_Color;
 
 // Material Parameters
 layout(set = 1, binding = 0) uniform sampler2D diffuseTexture;// Model texture
-layout(set = 1, binding = 1) uniform FramentData {
-    vec4 color;
-} materialData;
 
 void main() {
     // Get the base color of the fragment
     vec4 color = texture(diffuseTexture, in_fragUVs);
+    if (color.r == 0){
+        discard;
+    }
     // Combine calculated texture color with fragment color // used for tinting models
-    out_Color = in_fragColor * color * materialData.color;
+    out_Color =  vec4(in_fragColor.rgb, in_fragColor.a * color.r);
 }

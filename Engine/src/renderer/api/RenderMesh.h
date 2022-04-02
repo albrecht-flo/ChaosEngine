@@ -17,9 +17,13 @@ namespace Renderer {
         static std::unique_ptr<RenderMesh>
         Create(std::unique_ptr<Buffer> &&vertexBuffer, std::unique_ptr<Buffer> &&indexBuffer, size_t indexCount);
 
-        inline uint32_t getIndexCount() const { return indexCount; }
+        [[nodiscard]] inline uint32_t getIndexCount() const { return indexCount; }
 
-        inline bool isIndexed() const { return indexed; }
+        [[nodiscard]] inline bool isIndexed() const { return indexed; }
+
+        [[nodiscard]] virtual const Buffer *getVertexBuffer() const = 0;
+
+        [[nodiscard]] virtual const Buffer *getIndexBuffer() const = 0;
 
     private:
         uint32_t indexCount;

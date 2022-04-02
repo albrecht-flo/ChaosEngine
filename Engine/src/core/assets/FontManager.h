@@ -6,7 +6,7 @@
 
 #include <freetype/freetype.h>
 
-#include "Engine/src/core/uiSystem/Font.h"
+#include "Font.h"
 
 namespace ChaosEngine {
 

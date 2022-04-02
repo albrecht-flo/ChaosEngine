@@ -70,7 +70,7 @@ struct memory_stream : virtual memory_buffer, public std::istream {
 void ModelLoader::cleanup() {
 }
 
-std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromOBJ(const std::string &filename) {
+std::optional<std::unique_ptr<MeshPNCU>> ModelLoader::loadMeshFromOBJ(const std::string &filename) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -90,12 +90,12 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromOBJ(const std::str
         throw std::runtime_error("TinyObjloader: " + err);
     }
 
-    auto mesh = std::make_unique<Mesh>();
-    std::unordered_map<Vertex, uint32_t> verticesMap = {};
+    auto mesh = std::make_unique<MeshPNCU>();
+    std::unordered_map<VertexPNCU, uint32_t> verticesMap = {};
 
     for (size_t s = 0; s < shapes.size(); s++) {
         for (auto &index: shapes[s].mesh.indices) {
-            Vertex vertex;
+            VertexPNCU vertex;
             vertex.pos = glm::vec3(
                     attrib.vertices[index.vertex_index * 3 + 0],
                     attrib.vertices[index.vertex_index * 3 + 1],
@@ -130,7 +130,7 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromOBJ(const std::str
     return std::make_optional(std::move(mesh));
 }
 
-std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::string &filename) {
+std::optional<std::unique_ptr<MeshPNCU>> ModelLoader::loadMeshFromPLY(const std::string &filename) {
     using namespace tinyply;
 #ifdef M_DEBUG_MODELLOADER
     std::cout << "........................................................................\n";
@@ -241,10 +241,10 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
         auto *colorBuffer = (uint8_t *) colors->buffer.get();
         auto *texcoordBuffer = (float *) texcoords->buffer.get();
 
-        auto mesh = std::make_unique<Mesh>();
+        auto mesh = std::make_unique<MeshPNCU>();
 
         for (size_t i = 0; i < vertices->count; i++) {
-            Vertex vertex{};
+            VertexPNCU vertex{};
 
             vertex.pos = glm::vec3(
                     vertexBuffer[i * 3 + 0],
@@ -283,15 +283,15 @@ std::optional<std::unique_ptr<Mesh>> ModelLoader::loadMeshFromPLY(const std::str
     }
 }
 
-Mesh ModelLoader::getQuad() {
-    const std::vector<Vertex> vertices = {
-            Vertex{.pos{-1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+MeshPNCU ModelLoader::getQuad_PNCU() {
+    const std::vector<VertexPNCU> vertices = {
+            VertexPNCU{.pos{-1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
                     .normal{0.0f, 0.0f, 1.0f}, .uv{0.0f, 1.0f}},
-            Vertex{.pos{+1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+            VertexPNCU{.pos{+1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
                     .normal{0.0f, 0.0f, 1.0f}, .uv{1.0f, 1.0f}},
-            Vertex{.pos{+1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+            VertexPNCU{.pos{+1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
                     .normal{0.0f, 0.0f, 1.0f}, .uv{1.0f, 0.0f}},
-            Vertex{.pos{-1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
+            VertexPNCU{.pos{-1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f},
                     .normal{0.0f, 0.0f, 1.0f}, .uv{0.0f, 0.0f}},
     };
 
@@ -300,21 +300,43 @@ Mesh ModelLoader::getQuad() {
     };
 
 
-    Mesh m_quadMesh;
+    MeshPNCU m_quadMesh;
     m_quadMesh.vertices = vertices;
     m_quadMesh.indices = indices;
 
     return m_quadMesh;
 }
 
-Mesh ModelLoader::getHexagon() {
-    std::vector<Vertex> vertices;
+
+MeshPCU ModelLoader::getQuad_PCU() {
+    const std::vector<VertexPCU> vertices = {
+            VertexPCU{.pos{-1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f, 1.0f}, .uv{0.0f, 1.0f}},
+            VertexPCU{.pos{+1.0f, -1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f, 1.0f}, .uv{1.0f, 1.0f}},
+            VertexPCU{.pos{+1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f, 1.0f}, .uv{1.0f, 0.0f}},
+            VertexPCU{.pos{-1.0f, +1.0f, +0.0f}, .color{1.0f, 1.0f, 1.0f, 1.0f}, .uv{0.0f, 0.0f}},
+    };
+
+    const std::vector<uint32_t> indices = {
+            0, 1, 2, 2, 3, 0,
+    };
+
+
+    MeshPCU m_quadMesh;
+    m_quadMesh.vertices = vertices;
+    m_quadMesh.indices = indices;
+
+    return m_quadMesh;
+}
+
+
+MeshPNCU ModelLoader::getHexagon() {
+    std::vector<VertexPNCU> vertices;
     vertices.reserve(6);
 
     for (int i = 0; i < 6; ++i) {
         float x = static_cast<float>(std::sin(-i * ((M_PI * 2.0) / 6)));
         float y = static_cast<float>(std::cos(-i * ((M_PI * 2.0) / 6)));
-        vertices.push_back(Vertex{
+        vertices.push_back(VertexPNCU{
                 .pos = {x, y, +0.0f}, .color{1.0f, 1.0f, 1.0f}, .normal{0.0f, 0.0f, 1.0f},
                 .uv={(x + 0.5f) / 2, (y + 0.5f) / 2}
         });
@@ -328,5 +350,5 @@ Mesh ModelLoader::getHexagon() {
     };
 
 
-    return Mesh{std::move(vertices), std::move(indices)};
+    return MeshPNCU{std::move(vertices), std::move(indices)};
 }

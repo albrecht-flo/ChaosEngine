@@ -50,6 +50,19 @@ void EditorScene::load() {
 
     Editor::loadDefaultSceneEntities(*this, *baseAssets, *assetManager);
 
+    auto uiMesh = assetManager->getMesh("UI/Quad");
+    auto uiMaterial = assetManager->getMaterial("UI");
+    auto &borderTexture = assetManager->getTexture("UI/Border");
+
+    glm::vec4 buttonColor{1, 0.5f, 0.5f, 1};
+    auto button0 = createEntity();
+    button0.setComponent<Meta>("Test Button");
+    button0.setComponent<Transform>(Transform{glm::vec3{1640, 64, -0.5f}, glm::vec3(0, 0, 0), glm::vec3(128, 46, 1)});
+    button0.setComponent<UIComponent>(UIComponent{
+            .materialInstance = uiMaterial.instantiate(&buttonColor, sizeof(buttonColor), {&borderTexture}),
+            .mesh = uiMesh,
+    });
+
 }
 
 // Test data

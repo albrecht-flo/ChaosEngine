@@ -8,7 +8,7 @@
 - components
     - Attachments
     - Fixed function
-    - Vertex Input
+    - VertexPNCU Input
     - Shader Sources
     - Descriptors (UniformBuffer, Samplers, PushConstants/ConstantBuffer)
 
@@ -17,7 +17,7 @@ These objects have a downward compositional relationship.
 - RenderPass:
     - Attachments
 - ShaderPass:
-    - Vertex Input
+    - VertexPNCU Input
     - Fixed Function
 - Material:
     - Shader Sources

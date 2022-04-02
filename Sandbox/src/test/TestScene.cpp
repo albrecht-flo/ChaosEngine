@@ -20,8 +20,8 @@ void TestScene::load() {
     using namespace Renderer;
     // Load meshes
     LOG_INFO("Creating quad buffers");
-    auto quadAsset = ModelLoader::getQuad();
-    auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(Vertex),
+    auto quadAsset = ModelLoader::getQuad_PNCU();
+    auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(VertexPNCU),
                                        BufferType::Vertex);
     auto indexBuffer = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(uint32_t),
                                       BufferType::Index);
@@ -29,7 +29,7 @@ void TestScene::load() {
 
     LOG_INFO("Creating hex buffers");
     auto hexAsset = ModelLoader::getHexagon();
-    auto hexVertexBuffer = Buffer::Create(hexAsset.vertices.data(), hexAsset.vertices.size() * sizeof(Vertex),
+    auto hexVertexBuffer = Buffer::Create(hexAsset.vertices.data(), hexAsset.vertices.size() * sizeof(VertexPNCU),
                                           BufferType::Vertex);
     auto hexIndexBuffer = Buffer::Create(hexAsset.indices.data(), hexAsset.indices.size() * sizeof(uint32_t),
                                          BufferType::Index);

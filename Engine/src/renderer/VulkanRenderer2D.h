@@ -79,12 +79,17 @@ public:
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
     /// Render an indexed vertex buffer with its material
-    virtual void drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
-                        uint32_t indexCount, uint32_t indexOffset,
-                        const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
+    void drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
+                uint32_t indexCount, uint32_t indexOffset,
+                const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
+
+    /// Render a mesh with a material and model matrix
+    void drawUI(const glm::mat4 &viewMatrix, const Renderer::RenderMesh &mesh,
+                const Renderer::MaterialInstance &material) override;
 
     /// Gets the appropriate render pass for the requested shader stage
-    const Renderer::RenderPass &getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
+    [[nodiscard]] const Renderer::RenderPass &
+    getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const override;
 
     const Renderer::Framebuffer &getFramebuffer() override {
         return postProcessingPass.getColorAttachment();

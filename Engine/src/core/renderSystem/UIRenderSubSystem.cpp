@@ -12,9 +12,9 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
            pGlyphCapacity <= std::numeric_limits<uint32_t>::max() / 4);
     glyphCapacity = pGlyphCapacity;
 
-    const size_t vertexBufferCapacity = 4 * sizeof(GlyphVertex) * glyphCapacity;
+    const size_t vertexBufferCapacity = 4 * sizeof(VertexPCU) * glyphCapacity;
     const size_t indexBufferCapacity = 6 * sizeof(uint32_t) * glyphCapacity;
-    std::vector<GlyphVertex> textVertexBufferCPU{4 * glyphCapacity, GlyphVertex{}};
+    std::vector<VertexPCU> textVertexBufferCPU{4 * glyphCapacity, VertexPCU{}};
     std::vector<uint32_t> textIndexBufferCPU{6 * glyphCapacity, 0};
 
     textVertexBuffers.reserve(GraphicsContext::maxFramesInFlight);
@@ -27,18 +27,18 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
     }
 
     LOG_INFO("UIRenderSubSystem: Creating materials");
-    uiMaterial = Material::Create(MaterialCreateInfo{
+    uiTextMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
-            .vertexLayout = VertexLayout{.binding = 0, .stride = sizeof(GlyphVertex), .inputRate=InputRate::Vertex,
+            .vertexLayout = VertexLayout{.binding = 0, .stride = sizeof(VertexPCU), .inputRate=InputRate::Vertex,
                     .attributes = std::vector<VertexAttribute>(
                             {
-                                    VertexAttribute{0, VertexFormat::RGB_FLOAT, offsetof(GlyphVertex, pos)},
-                                    VertexAttribute{1, VertexFormat::RGBA_FLOAT, offsetof(GlyphVertex, color)},
-                                    VertexAttribute{2, VertexFormat::RG_FLOAT, offsetof(GlyphVertex, uv)},
+                                    VertexAttribute{0, VertexFormat::RGB_FLOAT, offsetof(VertexPCU, pos)},
+                                    VertexAttribute{1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color)},
+                                    VertexAttribute{2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv)},
                             })},
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
-            .vertexShader = "UI",
-            .fragmentShader = "UI",
+            .vertexShader = "UIBase",
+            .fragmentShader = "UIText",
             .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),
             .set0 = std::make_optional(Material::StandardOpaqueSet0),
             .set0ExpectedCount = Material::StandardOpaqueSet0ExpectedCount,
@@ -47,12 +47,12 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
                             ShaderBindings{.type = ShaderBindingType::TextureSampler, .stage=ShaderStage::Fragment, .name="texture"},
                     })),
             .set1ExpectedCount = 64,
-            .name="UIMaterial",
+            .name="UITextMaterial",
     });
 }
 
 uint32_t
-UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, GlyphVertex *vBufferRef, uint32_t *iBufferRef,
+UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, VertexPCU *vBufferRef, uint32_t *iBufferRef,
                                        const UITextComponent &text, glm::vec3 linePos) const {
     glm::vec3 cursor{0, -text.font->getLineHeight(), 0};
     uint32_t glyphCount = 0;
@@ -73,22 +73,22 @@ UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, GlyphVerte
 
         glm::vec2 uvBoxLT = glyph.uvOffset;
         glm::vec2 uvBoxRB = glyph.uvOffset + glyph.uvSize;
-        vBufferRef[4 * totalGlyphCount + 0] = GlyphVertex{
+        vBufferRef[4 * totalGlyphCount + 0] = VertexPCU{
                 .pos = glyphPos,
                 .color = text.textColor,
                 .uv=glm::vec2(uvBoxLT.x, uvBoxRB.y)
         };
-        vBufferRef[4 * totalGlyphCount + 1] = GlyphVertex{
+        vBufferRef[4 * totalGlyphCount + 1] = VertexPCU{
                 .pos = glyphPos + glm::vec3(0, glyph.size.y, 0),
                 .color = text.textColor,
                 .uv=uvBoxLT
         };
-        vBufferRef[4 * totalGlyphCount + 2] = GlyphVertex{
+        vBufferRef[4 * totalGlyphCount + 2] = VertexPCU{
                 .pos = glyphPos + glm::vec3(glyph.size.x, 0, 0),
                 .color = text.textColor,
                 .uv=uvBoxRB
         };
-        vBufferRef[4 * totalGlyphCount + 3] = GlyphVertex{
+        vBufferRef[4 * totalGlyphCount + 3] = VertexPCU{
                 .pos = glyphPos + glm::vec3(glyph.size.x, glyph.size.y, 0),
                 .color = text.textColor,
                 .uv=glm::vec2(uvBoxRB.x, uvBoxLT.y)
@@ -118,14 +118,14 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     // Render Text
     auto uiTexts = ecs.getRegistry().view<Transform, UITextComponent>();
     uint32_t totalGlyphCount = 0;
-    auto *vBufferRef = static_cast<GlyphVertex *>(textVertexBuffers[currentBufferedFrame]->map());
+    auto *vBufferRef = static_cast<VertexPCU *>(textVertexBuffers[currentBufferedFrame]->map());
     auto *iBufferRef = static_cast<uint32_t *>(textIndexBuffers[currentBufferedFrame]->map());
 
     renderer.beginUI(glm::mat4(1.0f));
     for (auto&&[entity, transform, text]: uiTexts.each()) {
         if (!fontMaterialInstances.contains(text.font.get())) {
             auto fontTexture = text.font->getFontTexture();
-            fontMaterialInstances[text.font.get()] = uiMaterial.instantiate(nullptr, 0, {fontTexture});
+            fontMaterialInstances[text.font.get()] = uiTextMaterial.instantiate(nullptr, 0, {fontTexture});
         }
 
         auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
@@ -139,7 +139,10 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     textIndexBuffers[currentBufferedFrame]->flush();
 
     // Render UI elements
-    // TOBE
+    auto uiComps = ecs.getRegistry().view<Transform, UIComponent>();
+    for (auto&&[entity, transform, ui]: uiComps.each()) {
+        renderer.drawUI(calculateTextModelMatrix(transform), *ui.mesh, *ui.materialInstance);
+    }
 
     renderer.endUI();
 

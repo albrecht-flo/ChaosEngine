@@ -55,7 +55,7 @@ set(GLSL_SOURCE_FILES
         "res/shaders/2DBase.frag"
         "res/shaders/UIBase.vert"
         "res/shaders/UIBase.frag"
-        "res/shaders/UI.vert"
+        "res/shaders/UIText.frag"
         "res/shaders/UI.frag"
         "res/shaders/2DDebug.vert"
         "res/shaders/2DSprite.vert"

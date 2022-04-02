@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/src/core/renderSystem/RenderingSystem.h"
-#include "Font.h"
+#include "Engine/src/core/assets/Font.h"
 
 namespace ChaosEngine {
     class UISystem {

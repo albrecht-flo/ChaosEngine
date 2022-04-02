@@ -11,28 +11,47 @@
 #include <vector>
 #include <unordered_map>
 
-struct Vertex {
+struct VertexPNCU {
     glm::vec3 pos;
     glm::vec3 color;
     glm::vec3 normal;
     glm::vec2 uv;
 
-    bool operator==(const Vertex &o) const {
+    bool operator==(const VertexPNCU &o) const {
         return pos == o.pos && color == o.color && normal == o.normal && uv == o.uv;
+    };
+};
+
+struct VertexPCU {
+    glm::vec3 pos;
+    glm::vec4 color;
+    glm::vec2 uv;
+
+    bool operator==(const VertexPCU &o) const {
+        return pos == o.pos && color == o.color && uv == o.uv;
     };
 };
 
 // Needed to enable Vertex instances as keys in unordered_maps
 namespace std {
     template<>
-    struct hash<Vertex> {
-        size_t operator()(Vertex const &vertex) const noexcept;
+    struct hash<VertexPNCU> {
+        size_t operator()(VertexPNCU const &vertex) const noexcept;
+    };
+
+    template<>
+    struct hash<VertexPCU> {
+        size_t operator()(VertexPCU const &vertex) const noexcept;
     };
 }
 
+struct MeshPNCU {
+    std::vector<VertexPNCU> vertices;
+    std::vector<uint32_t> indices;
+};
 
-struct Mesh {
-    std::vector<Vertex> vertices;
+struct MeshPCU {
+    std::vector<VertexPCU> vertices;
     std::vector<uint32_t> indices;
 };
 

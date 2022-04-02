@@ -15,7 +15,7 @@
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/core/scriptSystem/NativeScript.h"
-#include "Engine/src/core/uiSystem/Font.h"
+#include "Engine/src/core/assets/Font.h"
 
 struct Meta {
     std::string name;
@@ -91,4 +91,9 @@ struct UITextComponent {
     ChaosEngine::FontStyle style;
     glm::vec4 textColor;
     std::string text;
+};
+
+struct UIComponent {
+    std::shared_ptr<Renderer::MaterialInstance> materialInstance;
+    std::shared_ptr<Renderer::RenderMesh> mesh;
 };

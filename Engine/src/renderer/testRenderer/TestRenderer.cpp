@@ -61,6 +61,11 @@ void TestRenderer::drawUI(const Buffer &/*vertexBuffer*/, const Buffer &/*indexB
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
+void TestRenderer::drawUI(const glm::mat4 &/*viewMatrix*/, const Renderer::RenderMesh &/*mesh*/,
+                          const Renderer::MaterialInstance &/*material*/) {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
 const Renderer::RenderPass &
 TestRenderer::getRenderPassForShaderStage(Renderer::ShaderPassStage /*stage*/) const {
     LOG_DEBUG(__PRETTY_FUNCTION__);

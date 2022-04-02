@@ -21,7 +21,7 @@ set(ENGINE_SOURCES
         src/core/scriptSystem/NativeScriptSystem.cpp
         src/core/scriptSystem/NativeScript.cpp
         src/core/uiSystem/UISystem.cpp
-        src/core/uiSystem/Font.cpp
+        src/core/assets/Font.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
