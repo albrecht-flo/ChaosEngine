@@ -43,11 +43,11 @@ static VkExtent2D chooseSwapExtent(const Window &window, const VkSurfaceCapabili
         return capabilities.currentExtent;
     } else {
         // Retrieve current dimensions
-        const auto[width, height] = window.getFrameBufferSize();
+        const auto fbSize = window.getFrameBufferSize();
 
         VkExtent2D actualExtent = {
-                static_cast<uint32_t>(width),
-                static_cast<uint32_t>(height)
+                static_cast<uint32_t>(fbSize.x),
+                static_cast<uint32_t>(fbSize.y)
         };
 
         // Clamp dimensions to supported and keep within bounds

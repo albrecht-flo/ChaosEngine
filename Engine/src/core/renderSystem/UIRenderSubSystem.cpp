@@ -139,7 +139,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     textIndexBuffers[currentBufferedFrame]->flush();
 
     // Render UI elements
-    auto uiComps = ecs.getRegistry().view<Transform, UIComponent>();
+    auto uiComps = ecs.getRegistry().view<Transform, UIRenderComponent>();
     for (auto&&[entity, transform, ui]: uiComps.each()) {
         renderer.drawUI(calculateTextModelMatrix(transform), *ui.mesh, *ui.materialInstance);
     }

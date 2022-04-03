@@ -4,7 +4,7 @@
 #include "core/assets/ModelLoader.h"
 
 #include "scripts/BaseMovementScript.h"
-#include "core/renderSystem/UIRenderSubSystem.h"
+#include "scripts/ButtonScript.h"
 
 using namespace Editor;
 using namespace Renderer;
@@ -148,10 +148,16 @@ void EditorBaseAssets::loadBaseScripts() {
                                       },
                                       AssetManager::ScriptInfo{}
     );
+    assetManager.registerNativeScript("UI/ButtonScript",
+                                      [](ChaosEngine::Entity e) {
+                                          return std::unique_ptr<NativeScript>(new ButtonScript<true>(e));
+                                      },
+                                      AssetManager::ScriptInfo{}
+    );
 }
 
 void EditorBaseAssets::loadBaseFonts() {
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular);
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic);
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular, 16.0f);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic, 16.0f);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold, 16.0f);
 }

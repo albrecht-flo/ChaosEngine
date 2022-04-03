@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/src/core/scriptSystem/NativeScript.h"
-#include "Engine/src/core/Components.h"
 
 namespace Editor {
 

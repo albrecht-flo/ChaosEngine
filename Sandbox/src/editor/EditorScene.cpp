@@ -10,7 +10,7 @@
 
 #include "DefaultProject.h"
 #include "EditorComponentUI.h"
-#include "Sandbox/src/editor/scripts/EditorCameraScript.h"
+#include "scripts/EditorCameraScript.h"
 
 using namespace Editor;
 using namespace ChaosEngine;
@@ -49,19 +49,6 @@ void EditorScene::load() {
     editorCamera.setComponent<NativeScriptComponent>(std::move(script), true);
 
     Editor::loadDefaultSceneEntities(*this, *baseAssets, *assetManager);
-
-    auto uiMesh = assetManager->getMesh("UI/Quad");
-    auto uiMaterial = assetManager->getMaterial("UI");
-    auto &borderTexture = assetManager->getTexture("UI/Border");
-
-    glm::vec4 buttonColor{1, 0.5f, 0.5f, 1};
-    auto button0 = createEntity();
-    button0.setComponent<Meta>("Test Button");
-    button0.setComponent<Transform>(Transform{glm::vec3{1640, 64, -0.5f}, glm::vec3(0, 0, 0), glm::vec3(128, 46, 1)});
-    button0.setComponent<UIComponent>(UIComponent{
-            .materialInstance = uiMaterial.instantiate(&buttonColor, sizeof(buttonColor), {&borderTexture}),
-            .mesh = uiMesh,
-    });
 
 }
 
@@ -132,8 +119,6 @@ void EditorScene::updateImGui() {
     ImGui::NewFrame();
     CoreImGui::ImGuiEnableDocking([&]() { imGuiMainMenu(); });
 
-    CoreImGui::RenderLogWindow();
-
     if (ImGui::Begin("Outline")) {
         const uint32_t createEntityButtonSize = 100;
         ImGui::SameLine((ImGui::GetWindowWidth() - createEntityButtonSize) / 2);
@@ -159,12 +144,14 @@ void EditorScene::updateImGui() {
 
     const auto &fb = ChaosEngine::RenderingSystem::GetCurrentRenderer().getFramebuffer();
     auto size = CoreImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
+    window->setGameWindowExtent(glm::ivec2{(int) size.first.x, (int) size.first.y},
+                                glm::ivec2{(int) size.second.x, (int) size.second.y});
 
     ImGui::Begin("Info");
     ImGuiIO &io = ImGui::GetIO();
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::Text("Viewport Size: %f x %f", size.x, size.y);
+    ImGui::Text("Viewport Size: %f x %f", size.second.x - size.first.x, size.second.y - size.first.y);
     ImGui::Separator();
     if (ImGui::Button("Show ImGui Debugger")) {
         showImGuiDebugger = true;
@@ -202,4 +189,5 @@ void EditorScene::updateImGui() {
     }
 
     AssetView::renderAssetView();
+    CoreImGui::RenderLogWindow(); // Render after AssetView to put initial focus here
 }

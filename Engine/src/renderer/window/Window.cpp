@@ -15,7 +15,7 @@ static void framebufferResizeCallback(GLFWwindow *window, int /*width*/, int /*h
 
 static void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
     auto w = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
-    auto delta = MousePos{static_cast<int>(xOffset), static_cast<int>(yOffset)};
+    auto delta = glm::ivec2{static_cast<int>(xOffset), static_cast<int>(yOffset)};
     w->setScrollDelta(delta);
 }
 
@@ -25,7 +25,7 @@ static void keyCallback(GLFWwindow * /*window*/, int /*key*/, int /*scancode*/, 
 
 // ------------------------------------ Class members ------------------------------------------------------------------
 
-Window Window::Create(const std::string &applicationName, uint32_t width, uint32_t height) {
+Window Window::Create(const std::string &applicationName, int width, int height) {
     Logger::Init(LogLevel::Debug);
     Logger::I("Window", "Logger initialized");
 
@@ -65,10 +65,12 @@ void Window::poolEvents() {
     glfwPollEvents();
 
     double x, y;
+    int winX, winY;
     glfwGetCursorPos(window, &x, &y);
+    glfwGetWindowPos(window, &winX, &winY);
     Window::lastMousePos = Window::mousePos;
-    Window::mousePos.x = static_cast<int>(x);
-    Window::mousePos.y = static_cast<int>(y);
+    Window::mousePos = {static_cast<int>(x), static_cast<int>(y)};
+    Window::windowPos = {winX, winY};
 }
 
 void Window::destroy() {
@@ -81,10 +83,10 @@ void Window::setFrameBufferResized(bool b) {
     framebufferResized = b;
 }
 
-WindowDimensions Window::getFrameBufferSize() const {
+glm::ivec2 Window::getFrameBufferSize() const {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    return WindowDimensions{width, height};
+    return glm::ivec2{width, height};
 }
 
 

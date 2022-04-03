@@ -27,7 +27,7 @@ namespace CustomImGui {
 
         static void RenderLogWindow(const std::string &title = "Log");
 
-        static ImVec2
+        static std::pair<ImVec2, ImVec2>
         RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title = "Viewport",
                             bool *focused = nullptr);
 
@@ -70,4 +70,5 @@ namespace CustomImGui {
         static CoreImGuiState state;
     };
 
+    void MakeTabVisible(char *windowName);
 }
