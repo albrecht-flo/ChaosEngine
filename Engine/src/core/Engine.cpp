@@ -12,7 +12,7 @@ Engine *ChaosEngine::Engine::s_engineInstance = nullptr;
 Engine::Engine()
         : window(Window::Create("Chaos Engine", 1400, 800)),
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),
-          uiSystem(renderingSys),
+          uiSystem(renderingSys, window),
           nativeScriptSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),

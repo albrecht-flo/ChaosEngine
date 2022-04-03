@@ -7,7 +7,8 @@ namespace ChaosEngine {
     class UISystem {
 
     public:
-        explicit UISystem(ChaosEngine::RenderingSystem &renderingSystem) : renderingSystem(renderingSystem) {}
+        explicit UISystem(ChaosEngine::RenderingSystem &renderingSystem, Window &window)
+                : renderingSystem(renderingSystem), window(window) {}
 
         void init(ECS &ecs);
 
@@ -15,5 +16,6 @@ namespace ChaosEngine {
 
     private:
         ChaosEngine::RenderingSystem &renderingSystem;
+        Window &window;
     };
 }

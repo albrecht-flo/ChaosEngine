@@ -2,18 +2,9 @@
 
 #include <vulkan/vulkan.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <string>
-
-struct MousePos {
-    int x;
-    int y;
-};
-
-struct WindowDimensions {
-    int width;
-    int height;
-};
 
 class Window {
 private:
@@ -33,7 +24,7 @@ public:
     Window &operator=(Window &&o) = delete;
 
     static Window
-    Create(const std::string &applicationName = "Vulkan Triangle", uint32_t width = 1200, uint32_t height = 800);
+    Create(const std::string &applicationName = "Vulkan Triangle", int width = 1200, int height = 800);
 
     void poolEvents();
 
@@ -47,26 +38,41 @@ public:
 
     bool isKeyUp(int key) { return glfwGetKey(window, key) == GLFW_RELEASE; }
 
-    [[nodiscard]] MousePos getDeltaMouse() const {
-        return MousePos{mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y};
+    [[nodiscard]] glm::ivec2 getDeltaMouse() const {
+        return glm::ivec2{mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y};
     }
 
-    MousePos getMousePos() { return Window::mousePos; }
+    glm::ivec2 getMousePos() { return mousePos; }
+
+    glm::ivec2 getAbsoluteMousePos() { return windowPos + mousePos; }
 
     bool isMouseButtonDown(int button) { return glfwGetMouseButton(window, button) == GLFW_PRESS; }
 
     bool isMouseButtonUp(int button) { return glfwGetMouseButton(window, button) == GLFW_RELEASE; }
 
-    void setScrollDelta(MousePos delta) { scrollDelta = delta; }
+    void setScrollDelta(glm::ivec2 delta) { scrollDelta = delta; }
 
-    [[nodiscard]] MousePos getScrollDelta() const { return scrollDelta; }
+    [[nodiscard]] glm::ivec2 getScrollDelta() const { return scrollDelta; }
 
     // Rendering specific code
     void setFrameBufferResized(bool b);
 
     [[nodiscard]] bool getFrameBufferResize() const { return framebufferResized; }
 
-    [[nodiscard]] WindowDimensions getFrameBufferSize() const;
+    [[nodiscard]] glm::ivec2 getFrameBufferSize() const;
+
+    void setGameWindowExtent(glm::ivec2 min, glm::ivec2 max) {
+        viewportMin = min;
+        viewportMax = max;
+    }
+
+    [[nodiscard]] std::pair<glm::ivec2, glm::ivec2> getGameWindowExtent() const {
+        if (viewportMax.x == 0 && viewportMax.y == 0) {
+            auto size = getFrameBufferSize();
+            return {glm::ivec2{0, 0}, size};
+        }
+        return {viewportMin, viewportMax};
+    }
 
     // Vulkan specific code
     [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
@@ -75,8 +81,11 @@ private:
     GLFWwindow *window = nullptr;
 
     bool framebufferResized = false;
-    MousePos lastMousePos;
-    MousePos mousePos;
-    MousePos scrollDelta{0, 0};
+    glm::ivec2 lastMousePos;
+    glm::ivec2 mousePos;
+    glm::ivec2 windowPos;
+    glm::ivec2 scrollDelta{0, 0};
+    glm::ivec2 viewportMin{0, 0};
+    glm::ivec2 viewportMax{0, 0};
 };
 

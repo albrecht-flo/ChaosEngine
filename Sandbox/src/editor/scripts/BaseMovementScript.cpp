@@ -1,4 +1,5 @@
 #include "BaseMovementScript.h"
+#include "Engine/src/core/Components.h"
 #include "GLFW/glfw3.h"
 
 using namespace Editor;

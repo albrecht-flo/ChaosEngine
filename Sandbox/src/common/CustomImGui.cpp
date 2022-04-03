@@ -5,6 +5,7 @@
 
 #include "dep/imgui/imgui.h"
 #include "dep/imgui/backends/imgui_impl_vulkan.h"
+#include "imgui_internal.h"
 
 #include <vector>
 #include <string>
@@ -95,7 +96,7 @@ void CoreImGui::RenderLogWindow(const std::string &title) {
 }
 
 
-ImVec2
+std::pair<ImVec2, ImVec2>
 CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const std::string &title, bool *focused) {
     using namespace Renderer;
     if (state.sceneImageGPUHandles.empty()) {
@@ -130,7 +131,7 @@ CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const s
         }
         default: {
             Logger::E("RenderSceneViewport", "Unsupported Graphics API!");
-            return ImVec2{0.0f, 0.0f};
+            return {ImVec2{0.0f, 0.0f}, ImVec2{0.0f, 0.0f}};
         }
     }
 
@@ -150,10 +151,25 @@ CoreImGui::RenderSceneViewport(const Renderer::Framebuffer &framebuffer, const s
     ImGui::Image(state.sceneImageGPUHandles[state.currentFrame],
                  ImVec2(static_cast<float>(framebuffer.getWidth()), static_cast<float>(framebuffer.getHeight())));
 
+    ImVec2 winMin = ImGui::GetWindowContentRegionMin();
+    ImVec2 winMax = ImGui::GetWindowContentRegionMax();
+    ImVec2 winPos = ImGui::GetWindowPos();
+    winMin.x += winPos.x;
+    winMin.y += winPos.y;
+    winMax.x += winPos.x;
+    winMax.y += winPos.y;
+
     ImGui::End();
     ImGui::PopStyleVar();
 
     state.currentFrame = (state.currentFrame < state.sceneImageGPUHandles.size() - 1) ? state.currentFrame + 1 : 0;
-    return state.previousSize;
+    return std::pair{winMin, winMax};
+}
+
+void MakeTabVisible(const char *window_name) {
+    ImGuiWindow *window = ImGui::FindWindowByName(window_name);
+    if (window == nullptr || window->DockNode == nullptr || window->DockNode->TabBar == nullptr)
+        return;
+    window->DockNode->TabBar->NextSelectedTabId = window->ID;;
 }
 

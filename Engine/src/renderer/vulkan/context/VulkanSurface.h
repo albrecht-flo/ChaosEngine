@@ -27,12 +27,14 @@ public:
     }
 
 
-    inline VkSurfaceKHR vk() const { return surface; }
+    [[nodiscard]] inline VkSurfaceKHR vk() const { return surface; }
 
 private:
     void destroy() {
-        if (surface != nullptr)
+        if (surface != VK_NULL_HANDLE) {
             vkDestroySurfaceKHR(instance.vk(), surface, nullptr);
+            surface = VK_NULL_HANDLE;
+        }
     }
 
 private:

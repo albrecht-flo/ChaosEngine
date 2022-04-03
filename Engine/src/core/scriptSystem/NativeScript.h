@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Engine/src/core/Entity.h"
+#include "Engine/src/core/utils/Logger.h"
+#include <glm/glm.hpp>
 
 class Window;
 namespace ChaosEngine {
@@ -20,13 +22,18 @@ namespace ChaosEngine {
 
         NativeScript &operator=(NativeScript &&o) = delete;
 
-        // ------------------------------------ Class Members ----------------------------------------------------------
+        // ------------------------------------ Lifecycle and Core Events ----------------------------------------------
 
         /// This function is called once at the initialization of the script.
         virtual void onStart() {};
 
         /// This function is called once per frame.
         virtual void onUpdate(float /*deltaTime*/) {};
+
+        // ------------------------------------ Additional Events ------------------------------------------------------
+
+        /// This function is called if the entity has a **UIComponent** and the mouse cursor is over this entity.
+        virtual void onMouseOver() {};
 
     protected:
         // ------------------------------------ Script Helper Functions ------------------------------------------------
@@ -67,6 +74,10 @@ namespace ChaosEngine {
         static bool isKeyDown(int keyCode);
 
         static bool isKeyUp(int keyCode);
+
+        static bool isMouseButtonDown(int button);
+
+        static bool isMouseButtonUp(int button);
 
     protected:
         Entity entity;

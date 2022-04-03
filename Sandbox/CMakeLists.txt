@@ -1,11 +1,11 @@
 set(SANDBOX_SOURCES
+        src/main.cpp
         src/common/AssetView.cpp
         src/common/CustomImGui.cpp
         src/test/EmptyScene.cpp
         src/test/TestScene.cpp
         src/editor/EditorScene.cpp
         src/editor/EditorBaseAssets.cpp
-        src/main.cpp
         src/editor/DefaultProject.cpp
         src/editor/EditorComponentUI.cpp
         src/editor/EditorComponents.cpp

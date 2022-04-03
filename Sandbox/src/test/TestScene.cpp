@@ -253,7 +253,7 @@ void TestScene::updateImGui() {
     ImGuiIO &io = ImGui::GetIO();
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::Text("Viewport Size: %f x %f", size.x, size.y);
+    ImGui::Text("Viewport Size: %f x %f", size.second.x - size.first.x, size.second.y - size.first.y);
     ImGui::Separator();
     if (ImGui::Button("Show ImGui Debugger")) {
         showImGuiDebugger = true;

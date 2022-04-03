@@ -93,7 +93,11 @@ struct UITextComponent {
     std::string text;
 };
 
-struct UIComponent {
+struct UIRenderComponent {
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
     std::shared_ptr<Renderer::RenderMesh> mesh;
+};
+
+struct UIComponent {
+    bool clickable;
 };
