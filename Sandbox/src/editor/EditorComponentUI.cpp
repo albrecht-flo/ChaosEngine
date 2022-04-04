@@ -106,9 +106,19 @@ void EditorComponentUI::renderNativeScriptComponentUI(ChaosEngine::Entity &entit
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) {
-    renderMetaComponentUI(entity);
-
     const auto panelWidth = ImGui::GetContentRegionAvailWidth();
+
+    if (entity.has<Meta>()) {
+        renderMetaComponentUI(entity);
+    } else {
+        LOG_ERROR("All entities selectable by the editor MUST have a Meta component");
+        ImGui::TextColored(ImVec4{1, 0, 0, 1}, "ERROR !!!\n----------------");
+        ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + panelWidth);
+        ImGui::TextColored(ImVec4{1, 0, 0, 1}, "All entities selectable by the editor MUST have a Meta component");
+        ImGui::PopTextWrapPos();
+        return false;
+    }
+
     ImGui::SameLine(panelWidth - 60);
     bool deleted = ImGui::Button("Delete");
     ImGui::Separator();
@@ -116,9 +126,13 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
     if (deleted)
         return true;
 
-    renderTransformComponentUI(entity);
-    ImGui::Separator();
-    ImGui::Spacing();
+    if (entity.has<Transform>()) {
+        renderTransformComponentUI(entity);
+        ImGui::Separator();
+        ImGui::Spacing();
+    } else {
+        LOG_WARN("Entity '{}' has not transform, are you sure this is right?", entity.get<Meta>().name);
+    }
 
     if (entity.has<CameraComponent>()) {
         renderCameraComponentUI(entity);
