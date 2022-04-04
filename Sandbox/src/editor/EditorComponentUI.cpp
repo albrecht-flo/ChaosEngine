@@ -343,9 +343,9 @@ void EditorComponentUI::renderUIRenderComponentComponentUI(ChaosEngine::Entity &
         renderMaterialUI(rcMeta, entity);
         ImGui::Spacing();
 
-        auto &uiRC = entity.get<UIRenderComponent>();
+        UIRenderComponent &uiRC = entity.get<UIRenderComponent>();
         ImGui::Text("Scale Offset:");
-        ImGui::DragFloat3("Scale", &(uiRC.scaleOffset.x), 0.25f * dragSpeed);
+        ImGui::DragFloat3("##Scale_Offset", &(uiRC.scaleOffset.x), 0.25f * dragSpeed);
     }
 }
 
@@ -354,7 +354,8 @@ void EditorComponentUI::renderUIComponentComponentUI(ChaosEngine::Entity &entity
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("UI Component", flags)) {
         auto &uiC = entity.get<UIComponent>();
-        ImGui::Checkbox("Active", &(uiC.active));
+        ImGui::Text("Enable Mouse event");
+        ImGui::Checkbox("##Active_UIC", &(uiC.active));
     }
 }
 
