@@ -105,9 +105,11 @@ namespace ChaosEngine {
         }
 
         std::optional<std::shared_ptr<Font>> getFont(const std::string &name, FontStyle style,
-                                                     double size = 42, double resolution = 72.0) {
+                                                     float size = 42, float resolution = 72.0f) const {
             return fontManager.getFont(name, style, size, resolution);
         }
+
+        [[nodiscard]] decltype(auto) getAllFonts() const { return fontManager.getAll(); }
 
     private:
         std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> meshes{};

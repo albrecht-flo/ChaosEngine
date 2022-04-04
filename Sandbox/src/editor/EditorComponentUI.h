@@ -25,7 +25,18 @@ namespace Editor {
 
         void renderNativeScriptComponentUI(ChaosEngine::Entity &entity);
 
+        void renderUITextComponentComponentUI(ChaosEngine::Entity &entity);
+
+        void renderUIRenderComponentComponentUI(ChaosEngine::Entity &entity);
+
+        void renderUIComponentComponentUI(ChaosEngine::Entity &entity);
+
+
     private:
+
+        void renderMaterialUI(const RenderComponentMeta &rcMeta, ChaosEngine::Entity &entity);
+
+        void renderMeshUI(const RenderComponentMeta &rcMeta);
 
         void renderComponentPopupList(ChaosEngine::Entity &entity);
 
@@ -42,6 +53,6 @@ namespace Editor {
         std::string componentMenuInput{};
         int selectedComponent = 0;
     public:
-        static const std::array<std::string, 3> componentList;
+        static const std::array<std::string, 6> componentList;
     };
 }
