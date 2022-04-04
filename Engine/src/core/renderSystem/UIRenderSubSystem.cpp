@@ -105,13 +105,13 @@ UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, VertexPCU 
     return glyphCount;
 }
 
-glm::mat4 calculateTextModelMatrix(const Transform &transform, const glm::vec3 &scaleOffset = glm::vec3(0)) {
+static glm::mat4 calculateTextModelMatrix(const Transform &transform, const glm::vec3 scaleOffset) {
     auto linePos = transform.position;
     linePos.y *= -1;
     glm::mat4 modelMat = glm::translate(glm::mat4(1), linePos);
     modelMat *= glm::toMat4(glm::quat(glm::vec3{glm::radians(transform.rotation.x), glm::radians(transform.rotation.y),
                                                 glm::radians(transform.rotation.z)}));
-    return glm::scale(modelMat, transform.scale + scaleOffset);;
+    return glm::scale(modelMat, transform.scale + scaleOffset);
 }
 
 void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
@@ -129,7 +129,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
         }
 
         auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
-        glm::mat4 modelMat = calculateTextModelMatrix(transform);
+        glm::mat4 modelMat = calculateTextModelMatrix(transform, glm::vec3{0});
         renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
                         glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
 

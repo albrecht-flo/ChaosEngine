@@ -14,11 +14,11 @@ void EditorBaseAssets::loadBaseMeshes() {
     // Load meshes
     LOG_INFO("Creating quad buffers");
     auto quadAsset = ModelLoader::getQuad_PNCU();
-    auto vertexBuffer = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(VertexPNCU),
-                                       BufferType::Vertex);
-    auto indexBuffer = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(uint32_t),
-                                      BufferType::Index);
-    quadROB = RenderMesh::Create(std::move(vertexBuffer), std::move(indexBuffer), quadAsset.indices.size());
+    auto quadVB = Buffer::Create(quadAsset.vertices.data(), quadAsset.vertices.size() * sizeof(VertexPNCU),
+                                 BufferType::Vertex);
+    auto quadIB = Buffer::Create(quadAsset.indices.data(), quadAsset.indices.size() * sizeof(uint32_t),
+                                 BufferType::Index);
+    quadROB = RenderMesh::Create(std::move(quadVB), std::move(quadIB), quadAsset.indices.size());
     assetManager.registerMesh("Quad", quadROB, AssetManager::MeshInfo{});
 
     LOG_INFO("Creating hex buffers");
@@ -37,9 +37,9 @@ void EditorBaseAssets::loadBaseMeshes() {
                                              uiQuadAsset.vertices.size() * sizeof(VertexPCU), BufferType::Vertex);
     auto uiQuadIndexBuffer = Buffer::Create(uiQuadAsset.indices.data(), uiQuadAsset.indices.size() * sizeof(uint32_t),
                                             BufferType::Index);
-    quadROB = RenderMesh::Create(std::move(uiQuadVertexBuffer), std::move(uiQuadIndexBuffer),
-                                 uiQuadAsset.indices.size());
-    assetManager.registerMesh("UI/Quad", quadROB, AssetManager::MeshInfo{});
+    auto uiQuadROB = RenderMesh::Create(std::move(uiQuadVertexBuffer), std::move(uiQuadIndexBuffer),
+                                        uiQuadAsset.indices.size());
+    assetManager.registerMesh("UI/Quad", std::move(uiQuadROB), AssetManager::MeshInfo{});
 
 }
 
