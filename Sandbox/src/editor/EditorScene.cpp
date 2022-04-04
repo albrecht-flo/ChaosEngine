@@ -152,6 +152,8 @@ void EditorScene::updateImGui() {
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Text("Viewport Size: %f x %f", size.second.x - size.first.x, size.second.y - size.first.y);
+    auto mouse = window->getAbsoluteMousePos();
+    ImGui::Text("Mouse position Size: %f x %f", mouse.x - size.first.x, mouse.y - size.first.y);
     ImGui::Separator();
     if (ImGui::Button("Show ImGui Debugger")) {
         showImGuiDebugger = true;

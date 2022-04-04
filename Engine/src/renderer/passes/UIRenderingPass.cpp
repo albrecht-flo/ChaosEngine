@@ -111,7 +111,7 @@ void UIRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const glm::u
     ubo->view = viewMat;
     ubo->proj = glm::ortho(0.0f, (float) viewportDimensions.x,
                            0.0f, (float) viewportDimensions.y,
-                           0.1f, 10.0f);
+                           -1000.0f, 0.0f);
     ubo->proj[1][1] *= -1; // GLM uses OpenGL projection -> Y Coordinate needs to be flipped
 
     // Copy that data to the uniform buffer

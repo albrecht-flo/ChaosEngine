@@ -105,13 +105,13 @@ UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, VertexPCU 
     return glyphCount;
 }
 
-glm::mat4 calculateTextModelMatrix(const Transform &transform) {
+glm::mat4 calculateTextModelMatrix(const Transform &transform, const glm::vec3 &scaleOffset = glm::vec3(0)) {
     auto linePos = transform.position;
     linePos.y *= -1;
     glm::mat4 modelMat = glm::translate(glm::mat4(1), linePos);
-    modelMat *= glm::toMat4(glm::quat({glm::radians(transform.rotation.x), glm::radians(transform.rotation.y),
-                                       glm::radians(transform.rotation.z)}));
-    return glm::scale(modelMat, transform.scale);;
+    modelMat *= glm::toMat4(glm::quat(glm::vec3{glm::radians(transform.rotation.x), glm::radians(transform.rotation.y),
+                                                glm::radians(transform.rotation.z)}));
+    return glm::scale(modelMat, transform.scale + scaleOffset);;
 }
 
 void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
@@ -141,7 +141,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     // Render UI elements
     auto uiComps = ecs.getRegistry().view<Transform, UIRenderComponent>();
     for (auto&&[entity, transform, ui]: uiComps.each()) {
-        renderer.drawUI(calculateTextModelMatrix(transform), *ui.mesh, *ui.materialInstance);
+        renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
     }
 
     renderer.endUI();

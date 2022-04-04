@@ -60,7 +60,7 @@ namespace Editor {
             auto textTester = scene.createEntity();
             textTester.setComponent<Meta>("Text Tester Multiline");
             textTester.setComponent<Transform>(
-                    Transform{glm::vec3{16, 95, -1}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 95, 2}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
             textTester.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Regular, 16.0f)),
                     .style = FontStyle::Regular,
@@ -70,7 +70,7 @@ namespace Editor {
             auto textTesterI = scene.createEntity();
             textTesterI.setComponent<Meta>("Text Tester Italic");
             textTesterI.setComponent<Transform>(
-                    Transform{glm::vec3{16, 128 + 32, -1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 128 + 32, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterI.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Italic, 16.0f)),
                     .style = FontStyle::Regular,
@@ -80,29 +80,45 @@ namespace Editor {
             auto textTesterB = scene.createEntity();
             textTesterB.setComponent<Meta>("Text Tester Bold");
             textTesterB.setComponent<Transform>(
-                    Transform{glm::vec3{16, 128 + 64, -1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 128 + 64, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterB.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Bold, 16.0f)),
                     .style = FontStyle::Regular,
-                    .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
-                    .text = "This is some bold Text about a lazy dog xD",
+                    .textColor = glm::vec4(0.66f, 0, 0.0f, 1),
+                    .text = "This is some bold Text about a lazy dog xD (in red)",
             });
 
             auto uiMesh = assetManager.getMesh("UI/Quad");
             auto uiMaterial = assetManager.getMaterial("UI");
             auto &borderTexture = assetManager.getTexture("UI/Border");
 
-            glm::vec4 buttonColor{1, 0.5f, 0.5f, 1};
+            glm::vec4 buttonColor0{1, 0.5f, 0.5f, 1};
             auto button0 = scene.createEntity();
-            button0.setComponent<Meta>("Test Button");
+            button0.setComponent<Meta>("Test Button with 8x4 pixel offset rendering");
             button0.setComponent<Transform>(
-                    Transform{glm::vec3{512, 32, -0.5f}, glm::vec3(0, 0, 0), glm::vec3(64, 25, 1)});
+                    Transform{glm::vec3{512, 56, 1}, glm::vec3(0, 0, 0), glm::vec3(64, 25, 1)});
             button0.setComponent<UIRenderComponent>(UIRenderComponent{
-                    .materialInstance = uiMaterial.instantiate(&buttonColor, sizeof(buttonColor), {&borderTexture}),
+                    .materialInstance = uiMaterial.instantiate(&buttonColor0, sizeof(buttonColor0), {&borderTexture}),
                     .mesh = uiMesh,
+                    .scaleOffset = glm::vec3(8, 4, 0),
             });
-            button0.setComponent<UIComponent>(UIComponent{.clickable = true});
+            button0.setComponent<UIComponent>(UIComponent{.active = true});
             button0.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button0), true);
+            button0.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
+
+            glm::vec4 buttonColor1{0.5f, 0.5f, 1.0f, 1};
+            auto button1 = scene.createEntity();
+            button1.setComponent<Meta>("Test Button with rotation");
+            button1.setComponent<Transform>(
+                    Transform{glm::vec3{700, 128, 1}, glm::vec3(0, 0, 45.0f), glm::vec3(64, 32, 1)});
+            button1.setComponent<UIRenderComponent>(UIRenderComponent{
+                    .materialInstance = uiMaterial.instantiate(&buttonColor1, sizeof(buttonColor1), {&borderTexture}),
+                    .mesh = uiMesh,
+                    .scaleOffset = glm::vec3(0, 0, 0),
+            });
+            button1.setComponent<UIComponent>(UIComponent{.active = true});
+            button1.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button1), true);
+            button1.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
         }
     }
 }
