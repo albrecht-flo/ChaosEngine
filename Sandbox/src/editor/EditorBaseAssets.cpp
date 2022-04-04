@@ -127,7 +127,7 @@ void EditorBaseAssets::loadBaseMaterials() {
             .set1ExpectedCount = 64,
             .name="UIMaterial",
     });
-    assetManager.registerMaterial("UI", uiMaterial, AssetManager::MaterialInfo{.hasTintColor=true});
+    assetManager.registerMaterial("UIMaterial", uiMaterial, AssetManager::MaterialInfo{.hasTintColor=true});
 
 
 }

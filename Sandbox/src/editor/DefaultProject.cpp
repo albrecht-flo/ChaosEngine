@@ -88,8 +88,9 @@ namespace Editor {
                     .text = "This is some bold Text about a lazy dog xD (in red)",
             });
 
-            auto uiMesh = assetManager.getMesh("UI/Quad");
-            auto uiMaterial = assetManager.getMaterial("UI");
+            const std::string uiMeshName = "UI/Quad";
+            auto uiMesh = assetManager.getMesh(uiMeshName);
+            auto uiMaterial = assetManager.getMaterial("UIMaterial");
             auto &borderTexture = assetManager.getTexture("UI/Border");
 
             glm::vec4 buttonColor0{1, 0.5f, 0.5f, 1};
@@ -105,6 +106,9 @@ namespace Editor {
             button0.setComponent<UIComponent>(UIComponent{.active = true});
             button0.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button0), true);
             button0.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
+            button0.setComponent<RenderComponentMeta>(
+                    uiMeshName, uiMaterial->getName(),
+                    std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
 
             glm::vec4 buttonColor1{0.5f, 0.5f, 1.0f, 1};
             auto button1 = scene.createEntity();
@@ -119,6 +123,9 @@ namespace Editor {
             button1.setComponent<UIComponent>(UIComponent{.active = true});
             button1.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button1), true);
             button1.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
+            button1.setComponent<RenderComponentMeta>(
+                    uiMeshName, uiMaterial->getName(),
+                    std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
         }
     }
 }

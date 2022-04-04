@@ -18,7 +18,7 @@ FontManager::~FontManager() {
 }
 
 std::optional<std::shared_ptr<Font>>
-FontManager::getFont(const std::string &name, ChaosEngine::FontStyle style, double size, double resolution) {
+FontManager::getFont(const std::string &name, ChaosEngine::FontStyle style, float size, float resolution) const {
     // Linear search, because this should never be a huge vector.
     for (const auto &font: loadedFonts) {
         if (font->size == size) { // First filter by size for performance.
@@ -35,12 +35,13 @@ std::shared_ptr<Font>
 FontManager::loadFont(const std::string &name, const std::string &ttfFile, ChaosEngine::FontStyle style,
                       double size, double resolution) {
 
-    auto existingInstance = getFont(name, style, size, resolution);
+    auto existingInstance = getFont(name, style, (float) size, (float) resolution);
     if (existingInstance)
         return *existingInstance;
 
     auto font = Font::Create(freetype, name, ttfFile, style, size, resolution);
     loadedFonts.emplace_back(font);
 
+    fontsMeta.emplace_back(FontMeta{font->getName(), font->getStyle(), font->getSize(), font->getResolution()});
     return font;
 }

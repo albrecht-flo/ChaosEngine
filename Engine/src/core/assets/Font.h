@@ -15,7 +15,7 @@ namespace Renderer { class Texture; }
 namespace ChaosEngine {
 
     enum class FontStyle {
-        Regular, Italic, Bold
+        Regular, Italic, Bold, MAX
     };
 
     class Font {
@@ -32,18 +32,25 @@ namespace ChaosEngine {
     public:
         Font(const std::string &name, FontStyle style, double size, double resolution, double lineHeight,
              std::unordered_map<uint32_t, CharacterGlyph> &&glyphs, std::unique_ptr<Renderer::Texture> &&fontTex)
-                : name(name), style(style), size(size), resolution(resolution), lineHeight(lineHeight),
+                : name(name), style(style),
+                  size((float) size), resolution((float) resolution), lineHeight((float) lineHeight),
                   glyphs(std::move(glyphs)), fontTex(std::move(fontTex)) {}
+
+        [[nodiscard]] const std::string &getName() const { return name; }
+
+        [[nodiscard]] FontStyle getStyle() const { return style; }
+
+        [[nodiscard]] float getSize() const { return static_cast<float>(size); }
+
+        [[nodiscard]] float getResolution() const { return static_cast<float>(resolution); }
+
+        [[nodiscard]] float getLineHeight() const { return static_cast<float>(lineHeight); }
 
         [[nodiscard]] CharacterGlyph getGlyph(uint32_t car) const {
             return glyphs.contains(car) ? glyphs.at(car) : glyphs.at(0);
         }
 
         [[nodiscard]] Renderer::Texture const *getFontTexture() const { return fontTex.get(); };
-
-        [[nodiscard]] float getSize() const { return static_cast<float>(size); }
-
-        [[nodiscard]] float getLineHeight() const { return static_cast<float>(lineHeight); }
 
     private:
         // ------------------------------------ Creator ----------------------------------------------------------------
@@ -55,9 +62,9 @@ namespace ChaosEngine {
     private:
         const std::string name;
         const FontStyle style;
-        const double size;
-        const double resolution;
-        const double lineHeight;
+        const float size;
+        const float resolution;
+        const float lineHeight;
         const std::unordered_map<uint32_t, CharacterGlyph> glyphs;
         const std::unique_ptr<Renderer::Texture> fontTex;
     };

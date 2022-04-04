@@ -3,6 +3,7 @@
 #include <string>
 #include <optional>
 #include <unordered_map>
+#include <functional>
 
 #include "Engine/src/core/assets/AssetManager.h"
 #include "Engine/src/core/utils/Logger.h"
@@ -20,9 +21,11 @@ namespace Editor {
 
         ~EditorAssetSelector() = default;
 
-        template<class T>
+        template<class Iter>
         std::optional<std::string>
-        render(const std::string &label, const std::unordered_map<std::string, T> &assets, const std::string &type) {
+        render(const std::string &label, Iter begin, Iter end,
+               std::function<std::string(const typename Iter::value_type &)> getStringOfItem,
+               const std::string &type) {
             std::optional<std::string> result = std::nullopt;
             const std::string imGUIId = std::string("##") + label;
             const auto panelWidth = ImGui::GetContentRegionAvailWidth();
@@ -54,8 +57,8 @@ namespace Editor {
                 const ImGuiTreeNodeFlags node_flags_selected = ImGuiTreeNodeFlags_Selected;
                 bool first = true;
                 auto assetFilterInputLower = ChaosEngine::stringToLower(assetFilterInput);
-                for (const auto &mat: assets) {
-                    const std::string &assetUri = mat.first;
+                for (Iter itr = begin; itr != end; ++itr) {
+                    const std::string &assetUri = getStringOfItem(*itr);
                     auto assetUriLower = ChaosEngine::stringToLower(assetUri);
                     if (currentSelection.empty() || assetUriLower.find(assetFilterInputLower) != std::string::npos) {
                         if (first) {
