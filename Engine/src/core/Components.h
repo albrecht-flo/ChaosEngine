@@ -96,8 +96,9 @@ struct UITextComponent {
 struct UIRenderComponent {
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
     std::shared_ptr<Renderer::RenderMesh> mesh;
+    glm::vec3 scaleOffset;
 };
 
 struct UIComponent {
-    bool clickable;
+    bool active;
 };
