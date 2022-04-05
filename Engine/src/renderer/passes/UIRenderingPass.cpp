@@ -65,8 +65,9 @@ void UIRenderingPass::createStandardPipeline() {
                     .setTopology(Renderer::Topology::TriangleList)
                     .setPolygonMode(Renderer::PolygonMode::Fill)
                     .setCullFace(Renderer::CullFace::CCLW)
-                    .setDepthTestEnabled(true)
+                    .setDepthTestEnabled(false)
                     .setDepthCompare(Renderer::CompareOp::Less)
+//                    .setBlendMode()
                     .build());
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(

@@ -263,9 +263,33 @@ void EditorComponentUI::renderNativeScriptComponentUI(ChaosEngine::Entity &entit
     }
 }
 
-void EditorComponentUI::renderUITextComponentComponentUI(ChaosEngine::Entity &entity) {
+void EditorComponentUI::renderUIComponentComponentUI(ChaosEngine::Entity &entity) {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("UI Component", flags)) {
+        auto &uiC = entity.get<UIComponent>();
+        ImGui::Text("Enable Mouse event");
+        ImGui::Checkbox("##Active_UIC", &(uiC.active));
+        auto &tc = entity.get<Transform>();
+        ImGui::Text("Auto position with text");
+        ImGui::Checkbox("##ScaleWithText_UIC", &(uiComponent_ScaleWithText));
+
+        if (uiComponent_ScaleWithText)
+            ImGui::BeginDisabled();
+        ImGui::DragFloat3("Position (UI)", &(uiC.offsetPosition.x), 0.25f * dragSpeed);
+        if (uiComponent_ScaleWithText) {
+            ImGui::EndDisabled();
+            uiC.offsetPosition.x = uiC.offsetScale.x;
+            uiC.offsetPosition.y = uiC.offsetScale.y;
+            uiC.offsetPosition.z = uiC.offsetScale.z;
+        }
+        ImGui::DragFloat3("Rotation (UI)", &(uiC.offsetRotation.x), 1.0f * dragSpeed);
+        ImGui::DragFloat3("Scale (UI)", &(uiC.offsetScale.x), 0.25f * dragSpeed);
+    }
+}
+
+void EditorComponentUI::renderUITextComponentComponentUI(ChaosEngine::Entity &entity) {
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
+    if (ImGui::CollapsingHeader("UI Text Component", flags)) {
         auto &uiC = entity.get<UITextComponent>();
 
         ImGui::Text("Text:");
@@ -281,7 +305,7 @@ void EditorComponentUI::renderUITextComponentComponentUI(ChaosEngine::Entity &en
         const auto &fonts = assetManager.getAllFonts();
         std::vector<std::string> uniqueFonts;
         for (const auto &font: fonts) {
-            if (std::find(uniqueFonts.begin(), uniqueFonts.end(), font.name) != uniqueFonts.end()) {
+            if (std::find(uniqueFonts.begin(), uniqueFonts.end(), font.name) == uniqueFonts.end()) {
                 uniqueFonts.emplace_back(font.name);
             }
         }
@@ -346,16 +370,6 @@ void EditorComponentUI::renderUIRenderComponentComponentUI(ChaosEngine::Entity &
         UIRenderComponent &uiRC = entity.get<UIRenderComponent>();
         ImGui::Text("Scale Offset:");
         ImGui::DragFloat3("##Scale_Offset", &(uiRC.scaleOffset.x), 0.25f * dragSpeed);
-    }
-}
-
-
-void EditorComponentUI::renderUIComponentComponentUI(ChaosEngine::Entity &entity) {
-    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-    if (ImGui::CollapsingHeader("UI Component", flags)) {
-        auto &uiC = entity.get<UIComponent>();
-        ImGui::Text("Enable Mouse event");
-        ImGui::Checkbox("##Active_UIC", &(uiC.active));
     }
 }
 
