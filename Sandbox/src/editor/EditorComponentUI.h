@@ -52,6 +52,7 @@ namespace Editor {
         float dragSpeed = 1.0f;
         std::string componentMenuInput{};
         int selectedComponent = 0;
+        bool uiComponent_ScaleWithText = false;
     public:
         static const std::array<std::string, 6> componentList;
     };

@@ -85,6 +85,12 @@ private:
     bool initialized = false;
 };
 
+struct UIComponent {
+    bool active;
+    glm::vec3 offsetPosition;
+    glm::vec3 offsetRotation;
+    glm::vec3 offsetScale;
+};
 
 struct UITextComponent {
     std::shared_ptr<ChaosEngine::Font> font;
@@ -97,8 +103,4 @@ struct UIRenderComponent {
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
     std::shared_ptr<Renderer::RenderMesh> mesh;
     glm::vec3 scaleOffset;
-};
-
-struct UIComponent {
-    bool active;
 };

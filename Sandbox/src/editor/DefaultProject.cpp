@@ -114,18 +114,27 @@ namespace Editor {
             auto button1 = scene.createEntity();
             button1.setComponent<Meta>("Test Button with rotation");
             button1.setComponent<Transform>(
-                    Transform{glm::vec3{700, 128, 1}, glm::vec3(0, 0, 45.0f), glm::vec3(64, 32, 1)});
+                    Transform{glm::vec3{650, 128, 1}, glm::vec3(0, 0, 45.0f), glm::vec3(1, 1, 1)});
             button1.setComponent<UIRenderComponent>(UIRenderComponent{
                     .materialInstance = uiMaterial.instantiate(&buttonColor1, sizeof(buttonColor1), {&borderTexture}),
                     .mesh = uiMesh,
                     .scaleOffset = glm::vec3(0, 0, 0),
             });
-            button1.setComponent<UIComponent>(UIComponent{.active = true});
+            button1.setComponent<UIComponent>(
+                    UIComponent{.active = true, .offsetPosition={46, -22, 0}, .offsetRotation={0, 0, 0},
+                            .offsetScale={64, 20, 0}});
             button1.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button1), true);
             button1.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
             button1.setComponent<RenderComponentMeta>(
                     uiMeshName, uiMaterial->getName(),
                     std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
+            button1.setComponent<UITextComponent>(UITextComponent{
+                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold,
+                                                  18.0f),
+                    .style = FontStyle::Bold,
+                    .textColor = glm::vec4(0.33f, 0, 0.1f, 1),
+                    .text = "Click me :D",
+            });
         }
     }
 }

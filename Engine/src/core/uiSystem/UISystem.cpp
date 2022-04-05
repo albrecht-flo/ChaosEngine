@@ -13,14 +13,16 @@ static int isLeft(glm::vec2 p1, glm::vec2 p2, glm::vec2 p) {
     return (p2.x - p1.x) * (p.y - p1.y) - (p.x - p1.x) * (p2.y - p1.y) > 0;
 }
 
-static bool pointInRectangle(const Transform &transform, glm::vec2 mousePosition) {
-    bool flipX = transform.rotation.x != 0 && transform.rotation.y != 0;
-    glm::mat4 modelMat = glm::translate(glm::mat4(1), transform.position);
+static bool pointInRectangle(const Transform &transform, const UIComponent &uiC, glm::vec2 mousePosition) {
+    const auto pos = transform.position + uiC.offsetPosition;
+    const auto rot = transform.rotation + uiC.offsetRotation;
+    const auto scl = transform.scale + uiC.offsetScale;
+    bool flipX = rot.x != 0 && rot.y != 0;
+    glm::mat4 modelMat = glm::translate(glm::mat4(1), pos);
     // the rotation around the z and x-axis needs to be flipped due to the projection
-    modelMat *= glm::toMat4(glm::quat(glm::vec3{(flipX ? -1.0f : 1) * glm::radians(transform.rotation.x),
-                                                glm::radians(transform.rotation.y),
-                                                -glm::radians(transform.rotation.z)}));
-    modelMat = glm::scale(modelMat, transform.scale);
+    modelMat *= glm::toMat4(glm::quat(glm::vec3{
+            (flipX ? -1.0f : 1.0f) * glm::radians(rot.x), glm::radians(rot.y), -glm::radians(rot.z)}));
+    modelMat = glm::scale(modelMat, scl);
 
     glm::vec2 lb = glm::vec2(modelMat * glm::vec4{-1.0f, -1.0f, 0.0f, 1.0f});
     glm::vec2 lt = glm::vec2(modelMat * glm::vec4{-1.0f, +1.0f, 0.0f, 1.0f});
@@ -30,9 +32,9 @@ static bool pointInRectangle(const Transform &transform, glm::vec2 mousePosition
            !isLeft(rt, rb, mousePosition) && !isLeft(rb, lb, mousePosition);;
 }
 
-static bool pointInAxisAlignedBox(const Transform &transform, glm::vec2 mousePosition) {
-    const auto &p = transform.position;
-    const auto &s = transform.scale;
+static bool pointInAxisAlignedBox(const Transform &transform, const UIComponent &uiC, glm::vec2 mousePosition) {
+    const auto &p = transform.position + uiC.offsetPosition;
+    const auto &s = transform.scale + uiC.offsetScale;
     return (p.x - s.x <= mousePosition.x && mousePosition.x <= p.x + s.x) &&
            (p.y - s.y <= mousePosition.y && mousePosition.y <= p.y + s.y);
 }
@@ -60,8 +62,8 @@ void UISystem::update(ECS &ecs) {
     for (auto&&[entity, transform, ui]: scripts.each()) {
         if (!ui.active)
             continue;
-        bool isMouseOver = (transform.rotation == glm::vec3(0, 0, 0)) ? pointInAxisAlignedBox(transform, mousePos)
-                                                                      : pointInRectangle(transform, mousePos);
+        bool isMouseOver = ((transform.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?
+                           pointInAxisAlignedBox(transform, ui, mousePos) : pointInRectangle(transform, ui, mousePos);
         if (isMouseOver) {
             Entity entityH = ecs.getEntity(entity);
             if (entityH.has<NativeScriptComponent>()) {

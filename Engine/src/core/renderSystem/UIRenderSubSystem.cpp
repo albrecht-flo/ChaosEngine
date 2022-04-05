@@ -105,13 +105,18 @@ UIRenderSubSystem::renderTextToBuffers(uint32_t bufferOffsetInGlyphs, VertexPCU 
     return glyphCount;
 }
 
-static glm::mat4 calculateTextModelMatrix(const Transform &transform, const glm::vec3 scaleOffset) {
-    auto linePos = transform.position;
-    linePos.y *= -1;
-    glm::mat4 modelMat = glm::translate(glm::mat4(1), linePos);
-    modelMat *= glm::toMat4(glm::quat(glm::vec3{glm::radians(transform.rotation.x), glm::radians(transform.rotation.y),
-                                                glm::radians(transform.rotation.z)}));
-    return glm::scale(modelMat, transform.scale + scaleOffset);
+static glm::mat4
+calculateTextModelMatrix(const Transform &transform,
+                         const glm::vec3 scaleOffset = glm::vec3(0),
+                         const UIComponent &uiC = UIComponent{false, glm::vec3(0), glm::vec3(0), glm::vec3(0)}) {
+    auto pos = transform.position + uiC.offsetPosition;
+    const auto rot = transform.rotation + uiC.offsetRotation;
+    const auto scl = transform.scale + uiC.offsetScale + scaleOffset;
+    pos.y *= -1;
+    glm::mat4 modelMat = glm::translate(glm::mat4(1), pos);
+    modelMat *= glm::toMat4(glm::quat(glm::vec3{glm::radians(rot.x), glm::radians(rot.y),
+                                                glm::radians(rot.z)}));
+    return glm::scale(modelMat, scl);
 }
 
 void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
@@ -129,7 +134,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
         }
 
         auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
-        glm::mat4 modelMat = calculateTextModelMatrix(transform, glm::vec3{0});
+        glm::mat4 modelMat = calculateTextModelMatrix(transform);
         renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
                         glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
 
@@ -139,9 +144,13 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     textIndexBuffers[currentBufferedFrame]->flush();
 
     // Render UI elements
-    auto uiComps = ecs.getRegistry().view<Transform, UIRenderComponent>();
+    const auto uiComps = ecs.getRegistry().view<const Transform, const UIRenderComponent>();
     for (auto&&[entity, transform, ui]: uiComps.each()) {
-        renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
+        const auto *uiC = ecs.getRegistry().try_get<UIComponent>(entity);
+        if (uiC == nullptr)
+            renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
+        else
+            renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset, *uiC), *ui.mesh, *ui.materialInstance);
     }
 
     renderer.endUI();
