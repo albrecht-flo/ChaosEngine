@@ -145,6 +145,6 @@ Font::Create(FT_Library &freetype, const std::string &name, const std::string &t
     auto fontTexture = Texture::Create(RawImage(std::move(mapBuffer), width, width, width * width, ImageFormat::R8),
                                        ttfFile);
 
-    return std::make_shared<Font>(name, style, pixelSize, resolution, lineHeight,
+    return std::make_shared<Font>(name, style, size, resolution, lineHeight,
                                   std::move(charGlyphs), std::move(fontTexture));
 }

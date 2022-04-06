@@ -60,9 +60,9 @@ namespace Editor {
             auto textTester = scene.createEntity();
             textTester.setComponent<Meta>("Text Tester Multiline");
             textTester.setComponent<Transform>(
-                    Transform{glm::vec3{16, 95, 2}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 126, 2}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
             textTester.setComponent<UITextComponent>(UITextComponent{
-                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Regular, 16.0f)),
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Regular, 16.0f, 95.0f)),
                     .style = FontStyle::Regular,
                     .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
                     .text = "This is some Text with,\nmore than 1 line :)\nAnd Special Characters xD\n!@#$%^&*()-_=+[]{}'\":;,.<>/?",
@@ -70,20 +70,20 @@ namespace Editor {
             auto textTesterI = scene.createEntity();
             textTesterI.setComponent<Meta>("Text Tester Italic");
             textTesterI.setComponent<Transform>(
-                    Transform{glm::vec3{16, 128 + 32, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 210, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterI.setComponent<UITextComponent>(UITextComponent{
-                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Italic, 16.0f)),
-                    .style = FontStyle::Regular,
-                    .textColor = glm::vec4(0.3f, 0, 0.3f, 1),
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Italic, 16.0f, 95.0f)),
+                    .style = FontStyle::Italic,
+                    .textColor = glm::vec4(1.0f, 1, 1.0f, 1),
                     .text = "This is some italic Text about some quick brown foxes xD",
             });
             auto textTesterB = scene.createEntity();
             textTesterB.setComponent<Meta>("Text Tester Bold");
             textTesterB.setComponent<Transform>(
-                    Transform{glm::vec3{16, 128 + 64, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+                    Transform{glm::vec3{16, 240, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterB.setComponent<UITextComponent>(UITextComponent{
-                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Bold, 16.0f)),
-                    .style = FontStyle::Regular,
+                    .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Bold, 16.0f, 95.0f)),
+                    .style = FontStyle::Bold,
                     .textColor = glm::vec4(0.66f, 0, 0.0f, 1),
                     .text = "This is some bold Text about a lazy dog xD (in red)",
             });
@@ -121,8 +121,8 @@ namespace Editor {
                     .scaleOffset = glm::vec3(0, 0, 0),
             });
             button1.setComponent<UIComponent>(
-                    UIComponent{.active = true, .offsetPosition={46, -22, 0}, .offsetRotation={0, 0, 0},
-                            .offsetScale={64, 20, 0}});
+                    UIComponent{.active = true, .offsetPosition={60, -30, 0}, .offsetRotation={0, 0, 0},
+                            .offsetScale={75, 22, 0}});
             button1.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button1), true);
             button1.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
             button1.setComponent<RenderComponentMeta>(
@@ -130,10 +130,38 @@ namespace Editor {
                     std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
             button1.setComponent<UITextComponent>(UITextComponent{
                     .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold,
-                                                  18.0f),
+                                                  18.0f, 95.0f),
                     .style = FontStyle::Bold,
                     .textColor = glm::vec4(0.33f, 0, 0.1f, 1),
                     .text = "Click me :D",
+            });
+
+
+            auto &oBorderTexture = assetManager.getTexture("UI/OBorder");
+            glm::vec4 buttonColor2{0.1f, 0.0f, 0.7f, 1};
+            auto button2 = scene.createEntity();
+            button2.setComponent<Meta>("Opaque Test Button");
+            button2.setComponent<Transform>(
+                    Transform{glm::vec3{120, 400, 1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+            button2.setComponent<UIRenderComponent>(UIRenderComponent{
+                    .materialInstance = uiMaterial.instantiate(&buttonColor1, sizeof(buttonColor1), {&oBorderTexture}),
+                    .mesh = uiMesh,
+                    .scaleOffset = glm::vec3(0, 0, 0),
+            });
+            button2.setComponent<UIComponent>(
+                    UIComponent{.active = true, .offsetPosition={35, 21, 0}, .offsetRotation={0, 0, 0},
+                            .offsetScale={50, 20, 0}});
+            button2.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button2), true);
+            button2.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
+            button2.setComponent<RenderComponentMeta>(
+                    uiMeshName, uiMaterial->getName(),
+                    std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
+            button2.setComponent<UITextComponent>(UITextComponent{
+                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold,
+                                                  18.0f, 95.0f),
+                    .style = FontStyle::Bold,
+                    .textColor = glm::vec4(0.0f, 0, 0.0f, 1),
+                    .text = "Button",
             });
         }
     }
