@@ -36,7 +36,8 @@ void EditorComponentUI::renderMaterialUI(const RenderComponentMeta &rcMeta, Chao
     ImGui::Indent(indentW);
     ImGuiColorEditFlags colorFlags = ImGuiColorEditFlags_None;
     if (assetManager.getMaterialInfo(rcMeta.materialName).hasTintColor) {
-        if (ImGui::ColorEdit4("Color", &(editTintColor.r), colorFlags)) {
+        ImGui::LabelText("##color_label_matUI", "Color");
+        if (ImGui::ColorEdit4("##Color", &(editTintColor.r), colorFlags)) {
             updateMaterialInstance(entity, editTintColor, rcMeta);
         }
     }
@@ -352,7 +353,7 @@ void EditorComponentUI::renderUITextComponentComponentUI(ChaosEngine::Entity &en
 
         ImGui::Spacing();
 
-        ImGui::ColorEdit4("Color", &(uiC.textColor.r));
+        ImGui::ColorEdit4("Text Color", &(uiC.textColor.r));
     }
 }
 
@@ -414,7 +415,12 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
         renderRenderComponentUI(entity);
         ImGui::Separator();
         ImGui::Spacing();
+    } else if (entity.has<UIRenderComponent>()) {
+        renderUIRenderComponentComponentUI(entity);
+        ImGui::Separator();
+        ImGui::Spacing();
     }
+
 
     if (entity.has<NativeScriptComponent>()) {
         renderNativeScriptComponentUI(entity);
@@ -427,13 +433,6 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
         ImGui::Separator();
         ImGui::Spacing();
     }
-
-    if (entity.has<UIRenderComponent>()) {
-        renderUIRenderComponentComponentUI(entity);
-        ImGui::Separator();
-        ImGui::Spacing();
-    }
-
     if (entity.has<UIComponent>()) {
         renderUIComponentComponentUI(entity);
         ImGui::Separator();
