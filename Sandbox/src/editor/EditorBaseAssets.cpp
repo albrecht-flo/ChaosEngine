@@ -139,6 +139,8 @@ void EditorBaseAssets::loadBaseTextures() {
 
     auto borderTexture = Texture::Create("Border_128.png");
     assetManager.registerTexture("UI/Border", std::move(borderTexture), AssetManager::TextureInfo{});
+    auto oBorderTexture = Texture::Create("OBorder_128.png");
+    assetManager.registerTexture("UI/OBorder", std::move(oBorderTexture), AssetManager::TextureInfo{});
 }
 
 void EditorBaseAssets::loadBaseScripts() {
@@ -157,7 +159,7 @@ void EditorBaseAssets::loadBaseScripts() {
 }
 
 void EditorBaseAssets::loadBaseFonts() {
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular, 16.0f);
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic, 16.0f);
-    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold, 16.0f);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular, 16.0f, 95.0f);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Italic.ttf", FontStyle::Italic, 16.0f, 95.0f);
+    assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold, 16.0f, 95.0f);
 }

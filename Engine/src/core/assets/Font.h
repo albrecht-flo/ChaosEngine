@@ -42,6 +42,7 @@ namespace ChaosEngine {
 
         [[nodiscard]] float getSize() const { return static_cast<float>(size); }
 
+
         [[nodiscard]] float getResolution() const { return static_cast<float>(resolution); }
 
         [[nodiscard]] float getLineHeight() const { return static_cast<float>(lineHeight); }
