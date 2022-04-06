@@ -34,5 +34,5 @@ void main() {
 
     // Overlay UI
     vec4 uiColor = texture(uiBufferTex, fragUVs);
-    outColor = mix(color, uiColor, uiColor.a);
+    outColor = vec4(mix(color.rgb, uiColor.rgb, uiColor.a), color.a);
 }

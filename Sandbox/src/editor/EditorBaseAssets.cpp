@@ -108,7 +108,7 @@ void EditorBaseAssets::loadBaseMaterials() {
                                     VertexAttribute{1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color)},
                                     VertexAttribute{2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv)},
                             })},
-            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
+            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true, .alphaBlending=true},
             .vertexShader = "UIBase",
             .fragmentShader = "UI",
             .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),

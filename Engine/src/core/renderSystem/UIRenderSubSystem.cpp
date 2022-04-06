@@ -36,7 +36,7 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
                                     VertexAttribute{1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color)},
                                     VertexAttribute{2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv)},
                             })},
-            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
+            .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true, .alphaBlending=true},
             .vertexShader = "UIBase",
             .fragmentShader = "UIText",
             .pushConstant = std::make_optional(Material::StandardOpaquePushConstants),

@@ -17,5 +17,6 @@ void main() {
         discard;
     }
     // Combine calculated texture color with fragment color // used for tinting models
-    out_Color =  vec4(in_fragColor.rgb, in_fragColor.a * (color.r*color.r));
+    float text = color.r;
+    out_Color =  vec4(in_fragColor.rgb, in_fragColor.a * text);
 }

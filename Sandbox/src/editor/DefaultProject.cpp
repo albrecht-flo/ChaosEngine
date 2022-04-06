@@ -121,7 +121,7 @@ namespace Editor {
                     .scaleOffset = glm::vec3(0, 0, 0),
             });
             button1.setComponent<UIComponent>(
-                    UIComponent{.active = true, .offsetPosition={60, -30, 0}, .offsetRotation={0, 0, 0},
+                    UIComponent{.active = true, .offsetPosition={60, -30, -0.1f}, .offsetRotation={0, 0, 0},
                             .offsetScale={75, 22, 0}});
             button1.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button1), true);
             button1.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
@@ -149,7 +149,7 @@ namespace Editor {
                     .scaleOffset = glm::vec3(0, 0, 0),
             });
             button2.setComponent<UIComponent>(
-                    UIComponent{.active = true, .offsetPosition={35, 21, 0}, .offsetRotation={0, 0, 0},
+                    UIComponent{.active = true, .offsetPosition={35, 21, -0.1f}, .offsetRotation={0, 0, 0},
                             .offsetScale={50, 20, 0}});
             button2.setComponent<NativeScriptComponent>(assetManager.getScript("UI/ButtonScript", button2), true);
             button2.setComponent<NativeScriptComponentMeta>(NativeScriptComponentMeta{.scriptName="UI/ButtonScript"});
