@@ -53,6 +53,7 @@ namespace Renderer {
         CullFace cullMode = CullFace::CCLW;
         bool depthTest;
         bool depthWrite;
+        bool alphaBlending = false;
     };
 
 // --------------------------------- Shader Configuration --------------------------------------------------------------

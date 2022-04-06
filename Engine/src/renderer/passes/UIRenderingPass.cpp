@@ -67,7 +67,7 @@ void UIRenderingPass::createStandardPipeline() {
                     .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(false)
                     .setDepthCompare(Renderer::CompareOp::Less)
-//                    .setBlendMode()
+                    .setAlphaBlendingEnabled(true)
                     .build());
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(

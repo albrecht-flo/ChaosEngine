@@ -159,7 +159,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     depthTesting.front = {};
     depthTesting.back = {};
 
-    // Defines color attatchment blending -> used for alpha blending ---------------------------------------------------
+    // Defines color attachment blending -> used for alpha blending ---------------------------------------------------
     VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
     colorBlendAttachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
@@ -172,7 +172,7 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
     colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
 
-    // Manages color attatchment blending ops
+    // Manages color attachment blending ops
     VkPipelineColorBlendStateCreateInfo colorBlending = {};
     colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlending.logicOpEnable = VK_FALSE;

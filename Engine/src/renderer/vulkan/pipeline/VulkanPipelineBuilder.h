@@ -73,6 +73,11 @@ public:
         return *this;
     }
 
+    VulkanPipelineBuilder &setAlphaBlendingEnabled(bool pAlphaBlendingEnabled) {
+        alphaBlendingEnabled = pAlphaBlendingEnabled;
+        return *this;
+    }
+
     VulkanPipelineBuilder &setViewportDimensions(uint32_t width, uint32_t height) {
         viewportExtent.width = width;
         viewportExtent.height = height;
@@ -92,6 +97,7 @@ private:
     Renderer::CullFace cullFace = Renderer::CullFace::CCLW;
     bool depthTestEnabled = true;
     Renderer::CompareOp depthCompare = Renderer::CompareOp::Less;
+    bool alphaBlendingEnabled = false;
     VkExtent2D viewportExtent{0, 0};
     // Internal error catching ----------------------------
     bool layoutValid = true;

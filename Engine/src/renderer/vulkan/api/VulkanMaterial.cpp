@@ -84,6 +84,7 @@ VulkanMaterial::VulkanMaterial(GraphicsContext &pContext, const RendererAPI &ren
                     .setCullFace(info.fixedFunction.cullMode)
                     .setDepthTestEnabled(info.fixedFunction.depthTest)
                     .setDepthCompare(Renderer::CompareOp::Less)
+                    .setAlphaBlendingEnabled(info.fixedFunction.alphaBlending)
                     .build());
 
     // Build descriptor pool
