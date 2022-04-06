@@ -6,12 +6,14 @@ layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec2 fragUVs;
 // Output
 layout(location = 0) out vec4 outColor;
-// Uniforms for textures
-layout(set = 0, binding = 0) uniform Configuration { // Configuration data
+
+// Configuration data
+layout(set = 0, binding = 0) uniform Configuration {
     float cameraNear;
     float cameraFar;
 } config;
 
+// Uniforms for textures
 layout(set = 0, binding = 1) uniform sampler2D mainSceneTex;// Main scene framebuffer image
 layout(set = 0, binding = 2) uniform sampler2D depthBufferTex;// Depth buffer image
 layout(set = 0, binding = 3) uniform sampler2D uiBufferTex;// UI frambuffer image
@@ -27,14 +29,10 @@ float LinearizeDepth(float depth) {
     This shader mixes the framebuffer images of previous render passes together.
 */
 void main() {
-    vec4 color;
-    color = texture(mainSceneTex, fragUVs);
+    // Scene
+    vec4 color = texture(mainSceneTex, fragUVs);
 
     // Overlay UI
     vec4 uiColor = texture(uiBufferTex, fragUVs);
-    if (uiColor.a != 0) {
-        color = mix(color, uiColor, uiColor.a * uiColor.a);
-    }
-
-    outColor = color;
+    outColor = mix(color, uiColor, uiColor.a);
 }
