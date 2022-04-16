@@ -157,7 +157,7 @@ namespace Editor {
                     uiMeshName, uiMaterial->getName(),
                     std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
             button2.setComponent<UITextComponent>(UITextComponent{
-                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold,
+                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular,
                                                   18.0f, 95.0f),
                     .style = FontStyle::Bold,
                     .textColor = glm::vec4(0.0f, 0, 0.0f, 1),

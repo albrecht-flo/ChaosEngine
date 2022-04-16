@@ -22,10 +22,11 @@ static bool checkDeviceExtensionSupport(VkPhysicalDevice phdevice, const std::ve
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
     for (const auto &extension: availableExtensions) {
-//        LOG_DEBUG("[Vulkan Device] Found device extension {}", extension.extensionName);
         requiredExtensions.erase(extension.extensionName);
     }
-
+    for (const auto &extension : requiredExtensions) {
+        LOG_WARN("[Vulkan Device] Missing device extension {}", extension);
+    }
     return requiredExtensions.empty();
 }
 
@@ -315,7 +316,7 @@ static std::tuple<VkQueue, uint32_t> getTransferQueue(VkDevice device, QueueFami
 // ------------------------------------ Class Methods ------------------------------------------------------------------
 
 const std::vector<const char *> VulkanDevice::requiredDeviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME,
 };
 
 const std::vector<VkFormat> VulkanDevice::requiredTextureFormats = {

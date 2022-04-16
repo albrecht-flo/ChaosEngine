@@ -78,7 +78,7 @@ set(ENGINE_SOURCES
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm
         ../dep/glfw/include
-        ../dep/vulkan
+        ../dep/vulkan-1.3
         ../dep/VulkanMemoryAllocator/src
         ../dep/imgui
         ../dep/freetype/include

@@ -164,13 +164,14 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     colorBlendAttachment.colorWriteMask =
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT; // color channels to be passed through, get ANDed with the color
-    colorBlendAttachment.blendEnable = VK_FALSE; // disable mixing functions
-    colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-    colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+    colorBlendAttachment.blendEnable = (alphaBlendingEnabled) ? VK_TRUE : VK_FALSE; // disable mixing functions
+    colorBlendAttachment.srcColorBlendFactor = (alphaBlendingEnabled) ? VK_BLEND_FACTOR_SRC_ALPHA : VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstColorBlendFactor = (alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
+                                                                      : VK_BLEND_FACTOR_ZERO;
+    colorBlendAttachment.colorBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_MULTIPLY_EXT :VK_BLEND_OP_ADD;
+    colorBlendAttachment.srcAlphaBlendFactor = (false && alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE : VK_BLEND_FACTOR_ONE;
+    colorBlendAttachment.dstAlphaBlendFactor = (false && alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE : VK_BLEND_FACTOR_ZERO;
+    colorBlendAttachment.alphaBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_MAX : VK_BLEND_OP_ADD;
 
     // Manages color attachment blending ops
     VkPipelineColorBlendStateCreateInfo colorBlending = {};

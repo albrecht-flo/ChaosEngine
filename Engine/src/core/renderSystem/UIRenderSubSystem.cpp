@@ -12,8 +12,6 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
            pGlyphCapacity <= std::numeric_limits<uint32_t>::max() / 4);
     glyphCapacity = pGlyphCapacity;
 
-    const size_t vertexBufferCapacity = 4 * sizeof(VertexPCU) * glyphCapacity;
-    const size_t indexBufferCapacity = 6 * sizeof(uint32_t) * glyphCapacity;
     std::vector<VertexPCU> textVertexBufferCPU{4 * glyphCapacity, VertexPCU{}};
     std::vector<uint32_t> textIndexBufferCPU{6 * glyphCapacity, 0};
 
@@ -21,9 +19,9 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
     textIndexBuffers.reserve(GraphicsContext::maxFramesInFlight);
     for (uint32_t i = 0; i < GraphicsContext::maxFramesInFlight; ++i) {
         textVertexBuffers.emplace_back(
-                Buffer::CreateStreaming(textVertexBufferCPU.data(), vertexBufferCapacity, BufferType::Vertex));
+                Buffer::CreateStreaming(textVertexBufferCPU.data(), sizeof(VertexPCU) * textVertexBufferCPU.size(), BufferType::Vertex));
         textIndexBuffers.emplace_back(
-                Buffer::CreateStreaming(textIndexBufferCPU.data(), indexBufferCapacity, BufferType::Index));
+                Buffer::CreateStreaming(textIndexBufferCPU.data(), sizeof(uint32_t) * textIndexBufferCPU.size(), BufferType::Index));
     }
 
     LOG_INFO("UIRenderSubSystem: Creating materials");
