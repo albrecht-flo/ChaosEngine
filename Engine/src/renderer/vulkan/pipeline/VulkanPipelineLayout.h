@@ -2,6 +2,8 @@
 
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 
+#include <utility>
+
 /**
  * This class defines the dynamic layout of a pipeline combining, push constants and descriptor set layouts.
  */

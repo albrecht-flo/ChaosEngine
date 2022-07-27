@@ -15,7 +15,7 @@ namespace Editor {
 
         void onStart() override {}
 
-        void onUpdate(float deltaTime) override {
+        void onUpdate(float /*deltaTime*/) override {
             if (mouseOver) {
                 if (!mouseEntered) {
                     onMouseEnter();

@@ -41,7 +41,7 @@ static bool pointInAxisAlignedBox(const Transform &transform, const UIComponent 
 
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
-void UISystem::init(ECS &ecs) {
+void UISystem::init(ECS &/*ecs*/) {
 
 }
 

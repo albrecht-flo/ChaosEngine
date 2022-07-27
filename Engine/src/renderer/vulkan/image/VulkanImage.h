@@ -7,6 +7,7 @@
 #include "VulkanImageView.h"
 
 #include <string>
+#include <utility>
 
 class VulkanImage {
     friend class VulkanMemory;

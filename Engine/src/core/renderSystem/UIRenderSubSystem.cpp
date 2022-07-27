@@ -12,8 +12,8 @@ void UIRenderSubSystem::init(uint32_t pGlyphCapacity) {
            pGlyphCapacity <= std::numeric_limits<uint32_t>::max() / 4);
     glyphCapacity = pGlyphCapacity;
 
-    std::vector<VertexPCU> textVertexBufferCPU{4 * glyphCapacity, VertexPCU{}};
-    std::vector<uint32_t> textIndexBufferCPU{6 * glyphCapacity, 0};
+    std::vector<VertexPCU> textVertexBufferCPU(4 * glyphCapacity, VertexPCU{});
+    std::vector<uint32_t> textIndexBufferCPU(6 * glyphCapacity, 0);
 
     textVertexBuffers.reserve(GraphicsContext::maxFramesInFlight);
     textIndexBuffers.reserve(GraphicsContext::maxFramesInFlight);

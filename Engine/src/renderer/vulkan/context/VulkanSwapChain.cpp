@@ -65,8 +65,7 @@ static std::tuple<VkSwapchainKHR, VkFormat, VkExtent2D>
 createSwapChain(const Window &window, const VulkanDevice &device, VkSurfaceKHR surface) {
     // Check for available swapchain
     SwapChainSupportDetails swapChainSupport = device.querySwapChainSupport(surface);
-    bool surfaceAvailable = device.checkSurfaceAvailability(surface);
-    assert("Expect surface KHR to be supported" && surfaceAvailable);
+    assert("Expect surface KHR to be supported" && device.checkSurfaceAvailability(surface));
 
     // Select our surface and dimensions
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);

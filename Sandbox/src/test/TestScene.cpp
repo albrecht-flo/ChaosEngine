@@ -36,6 +36,14 @@ void TestScene::load() {
     hexROB = RenderMesh::Create(std::move(hexVertexBuffer), std::move(hexIndexBuffer), hexAsset.indices.size());
 
     LOG_INFO("Creating materials");
+    const auto BaseVertexLayout = VertexLayout{.binding = 0, .stride = sizeof(VertexPNCU), .inputRate=InputRate::Vertex,
+            .attributes = std::vector<VertexAttribute>(
+                    {
+                            VertexAttribute{0, VertexFormat::RGB_FLOAT, offsetof(VertexPNCU, pos)},
+                            VertexAttribute{1, VertexFormat::RGB_FLOAT, offsetof(VertexPNCU, color)},
+                            VertexAttribute{2, VertexFormat::RGB_FLOAT, offsetof(VertexPNCU, normal)},
+                            VertexAttribute{3, VertexFormat::RG_FLOAT, offsetof(VertexPNCU, uv)},
+                    })};
     // Load Materials
 //    debugMaterial = Material::Create(MaterialCreateInfo{
 //            .stage = ShaderPassStage::Opaque,
@@ -59,6 +67,7 @@ void TestScene::load() {
 
     coloredMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
+            .vertexLayout = BaseVertexLayout,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
             .vertexShader = "2DSprite",
             .fragmentShader = "2DStaticColoredSprite",
@@ -77,6 +86,7 @@ void TestScene::load() {
     });
     texturedMaterial = Material::Create(MaterialCreateInfo{
             .stage = ShaderPassStage::Opaque,
+            .vertexLayout = BaseVertexLayout,
             .fixedFunction = FixedFunctionConfiguration{.depthTest = true, .depthWrite = true},
             .vertexShader = "2DSprite",
             .fragmentShader = "2DStaticTexturedSprite",

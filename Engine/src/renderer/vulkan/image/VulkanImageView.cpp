@@ -3,6 +3,7 @@
 #include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
 
 #include <stdexcept>
+#include <utility>
 
 /* Creates an image view for an image. */
 VulkanImageView

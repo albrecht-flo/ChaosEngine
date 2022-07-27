@@ -17,7 +17,7 @@ void VulkanBuffer::unmap() {
 }
 
 void VulkanBuffer::copy(void *data, size_t bytes) {
-    memory.copyDataToBuffer(*this, mapping, bytes, 0);
+    memory.copyDataToBuffer(*this, data, bytes, 0);
 }
 
 void VulkanBuffer::destroy() {

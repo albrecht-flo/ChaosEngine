@@ -163,7 +163,7 @@ EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const std::
         }
         // TODO: Switch to default assets
         glm::vec4 buttonColor{1, 1, 1, 1};
-        auto &borderTexture = assetManager.getTexture("UI/Border");
+//        auto &borderTexture = assetManager.getTexture("UI/Border");
         entity.setComponent<UIRenderComponent>(UIRenderComponent{
                 .materialInstance = assetManager.getMaterial("UIMaterial").instantiate(
                         &buttonColor, sizeof(buttonColor),
@@ -270,7 +270,7 @@ void EditorComponentUI::renderUIComponentComponentUI(ChaosEngine::Entity &entity
         auto &uiC = entity.get<UIComponent>();
         ImGui::Text("Enable Mouse event");
         ImGui::Checkbox("##Active_UIC", &(uiC.active));
-        auto &tc = entity.get<Transform>();
+//        auto &tc = entity.get<Transform>();
         ImGui::Text("Auto position with text");
         ImGui::Checkbox("##ScaleWithText_UIC", &(uiComponent_ScaleWithText));
 

@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include <stdexcept>
+#include <utility>
 
 static VkCommandBuffer createCommandBuffer(const VulkanDevice &device, VkCommandPool commandPool,
                                            VkCommandBufferLevel level) {

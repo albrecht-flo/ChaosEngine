@@ -87,9 +87,9 @@ private:
 
 struct UIComponent {
     bool active;
-    glm::vec3 offsetPosition;
-    glm::vec3 offsetRotation;
-    glm::vec3 offsetScale;
+    glm::vec3 offsetPosition = glm::vec3(0);
+    glm::vec3 offsetRotation = glm::vec3(0);
+    glm::vec3 offsetScale = glm::vec3(1);
 };
 
 struct UITextComponent {

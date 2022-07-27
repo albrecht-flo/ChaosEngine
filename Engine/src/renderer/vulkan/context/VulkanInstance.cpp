@@ -62,6 +62,7 @@ static std::vector<const char *> getRequiredExtensions(bool enableValidationLaye
 
     if (enableValidationLayers) {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
 
     LOG_INFO("[VulkanInstance] Required extensions:");
@@ -143,7 +144,7 @@ VulkanInstance::Create(const std::vector<const char *> &validationLayers, const 
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = engineName.c_str();
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_3;
+    appInfo.apiVersion = VK_API_VERSION_1_2;
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

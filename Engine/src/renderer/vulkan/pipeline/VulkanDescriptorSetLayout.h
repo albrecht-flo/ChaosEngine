@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <cassert>
+#include <utility>
 
 class VulkanDescriptorSetLayout;
 

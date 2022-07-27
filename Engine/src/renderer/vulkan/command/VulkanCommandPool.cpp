@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <cassert>
+#include <utility>
 
 static VkCommandPool createCommandPool(const VulkanDevice &device, uint32_t queueFamilyIndex) {
     VkCommandPoolCreateFlagBits flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;

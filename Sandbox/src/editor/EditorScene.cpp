@@ -58,7 +58,7 @@ static bool viewportInFocus = false;
 static bool itemEditActive = true;
 static float cameraSpeed = 10.0f;
 
-void EditorScene::update(float deltaTime) {
+void EditorScene::update(float /*deltaTime*/) {
     // Close window controls
     if (window->isKeyDown(GLFW_KEY_ESCAPE) ||
         (window->isKeyDown(GLFW_KEY_Q) && window->isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window->close(); }
