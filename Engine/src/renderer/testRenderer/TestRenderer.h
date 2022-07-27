@@ -51,6 +51,12 @@ namespace Renderer::TestRenderer {
         /// Finalize the UI command buffer
         void endUI() override;
 
+        /// Start recording commands to this renderers TextOverlay command buffer
+        void beginTextOverlay(const glm::mat4 &viewMat) override;
+
+        /// Finalize the TextOverlay command buffer
+        void endTextOverlay() override;
+
         /// Submit recorded commands to gpu
         void flush() override;
 
@@ -63,7 +69,7 @@ namespace Renderer::TestRenderer {
         void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
         /// Render an indexed vertex buffer with its material
-        void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer,
+        void drawText(const Buffer &vertexBuffer, const Buffer &indexBuffer,
                     uint32_t indexCount, uint32_t indexOffset,
                     const glm::mat4 &modelMat, const MaterialInstance &materialInstance) override;
 

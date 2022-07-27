@@ -19,11 +19,12 @@ using namespace Renderer;
 PostProcessingPass PostProcessingPass::Create(const VulkanContext &context,
                                               const VulkanFramebuffer &previousPassSceneFB,
                                               const VulkanFramebuffer &previousPassUIFB,
+                                              const VulkanFramebuffer &previousPassTextFB,
                                               bool renderToSwapchain, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            (renderToSwapchain || (width != 0 && height != 0)));
     PostProcessingPass postProcessingPass(context, renderToSwapchain);
-    postProcessingPass.init(width, height, previousPassSceneFB, previousPassUIFB);
+    postProcessingPass.init(width, height, previousPassSceneFB, previousPassUIFB, previousPassTextFB);
     return postProcessingPass;
 }
 
@@ -41,7 +42,7 @@ PostProcessingPass::PostProcessingPass(PostProcessingPass &&o) noexcept
 
 void
 PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffer &previousPassSceneFB,
-                         const VulkanFramebuffer &previousPassUIFB) {
+                         const VulkanFramebuffer &previousPassUIFB, const VulkanFramebuffer &previousPassTextFB) {
 
     std::vector<VulkanAttachmentDescription> attachments;
     attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
@@ -78,6 +79,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                     .addBinding(1, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // Color
                     .addBinding(2, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // Depth
                     .addBinding(3, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // UI
+                    .addBinding(4, ShaderBindingType::TextureSampler, ShaderStage::Fragment) // Text
                     .build());
 
     VulkanPipelineLayout pipelineLayout = VulkanPipelineLayoutBuilder(context.getDevice())
@@ -98,7 +100,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                     .addDescriptor(descriptorSetLayout->getBinding(0).descriptorType,
                                    GraphicsContext::maxFramesInFlight)
                     .addDescriptor(descriptorSetLayout->getBinding(1).descriptorType,
-                                   GraphicsContext::maxFramesInFlight * 3) // Color + Depth + UI
+                                   GraphicsContext::maxFramesInFlight * 4) // Color + Depth + UI
                     .setMaxSets(GraphicsContext::maxFramesInFlight * 3)
                     .build());
 
@@ -110,7 +112,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
 
     perFrameDescriptorSet = std::make_unique<VulkanDescriptorSet>(descriptorPool->allocate(*descriptorSetLayout));
     perFrameDescriptorSet->startWriting().writeBuffer(0, perFrameUniformBuffer->getBuffer().vk()).commit();
-    writeDescriptorSet(previousPassSceneFB, previousPassUIFB);
+    writeDescriptorSet(previousPassSceneFB, previousPassUIFB, previousPassTextFB);
 }
 
 void PostProcessingPass::createAttachments(uint32_t width, uint32_t height) {
@@ -130,19 +132,23 @@ void PostProcessingPass::createAttachments(uint32_t width, uint32_t height) {
 }
 
 void PostProcessingPass::writeDescriptorSet(const VulkanFramebuffer &previousPassSceneFB,
-                                            const VulkanFramebuffer &previousPassUIFB) {
+                                            const VulkanFramebuffer &previousPassUIFB,
+                                            const VulkanFramebuffer &previousPassTextFB) {
     const auto &depthTex = dynamic_cast<const VulkanTexture &>(
             previousPassSceneFB.getAttachmentTexture(AttachmentType::Depth, 0));
     const auto &colorTex = dynamic_cast<const VulkanTexture &>(
             previousPassSceneFB.getAttachmentTexture(AttachmentType::Color, 0));
     const auto &uiTex = dynamic_cast<const VulkanTexture &>(
             previousPassUIFB.getAttachmentTexture(AttachmentType::Color, 0));
+    const auto &textTex = dynamic_cast<const VulkanTexture &>(
+            previousPassTextFB.getAttachmentTexture(AttachmentType::Color, 0));
 
     // Fill the descriptor set
     perFrameDescriptorSet->startWriting()
             .writeImageSampler(1, colorTex.getSampler(), colorTex.getImageView(), colorTex.getImageLayout())
             .writeImageSampler(2, depthTex.getSampler(), depthTex.getImageView(), depthTex.getImageLayout())
             .writeImageSampler(3, uiTex.getSampler(), uiTex.getImageView(), uiTex.getImageLayout())
+            .writeImageSampler(4, textTex.getSampler(), textTex.getImageView(), textTex.getImageLayout())
             .commit();
 }
 
@@ -208,12 +214,12 @@ void PostProcessingPass::draw() {
 
 void
 PostProcessingPass::resizeAttachments(const VulkanFramebuffer &sceneFramebuffer, const VulkanFramebuffer &uiFramebuffer,
-                                      uint32_t width, uint32_t height) {
+                                      const VulkanFramebuffer &textFramebuffer, uint32_t width, uint32_t height) {
     assert("If the PostProcessingPass does NOT render to the swapchain, a width and height have to be supplied" &&
            (renderToSwapchain || (width != 0 && height != 0)));
     createAttachments(width, height);
 
-    writeDescriptorSet(sceneFramebuffer, uiFramebuffer);
+    writeDescriptorSet(sceneFramebuffer, uiFramebuffer, textFramebuffer);
 }
 
 void PostProcessingPass::updateConfiguration(const PostProcessingPass::PostProcessingConfiguration &configuration) {

@@ -37,7 +37,7 @@ private:
 
     void
     init(uint32_t width, uint32_t height, const VulkanFramebuffer &previousPassSceneFB,
-         const VulkanFramebuffer &previousPassUIFB);
+         const VulkanFramebuffer &previousPassUIFB, const VulkanFramebuffer &previousPassTextFB);
 
 public:
     ~PostProcessingPass() = default;
@@ -53,12 +53,12 @@ public:
     static PostProcessingPass
     Create(const VulkanContext &context,
            const VulkanFramebuffer &previousPassSceneFB, const VulkanFramebuffer &previousPassUIFB,
-           bool renderToSwapchain, uint32_t width, uint32_t height);
+           const VulkanFramebuffer &previousPassTextFB, bool renderToSwapchain, uint32_t width, uint32_t height);
 
     void draw();
 
     void resizeAttachments(const VulkanFramebuffer &sceneFramebuffer, const VulkanFramebuffer &uiFramebuffer,
-                           uint32_t width, uint32_t height);
+                           const VulkanFramebuffer &textFramebuffer, uint32_t width, uint32_t height);
 
     void updateConfiguration(const PostProcessingConfiguration &configuration);
 
@@ -68,7 +68,8 @@ public:
     }
 
 private:
-    void writeDescriptorSet(const VulkanFramebuffer &previousPassSceneFB, const VulkanFramebuffer &previousPassUIFB);
+    void writeDescriptorSet(const VulkanFramebuffer &previousPassSceneFB, const VulkanFramebuffer &previousPassUIFB,
+                            const VulkanFramebuffer &previousPassTextFB);
 
 private:
     const VulkanContext &context;

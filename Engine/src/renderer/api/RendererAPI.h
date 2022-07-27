@@ -51,6 +51,12 @@ namespace Renderer {
         /// Finalize the UI command buffer
         virtual void endUI() = 0;
 
+        /// Start recording commands to this renderers TextOverlay command buffer
+        virtual void beginTextOverlay(const glm::mat4 &viewMat) = 0;
+
+        /// Finalize the TextOverlay command buffer
+        virtual void endTextOverlay() = 0;
+
         /// Submit recorded commands to gpu
         virtual void flush() = 0;
 
@@ -63,7 +69,7 @@ namespace Renderer {
         virtual void draw(const glm::mat4 &viewMatrix, const RenderComponent &renderComponent) = 0;
 
         /// Render an indexed vertex buffer with its material
-        virtual void drawUI(const Buffer &vertexBuffer, const Buffer &indexBuffer,
+        virtual void drawText(const Buffer &vertexBuffer, const Buffer &indexBuffer,
                             uint32_t indexCount, uint32_t indexOffset,
                             const glm::mat4 &modelMat, const MaterialInstance &materialInstance) = 0;
 

@@ -17,6 +17,7 @@ layout(set = 0, binding = 0) uniform Configuration {
 layout(set = 0, binding = 1) uniform sampler2D mainSceneTex;// Main scene framebuffer image
 layout(set = 0, binding = 2) uniform sampler2D depthBufferTex;// Depth buffer image
 layout(set = 0, binding = 3) uniform sampler2D uiBufferTex;// UI frambuffer image
+layout(set = 0, binding = 4) uniform sampler2D textBufferTex;// Text frambuffer image
 
 // From https://github.com/SaschaWillems/Vulkan/blob/master/data/shaders/shadowmapping/quad.frag
 float LinearizeDepth(float depth) {
@@ -34,5 +35,9 @@ void main() {
 
     // Overlay UI
     vec4 uiColor = texture(uiBufferTex, fragUVs);
-    outColor = vec4(mix(color.rgb, uiColor.rgb, uiColor.a), color.a);
+    // Overlay Text
+    vec4 textColor = texture(textBufferTex, fragUVs);
+    vec3 finalColor = mix(color.rgb, uiColor.rgb, uiColor.a);
+    finalColor = mix(finalColor, textColor.rgb, textColor.a);
+    outColor = vec4(finalColor, color.a);
 }

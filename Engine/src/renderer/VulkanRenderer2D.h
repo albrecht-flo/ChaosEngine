@@ -24,6 +24,7 @@ private:
     VulkanRenderer2D(VulkanContext &context,
                      SpriteRenderingPass &&spriteRenderingPass,
                      UIRenderingPass &&uiRenderPass,
+                     UIRenderingPass &&textRenderPass,
                      PostProcessingPass &&postProcessingPass,
                      ImGuiRenderingPass &&imGuiRenderingPass,
                      bool renderingSceneToSwapchain);
@@ -63,10 +64,16 @@ public:
     void endScene() override;
 
     /// Start recording commands to this renderers UI command buffer
-    virtual void beginUI(const glm::mat4 &viewMat) override;
+    void beginUI(const glm::mat4 &viewMat) override;
 
     /// Finalize the UI command buffer
-    virtual void endUI() override;
+    void endUI() override;
+
+    /// Start recording commands to this renderers TextOverlay command buffer
+    void beginTextOverlay(const glm::mat4 &viewMat) override;
+
+    /// Finalize the TextOverlay command buffer
+    void endTextOverlay() override;
 
     /// Submit recorded commands to gpu
     void flush() override;
@@ -79,7 +86,7 @@ public:
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
     /// Render an indexed vertex buffer with its material
-    void drawUI(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
+    void drawText(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
                 uint32_t indexCount, uint32_t indexOffset,
                 const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
 
@@ -103,6 +110,7 @@ private:
 
     SpriteRenderingPass spriteRenderingPass;
     UIRenderingPass uiRenderingPass;
+    UIRenderingPass textRenderingPass;
     PostProcessingPass postProcessingPass;
     ImGuiRenderingPass imGuiRenderingPass;
 

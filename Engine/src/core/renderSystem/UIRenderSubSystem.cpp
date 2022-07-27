@@ -118,40 +118,46 @@ calculateTextModelMatrix(const Transform &transform,
 }
 
 void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
-    // Render Text
-    auto uiTexts = ecs.getRegistry().view<Transform, UITextComponent>();
-    uint32_t totalGlyphCount = 0;
-    auto *vBufferRef = static_cast<VertexPCU *>(textVertexBuffers[currentBufferedFrame]->map());
-    auto *iBufferRef = static_cast<uint32_t *>(textIndexBuffers[currentBufferedFrame]->map());
-
-    renderer.beginUI(glm::mat4(1.0f));
-    for (auto&&[entity, transform, text]: uiTexts.each()) {
-        if (!fontMaterialInstances.contains(text.font.get())) {
-            auto fontTexture = text.font->getFontTexture();
-            fontMaterialInstances[text.font.get()] = uiTextMaterial.instantiate(nullptr, 0, {fontTexture});
-        }
-
-        auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
-        glm::mat4 modelMat = calculateTextModelMatrix(transform);
-        renderer.drawUI(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
-                        glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
-
-        totalGlyphCount += glyphCount;
-    }
-    textVertexBuffers[currentBufferedFrame]->flush();
-    textIndexBuffers[currentBufferedFrame]->flush();
-
     // Render UI elements
-    const auto uiComps = ecs.getRegistry().view<const Transform, const UIRenderComponent>();
-    for (auto&&[entity, transform, ui]: uiComps.each()) {
-        const auto *uiC = ecs.getRegistry().try_get<UIComponent>(entity);
-        if (uiC == nullptr)
-            renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
-        else
-            renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset, *uiC), *ui.mesh, *ui.materialInstance);
+    {
+        renderer.beginUI(glm::mat4(1.0f));
+        const auto uiComps = ecs.getRegistry().view<const Transform, const UIRenderComponent>();
+        for (auto &&[entity, transform, ui]: uiComps.each()) {
+            const auto *uiC = ecs.getRegistry().try_get<UIComponent>(entity);
+            if (uiC == nullptr)
+                renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
+            else
+                renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset, *uiC), *ui.mesh,
+                                *ui.materialInstance);
+        }
+        renderer.endUI();
+    }
+    // Render Text
+    {
+        auto uiTexts = ecs.getRegistry().view<Transform, UITextComponent>();
+        uint32_t totalGlyphCount = 0;
+        auto *vBufferRef = static_cast<VertexPCU *>(textVertexBuffers[currentBufferedFrame]->map());
+        auto *iBufferRef = static_cast<uint32_t *>(textIndexBuffers[currentBufferedFrame]->map());
+
+        renderer.beginTextOverlay(glm::mat4(1.0f));
+        for (auto &&[entity, transform, text]: uiTexts.each()) {
+            if (!fontMaterialInstances.contains(text.font.get())) {
+                auto fontTexture = text.font->getFontTexture();
+                fontMaterialInstances[text.font.get()] = uiTextMaterial.instantiate(nullptr, 0, {fontTexture});
+            }
+
+            auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
+            glm::mat4 modelMat = calculateTextModelMatrix(transform);
+            renderer.drawText(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
+                            glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
+
+            totalGlyphCount += glyphCount;
+        }
+        textVertexBuffers[currentBufferedFrame]->flush();
+        textIndexBuffers[currentBufferedFrame]->flush();
+        renderer.endTextOverlay();
     }
 
-    renderer.endUI();
 
     currentBufferedFrame = (currentBufferedFrame + 1) % GraphicsContext::maxFramesInFlight;
 }
