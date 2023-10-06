@@ -41,3 +41,6 @@
 [submodule "dep/yaml-cpp"]
 	path = dep/yaml-cpp
 	url = git@github.com:jbeder/yaml-cpp.git
+[submodule "dep/tinyply"]
+	path = dep/tinyply
+	url = git@github.com:ddiakopoulos/tinyply.git
