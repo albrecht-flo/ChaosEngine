@@ -41,3 +41,6 @@
 [submodule "dep/freetype"]
 	path = dep/freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype.git
+[submodule "dep/yaml-cpp"]
+	path = dep/yaml-cpp
+	url = git@github.com:jbeder/yaml-cpp.git
