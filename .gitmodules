@@ -10,9 +10,6 @@
 [submodule "dep/stb"]
 	path = dep/stb
 	url = https://github.com/nothings/stb.git
-[submodule "dep/tinyply"]
-	path = dep/tinyply
-	url = https://github.com/syoyo/tinyobjloader.git
 [submodule "dep/imgui"]
 	path = dep/imgui
 	url = https://github.com/albrecht-flo/imgui.git

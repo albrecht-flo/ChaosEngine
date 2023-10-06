@@ -1,4 +1,5 @@
 #include "platform.h"
+#include <cstdio>
 
 #define VMA_IMPLEMENTATION
 #define VMA_STATIC_VULKAN_FUNCTIONS 1
