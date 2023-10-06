@@ -29,14 +29,14 @@
 [submodule "dep/spdlog"]
 	path = dep/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule ".\\dep\\VulkanMemoryAllocator"]
-	path = .\\dep\\VulkanMemoryAllocator
+[submodule "dep/VulkanMemoryAllocator"]
+	path = dep/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule ".\\dep\\ImGuiFileDialog"]
-	path = .\\dep\\ImGuiFileDialog
+[submodule "dep/ImGuiFileDialog"]
+	path = dep/ImGuiFileDialog
 	url = git@github.com:aiekick/ImGuiFileDialog.git
-[submodule ".\\dep\\nativefiledialog-extended"]
-	path = .\\dep\\nativefiledialog-extended
+[submodule "dep/nativefiledialog-extended"]
+	path = dep/nativefiledialog-extended
 	url = git@github.com:btzy/nativefiledialog-extended.git
 [submodule "dep/freetype"]
 	path = dep/freetype
