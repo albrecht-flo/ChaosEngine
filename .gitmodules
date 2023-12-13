@@ -44,3 +44,6 @@
 [submodule "dep/tinyply"]
 	path = dep/tinyply
 	url = git@github.com:ddiakopoulos/tinyply.git
+[submodule "dep/box2d"]
+	path = dep/box2d
+	url = git@github.com:erincatto/box2d.git
