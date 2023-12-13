@@ -71,7 +71,7 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestContext.cpp
         src/renderer/testRenderer/TestRenderer.cpp
         src/renderer/testRenderer/TestRenderPass.cpp
-        src/renderer/testRenderer/TestFramebuffe r.cpp
+        src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
         )
 
