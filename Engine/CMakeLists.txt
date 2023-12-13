@@ -21,6 +21,7 @@ set(ENGINE_SOURCES
         src/core/scriptSystem/NativeScriptSystem.cpp
         src/core/scriptSystem/NativeScript.cpp
         src/core/uiSystem/UISystem.cpp
+        src/core/physicsSystem/PhysicsSystem2D.cpp
         src/core/assets/Font.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
@@ -87,6 +88,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/tinyobjloader
         ../dep/stb
         ../dep/spdlog/include
+        ../dep/box2d/include
         src/
         )
 
@@ -95,10 +97,10 @@ target_include_directories(Engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUD
 
 if (WIN32)
     target_link_directories(Engine PUBLIC ../dep/lib/win)
-    target_link_libraries(Engine vulkan-1 glfw3 freetype)
+    target_link_libraries(Engine vulkan-1 glfw3 freetype box2d)
 elseif (UNIX AND NOT APPLE)
     target_link_directories(Engine PUBLIC ../dep/lib/linux)
-    target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype)
+    target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype box2d)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()

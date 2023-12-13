@@ -14,6 +14,7 @@ Engine::Engine()
           renderingSys(window, Renderer::GraphicsAPI::Vulkan),
           uiSystem(renderingSys, window),
           nativeScriptSystem(),
+          physicsSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),
           deltaTimer(std::chrono::high_resolution_clock::now()),
@@ -30,6 +31,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(*this);
     renderingSys.createRenderer(config.rendererType);
+    physicsSystem.init(config);
 
     scene->load();
 
@@ -74,6 +76,9 @@ void Engine::run() {
 
         // Run all script updates
         nativeScriptSystem.update(scene->ecs, deltaTime);
+        // Tick rendering system
+        physicsSystem.update(scene->ecs, deltaTime);
+
         // Update Scene
         scene->update(deltaTime);
 
