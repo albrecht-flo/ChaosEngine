@@ -5,8 +5,9 @@
 #include "Engine/src/renderer/api/GraphicsContext.h"
 #include "assets/AssetManager.h"
 #include "Engine/src/core/renderSystem/RenderingSystem.h"
-#include "scriptSystem/NativeScriptSystem.h"
-#include "core/uiSystem/UISystem.h"
+#include "Engine/src/core/scriptSystem/NativeScriptSystem.h"
+#include "Engine/src/core/uiSystem/UISystem.h"
+#include "Engine/src/core/physicsSystem/PhysicsSystem2D.h"
 
 
 namespace ChaosEngine {
@@ -56,6 +57,7 @@ namespace ChaosEngine {
         RenderingSystem renderingSys;
         UISystem uiSystem;
         NativeScriptSystem nativeScriptSystem;
+        PhysicsSystem2D physicsSystem;
 
         // Scene Data
         std::shared_ptr<AssetManager> assetManager;
