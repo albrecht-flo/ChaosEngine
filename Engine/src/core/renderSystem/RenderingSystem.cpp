@@ -27,12 +27,12 @@ RenderingSystem::~RenderingSystem() {
     Context = nullptr;
 }
 
-void RenderingSystem::createRenderer(RendererType rendererType) {
+void RenderingSystem::createRenderer(RendererType rendererType, bool renderSceneToOffscreenBuffer) {
     LOG_DEBUG("[RenderingSystem] currentAPI {}", Context->currentAPI);
     if (Context->currentAPI == Renderer::GraphicsAPI::Vulkan) {
         switch (rendererType) {
             case Renderer::RendererType::RENDERER2D :
-                Renderer = VulkanRenderer2D::Create(*Context);
+                Renderer = VulkanRenderer2D::Create(*Context, !renderSceneToOffscreenBuffer);
                 break;
             default:
                 assert("Unknown renderer for 'Vulkan' GraphicsAPI" && false);

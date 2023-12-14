@@ -11,7 +11,8 @@ using namespace ChaosEngine;
 ChaosEngine::SceneConfiguration TestScene::configure(Engine &engine) {
     window = &engine.getEngineWindow();
     return ChaosEngine::SceneConfiguration{
-            .rendererType = Renderer::RendererType::RENDERER2D
+            .rendererType = Renderer::RendererType::RENDERER2D,
+            .renderSceneToOffscreenBuffer = true,
     };
 }
 

@@ -40,7 +40,7 @@ public:
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
-    static std::unique_ptr<VulkanRenderer2D> Create(Renderer::GraphicsContext &graphicsContext);
+    static std::unique_ptr<VulkanRenderer2D> Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain);
 
     // Lifecycle
 

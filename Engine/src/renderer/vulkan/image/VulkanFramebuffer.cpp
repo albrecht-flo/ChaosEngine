@@ -69,6 +69,7 @@ VulkanFramebuffer VulkanFramebuffer::Create(const VulkanContext &context, VkRend
                                  [](auto info) { return info.type == Renderer::AttachmentType::SwapChain; });
     int64_t depthAttachment = std::count_if(infos.begin(), infos.end(),
                                             [](auto info) { return info.type == Renderer::AttachmentType::Depth; });
+
     assert("Swapchain attachment needs to be bound to attachment 0!" &&
            (!swapchain || infos.begin()->type == Renderer::AttachmentType::SwapChain));
     assert("Only one depth attachment is supported!" && depthAttachment <= 1);

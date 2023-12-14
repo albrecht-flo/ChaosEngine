@@ -14,7 +14,7 @@ createPrimaryCommandBuffers(const VulkanInstance &instance, const VulkanDevice &
         primaryCommandBuffers.emplace_back(
                 VulkanCommandBuffer::Create(device, commandPool, VK_COMMAND_BUFFER_LEVEL_PRIMARY));
         char name[sizeof("PrimaryCommandBuffer-0")];
-        snprintf(name, sizeof(name), "PrimaryCommandBuffer-%u", i & 0x7);
+        snprintf(name, sizeof(name), "PrimaryCommandBuffer-%u", i & 0x9);
         instance.setDebugName(device.vk(), VK_OBJECT_TYPE_COMMAND_BUFFER, (uint64_t) primaryCommandBuffers.back().vk(),
                               name);
     }

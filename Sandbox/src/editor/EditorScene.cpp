@@ -19,7 +19,8 @@ ChaosEngine::SceneConfiguration EditorScene::configure(ChaosEngine::Engine &engi
     window = &engine.getEngineWindow();
     assetManager = engine.getAssetManager();
     return ChaosEngine::SceneConfiguration{
-            .rendererType = Renderer::RendererType::RENDERER2D
+            .rendererType = Renderer::RendererType::RENDERER2D,
+            .renderSceneToOffscreenBuffer = true,
     };
 }
 

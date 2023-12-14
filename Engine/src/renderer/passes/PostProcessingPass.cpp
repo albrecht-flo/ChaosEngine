@@ -45,8 +45,11 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
                          const VulkanFramebuffer &previousPassUIFB, const VulkanFramebuffer &previousPassTextFB) {
 
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color)
-                                     .build());
+    if(renderToSwapchain)
+        attachments.emplace_back(VulkanAttachmentBuilder(context, AttachmentType::SwapChain).build());
+    else
+        attachments.emplace_back(VulkanAttachmentBuilder(context, AttachmentType::Color).build());
+
     renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "PostProcessingRenderPass"));
 
@@ -88,7 +91,7 @@ PostProcessingPass::init(uint32_t width, uint32_t height, const VulkanFramebuffe
 
     postprocessingPipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(context.getDevice(), *renderPass, std::move(pipelineLayout), *vertex_3P_2U,
-                                  "2DPostProcessing")
+                                  "ENGINE_2DPostProcessing")
                     .setTopology(Renderer::Topology::TriangleList)
                     .setPolygonMode(Renderer::PolygonMode::Fill)
                     .setCullFace(Renderer::CullFace::CCLW)

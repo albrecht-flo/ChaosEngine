@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/src/renderer/api/Framebuffer.h"
-#include "Engine/src/renderer/vulkan/context/VulkanDevice.h"
+#include "Engine/src/renderer/vulkan/context/VulkanContext.h"
 
 #include <cassert>
 #include <utility>
@@ -30,7 +30,7 @@ struct VulkanAttachmentDescription {
 class VulkanAttachmentBuilder {
 
 public:
-    explicit VulkanAttachmentBuilder(const VulkanDevice &device, Renderer::AttachmentType attachmentType);
+    explicit VulkanAttachmentBuilder(const VulkanContext &context, Renderer::AttachmentType attachmentType);
 
     ~VulkanAttachmentBuilder() = default;
 

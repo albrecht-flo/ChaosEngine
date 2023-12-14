@@ -60,8 +60,8 @@ void UIRenderingPass::createStandardPipeline() {
                             .addAttribute(1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color))
                             .addAttribute(2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv))
                             .build(),
-                    "UIBase")
-                    .setFragmentShader("UIBase")
+                    "ENGINE_UIBase")
+                    .setFragmentShader("ENGINE_UIBase")
                     .setTopology(Renderer::Topology::TriangleList)
                     .setPolygonMode(Renderer::PolygonMode::Fill)
                     .setCullFace(Renderer::CullFace::CCLW)
@@ -96,8 +96,8 @@ void UIRenderingPass::createStandardPipeline() {
 
 void UIRenderingPass::init(uint32_t width, uint32_t height) {
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Color).build());
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), AttachmentType::Depth).build());
+    attachments.emplace_back(VulkanAttachmentBuilder(context, AttachmentType::Color).build());
+    attachments.emplace_back(VulkanAttachmentBuilder(context, AttachmentType::Depth).build());
     opaquePass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "UIRenderPass-Color"));
 
