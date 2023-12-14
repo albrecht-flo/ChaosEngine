@@ -30,3 +30,4 @@ add_subdirectory(dep/nativefiledialog-extended)
 
 add_subdirectory(Engine)
 add_subdirectory(Sandbox)
+add_subdirectory(Test)
