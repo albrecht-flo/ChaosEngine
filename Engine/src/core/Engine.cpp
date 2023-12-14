@@ -30,7 +30,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     assert("A Scene is required." && pScene != nullptr);
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(*this);
-    renderingSys.createRenderer(config.rendererType);
+    renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer);
     physicsSystem.init(config);
 
     scene->load();

@@ -21,15 +21,24 @@ static void check_imgui_vk_result(VkResult result) {
 // ------------------------------------ Class Members ------------------------------------------------------------------
 
 ImGuiRenderingPass
-ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window) {
+ImGuiRenderingPass::Create(const VulkanContext &context, const Window &window, bool mainSwapChainRenderer) {
 
     std::vector<VulkanAttachmentDescription> attachments;
-    attachments.emplace_back(VulkanAttachmentBuilder(context.getDevice(), Renderer::AttachmentType::Color)
+    if(mainSwapChainRenderer) {
+        attachments.emplace_back(VulkanAttachmentBuilder(context, Renderer::AttachmentType::Color)
                                      .format(VK_FORMAT_B8G8R8A8_UNORM)
                                      .loadStore(AttachmentLoadOp::Clear, AttachmentStoreOp::Store)
                                      .layoutInitFinal(VK_IMAGE_LAYOUT_UNDEFINED,
                                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
                                      .build());
+    } else {
+        attachments.emplace_back(VulkanAttachmentBuilder(context, Renderer::AttachmentType::Color)
+                                      .format(VK_FORMAT_B8G8R8A8_UNORM)
+                                      .loadStore(AttachmentLoadOp::Preserve, AttachmentStoreOp::Store)
+                                      .layoutInitFinal(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                                       VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+                                      .build());
+    }
     auto renderPass = std::make_unique<VulkanRenderPass>(
             VulkanRenderPass::Create(context, attachments, "ImGuiRenderPass"));
 

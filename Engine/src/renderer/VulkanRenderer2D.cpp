@@ -8,8 +8,7 @@
 
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
-std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext) {
-    bool renderingSceneToSwapchain = false;
+std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain) {
     auto &context = dynamic_cast<VulkanContext &>(graphicsContext);
     auto spriteRenderingPass = SpriteRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                            context.getSwapChain().getHeight());
@@ -26,7 +25,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
                                                          context.getSwapChain().getWidth(),
                                                          context.getSwapChain().getHeight());
 
-    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow());
+    auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow(), !renderingSceneToSwapchain);
 
     return std::unique_ptr<VulkanRenderer2D>(
             new VulkanRenderer2D(context, std::move(spriteRenderingPass),

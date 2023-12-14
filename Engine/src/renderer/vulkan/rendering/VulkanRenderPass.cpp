@@ -23,6 +23,8 @@ VulkanRenderPass::Create(const VulkanContext &context,
             colorAttachmentRefs.emplace_back(attachmentRef);
         } else if (attachmentDescriptions[i].attachmentType == Renderer::AttachmentType::Depth) {
             depthAttachmentRefs.emplace_back(attachmentRef);
+        } else if (attachmentDescriptions[i].attachmentType == Renderer::AttachmentType::SwapChain) {
+            colorAttachmentRefs.emplace_back(attachmentRef);
         } else {
             assert("Attachment type not supported." && false);
         }

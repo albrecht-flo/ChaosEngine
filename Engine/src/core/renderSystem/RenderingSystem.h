@@ -21,7 +21,7 @@ namespace ChaosEngine {
         /// Processes all entities to create the next frame
         void renderEntities(ECS &ecs);
 
-        void createRenderer(Renderer::RendererType rendererType);
+        void createRenderer(Renderer::RendererType rendererType, bool renderSceneToOffscreenBuffer);
 
         static Renderer::GraphicsContext &GetContext() {
             assert("Context MUST not be empty!" && Context != nullptr);

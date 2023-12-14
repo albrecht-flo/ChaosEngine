@@ -21,5 +21,6 @@ namespace ChaosEngine
 
     void PhysicsSystem2D::update(const ECS& ecs, float deltaTime)
     {
+        world.Step(deltaTime, velocityIterations, positionIterations);
     }
 }

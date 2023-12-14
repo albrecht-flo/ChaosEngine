@@ -10,6 +10,8 @@ namespace ChaosEngine {
     /// Via this struct the scene is able to configure the engine runtime.
     struct SceneConfiguration {
         Renderer::RendererType rendererType; // TOBE: Abstraction layer
+        bool renderSceneToOffscreenBuffer;
+        glm::vec2 gravity = glm::vec2(0, 0);
     };
 
     /**
