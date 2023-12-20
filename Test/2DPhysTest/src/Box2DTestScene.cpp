@@ -82,6 +82,9 @@ void Box2DTestScene::load() {
 
     auto fallbackTex = Texture::Create("TestAtlas.jpg");
     assetManager->registerTexture("TestAtlas.jpg", std::move(fallbackTex),
+    AssetManager::TextureInfo{});
+    auto plainTex = Texture::Create("noTex.jpg");
+    assetManager->registerTexture("Square", std::move(plainTex),
                                   AssetManager::TextureInfo{});
 
     LOG_INFO("Loading base font");
@@ -109,10 +112,19 @@ void Box2DTestScene::loadEntities() {
     auto floor = createEntity();
     floor.setComponent<Meta>(Meta{"Floor"});
     floor.setComponent<Transform>(
-        Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
-    glm::vec4 greenColor(1, 1, 0, 1);
+        Transform{glm::vec3(0, -8.0f, 0), glm::vec3(), glm::vec3(10, 1, 1)});
+    glm::vec4 redColor(1, 0, 0, 1);
     floor.setComponent<RenderComponent>(
-        texturedMaterial.instantiate(&greenColor, sizeof(greenColor), {&assetManager->getTexture("TestAtlas.jpg")}),
+        texturedMaterial.instantiate(&redColor, sizeof(redColor), {&assetManager->getTexture("TestAtlas.jpg")}),
+        quadROB);
+
+    auto ball = createEntity();
+    ball.setComponent<Meta>(Meta{"Tester"});
+    ball.setComponent<Transform>(
+        Transform{glm::vec3(0, 0.0f, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    glm::vec4 whiteColor(1, 1, 1, 1);
+    ball.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
 }
 
