@@ -3,7 +3,6 @@
 #include <entt/entity/registry.hpp>
 
 namespace ChaosEngine {
-
     /**
      * This is a handler to an entity for modifying associated data.
      *
@@ -13,11 +12,13 @@ namespace ChaosEngine {
         friend class ECS;
 
     private:
-        Entity(entt::registry *registry, entt::entity entity)
-                : registry(registry), entity(entity) {}
+        Entity(entt::registry* registry, entt::entity entity)
+            : registry(registry), entity(entity) {
+        }
 
     public:
-        Entity() : registry(nullptr), entity(entt::null) {}
+        Entity() : registry(nullptr), entity(entt::null) {
+        }
 
         ~Entity() = default;
 
@@ -27,8 +28,8 @@ namespace ChaosEngine {
          * @tparam Args
          * @param args to be passed to the constructor of Component
          */
-        template<typename Component, typename ... Args>
-        inline void setComponent(Args &&...args) {
+        template <typename Component, typename... Args>
+        inline void setComponent(Args&&... args) {
             assert("Registry must not be null" && registry != nullptr);
             registry->emplace_or_replace<Component>(entity, std::forward<Args>(args)...);
         }
@@ -38,7 +39,7 @@ namespace ChaosEngine {
          * @tparam Component
          * @return Component
          */
-        template<typename... Component>
+        template <typename... Component>
         [[nodiscard]] decltype(auto) get() {
             assert("Registry must not be null" && registry != nullptr);
             return registry->get<Component...>(entity);
@@ -49,21 +50,28 @@ namespace ChaosEngine {
          * @tparam Component
          * @return bool
          */
-        template<typename... Component>
+        template <typename... Component>
         [[nodiscard]] decltype(auto) has() {
             assert("Registry must not be null" && registry != nullptr);
             return registry->all_of<Component...>(entity);
         }
 
-        explicit  operator uint32_t() const {
+        explicit operator uint32_t() const {
             static_assert(std::is_same<entt::id_type, std::uint32_t>::value,
                           "Entity is not of type uint32_t so it can't be casted to it");
             return static_cast<uint32_t>(entity);
         }
 
     private:
-        entt::registry *registry;
+        friend class RigidBody2D;
+        /**
+         * ONLY USE WHEN ABSOLUTELY NESCESSARY. This function exposes the underlying entity
+         * @return Underlying entity
+         */
+        entt::entity raw() { return entity; }
+
+    private:
+        entt::registry* registry;
         entt::entity entity;
     };
-
 }

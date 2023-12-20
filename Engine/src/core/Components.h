@@ -16,6 +16,7 @@
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/core/scriptSystem/NativeScript.h"
 #include "Engine/src/core/assets/Font.h"
+#include "physicsSystem/Physics2DBody.h"
 
 struct Meta {
     std::string name;
@@ -103,4 +104,13 @@ struct UIRenderComponent {
     std::shared_ptr<Renderer::MaterialInstance> materialInstance;
     std::shared_ptr<Renderer::RenderMesh> mesh;
     glm::vec3 scaleOffset;
+};
+
+// Physics components ---------------------------------------------------------------------
+struct StaticRigidBodyComponent {
+    ChaosEngine::Physics2DBody body;
+};
+
+struct DynamicRigidBodyComponent {
+    ChaosEngine::Physics2DBody body;
 };
