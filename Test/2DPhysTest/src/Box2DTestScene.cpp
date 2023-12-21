@@ -113,7 +113,7 @@ void Box2DTestScene::loadEntities() {
     auto floor = createEntity();
     floor.setComponent<Meta>(Meta{"Floor"});
     floor.setComponent<Transform>(
-        Transform{glm::vec3(0, -8.0f, 0), glm::vec3(), glm::vec3(10, 1, 1)});
+        Transform{glm::vec3(0, -8.0f, 0), glm::vec3(), glm::vec3(5, 1, 1)});
     glm::vec4 redColor(1, 0, 0, 1);
     floor.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&redColor, sizeof(redColor), {&assetManager->getTexture("TestAtlas.jpg")}),
@@ -123,13 +123,13 @@ void Box2DTestScene::loadEntities() {
     auto ball = createEntity();
     ball.setComponent<Meta>(Meta{"Tester"});
     ball.setComponent<Transform>(
-        Transform{glm::vec3(0, 6.0f, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+        Transform{glm::vec3(0, 6.0f, 0), glm::vec3(0, 0, 40), glm::vec3(1, 1, 1)});
     glm::vec4 whiteColor(1, 1, 1, 1);
     ball.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
     ball.setComponent<DynamicRigidBodyComponent>(
-        RigidBody2D::CreateDynamicRigidBody(ball, ball.get<Transform>(), 1, 0.3f));
+        RigidBody2D::CreateDynamicRigidBody(ball, ball.get<Transform>(), 1, 0.3f, true));
 }
 
 void Box2DTestScene::update(float /*deltaTime*/) {
