@@ -150,9 +150,10 @@ void Box2DTestScene::loadEntities() {
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
     jumper.setComponent<DynamicRigidBodyComponent>(
-        RigidBody2D::CreateDynamicRigidBody(ball, jumper.get<Transform>(), 1, 0.3f, true));
+        RigidBody2D::CreateDynamicRigidBody(jumper, jumper.get<Transform>(), 1, 0.3f, true));
     auto jumperScript = std::unique_ptr<NativeScript>(new JumperScript(jumper, 14.0f));
     jumper.setComponent<NativeScriptComponent>(std::move(jumperScript), true);
+    LOG_INFO("Jumper entity has ID {}", static_cast<uint32_t>(jumper));
 }
 
 void Box2DTestScene::update(float /*deltaTime*/) {
