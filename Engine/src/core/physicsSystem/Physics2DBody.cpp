@@ -29,6 +29,7 @@ namespace ChaosEngine {
 
 
   StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(const Entity& entity, const Transform& transform) {
+    // LOG_DEBUG("Creating StaticRigidBody2D for entity {}", static_cast<uint32_t>(entity));
     b2BodyDef def{};
     def.position.Set(transform.position.x, transform.position.y);
     def.angle = glm::radians(transform.rotation.z);
@@ -51,6 +52,8 @@ namespace ChaosEngine {
 
   DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(const Entity& entity, const Transform& transform,
                                                                 float density, float friction, bool useGravity) {
+    // LOG_DEBUG("Creating DynamicRigidBody2D for entity {}", static_cast<uint32_t>(entity));
+
     b2BodyDef def{};
     def.position.Set(transform.position.x, transform.position.y);
     def.angle = glm::radians(transform.rotation.z);
@@ -62,7 +65,8 @@ namespace ChaosEngine {
 
     // TODO: multiple shapes
     b2PolygonShape shape;
-    shape.SetAsBox(transform.scale.x - 0.00501f, transform.scale.y - 0.00501f); // -0.501(cm) to compensate for skin collision
+    shape.SetAsBox(transform.scale.x - 0.0051f, transform.scale.y - 0.0051f);
+    // -0.51(cm) to compensate for skin collision
 
     b2FixtureDef fixtureDef{};
     fixtureDef.shape = &shape;

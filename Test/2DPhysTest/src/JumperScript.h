@@ -13,6 +13,8 @@ public:
 
     void onUpdate(float deltaTime) override;
 
+    void onCollisionEnter(const ChaosEngine::Entity& other) override;
+
 private:
     float strength = 10.0f;
     bool pressed = false;

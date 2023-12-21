@@ -8,13 +8,30 @@ struct StaticRigidBodyComponent;
 struct DynamicRigidBodyComponent;
 
 namespace ChaosEngine {
-
     class PhysicsSystem2D {
+        class Physics2DCollisionListener : public b2ContactListener {
+        public:
+            Physics2DCollisionListener(ECS& ecs);
+
+            ~Physics2DCollisionListener();
+
+            void BeginContact(b2Contact* contact) override;
+
+            void EndContact(b2Contact* contact) override;
+
+            void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
+
+            void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override;
+
+        private:
+            ECS& ecs;
+        };
+
     public:
         PhysicsSystem2D();
         ~PhysicsSystem2D();
 
-        void init(const SceneConfiguration& config);
+        void init(const SceneConfiguration& config, ECS& ecs);
         void update(ECS& ecs, float deltaTime);
 
     private:
@@ -33,11 +50,11 @@ namespace ChaosEngine {
 
     private:
         b2World world;
+        std::unique_ptr<Physics2DCollisionListener> collusionListener = nullptr;
 
         // Based on recommended values of Box2D
         // See: https://box2d.org/documentation/md__d_1__git_hub_box2d_docs_hello.html#autotoc_md24
         const int32_t velocityIterations = 8;
         const int32_t positionIterations = 3;
     };
-
 } // ChaosEngine
