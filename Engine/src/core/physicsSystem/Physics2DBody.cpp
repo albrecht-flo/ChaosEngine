@@ -23,6 +23,10 @@ namespace ChaosEngine {
     };
   }
 
+  void Physics2DBody::setVelocity(const glm::vec3& velocity) {
+    body->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+  }
+
 
   StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(const Entity& entity, const Transform& transform) {
     b2BodyDef def{};

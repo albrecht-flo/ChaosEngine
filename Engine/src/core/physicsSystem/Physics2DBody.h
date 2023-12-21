@@ -35,6 +35,8 @@ namespace ChaosEngine {
 
     [[nodiscard]] Transform getTransform() const;
 
+    void setVelocity(const glm::vec3& velocity);
+
   private:
     friend class RigidBody2D;
     b2Fixture* CreateFixture(const b2FixtureDef& def) { return body->CreateFixture(&def); }
