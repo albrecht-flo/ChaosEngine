@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 
+#include "JumperScript.h"
+
 ChaosEngine::SceneConfiguration
 Box2DTestScene::configure(ChaosEngine::Engine& engine) {
     LOG_INFO("Configurig Engine");
@@ -121,7 +123,7 @@ void Box2DTestScene::loadEntities() {
     floor.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor, floor.get<Transform>()));
 
     auto ball = createEntity();
-    ball.setComponent<Meta>(Meta{"Tester"});
+    ball.setComponent<Meta>(Meta{"Gravity test"});
     ball.setComponent<Transform>(
         Transform{glm::vec3(0, 6.0f, 0), glm::vec3(0, 0, 40), glm::vec3(1, 1, 1)});
     glm::vec4 whiteColor(1, 1, 1, 1);
@@ -130,6 +132,27 @@ void Box2DTestScene::loadEntities() {
         quadROB);
     ball.setComponent<DynamicRigidBodyComponent>(
         RigidBody2D::CreateDynamicRigidBody(ball, ball.get<Transform>(), 1, 0.3f, true));
+
+
+    auto floor1 = createEntity();
+    floor1.setComponent<Meta>(Meta{"Floor 2"});
+    floor1.setComponent<Transform>(
+        Transform{glm::vec3(-8, -7.0f, 0), glm::vec3(), glm::vec3(2, 1, 1)});
+    floor1.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("TestAtlas.jpg")}),
+        quadROB);
+    floor1.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor1, floor1.get<Transform>()));
+    auto jumper = createEntity();
+    jumper.setComponent<Meta>(Meta{"Gravity test"});
+    jumper.setComponent<Transform>(
+        Transform{glm::vec3(-8, 7.0f, 0), glm::vec3(), glm::vec3(1)});
+    jumper.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
+        quadROB);
+    jumper.setComponent<DynamicRigidBodyComponent>(
+        RigidBody2D::CreateDynamicRigidBody(ball, jumper.get<Transform>(), 1, 0.3f, true));
+    auto jumperScript = std::unique_ptr<NativeScript>(new JumperScript(jumper, 14.0f));
+    jumper.setComponent<NativeScriptComponent>(std::move(jumperScript), true);
 }
 
 void Box2DTestScene::update(float /*deltaTime*/) {
