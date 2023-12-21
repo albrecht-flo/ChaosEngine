@@ -58,7 +58,7 @@ namespace ChaosEngine {
 
     // TODO: multiple shapes
     b2PolygonShape shape;
-    shape.SetAsBox(transform.scale.x - 0.005f, transform.scale.y - 0.005f); // -0.5(cm) to compensate for skin collision
+    shape.SetAsBox(transform.scale.x - 0.00501f, transform.scale.y - 0.00501f); // -0.501(cm) to compensate for skin collision
 
     b2FixtureDef fixtureDef{};
     fixtureDef.shape = &shape;

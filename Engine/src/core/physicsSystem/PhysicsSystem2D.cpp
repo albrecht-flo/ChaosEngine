@@ -25,7 +25,7 @@ namespace ChaosEngine {
             const Transform phyTransform = body.body.getTransform();
             transform.position.x = phyTransform.position.x;
             transform.position.y = phyTransform.position.y;
-            transform.rotation.z = phyTransform.rotation.z;
+            transform.rotation.z = glm::degrees(phyTransform.rotation.z);
         }
     }
 
