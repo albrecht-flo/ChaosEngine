@@ -82,7 +82,7 @@ void Box2DTestScene::load() {
 
     auto fallbackTex = Texture::Create("TestAtlas.jpg");
     assetManager->registerTexture("TestAtlas.jpg", std::move(fallbackTex),
-    AssetManager::TextureInfo{});
+                                  AssetManager::TextureInfo{});
     auto plainTex = Texture::Create("noTex.jpg");
     assetManager->registerTexture("Square", std::move(plainTex),
                                   AssetManager::TextureInfo{});
@@ -98,6 +98,7 @@ void Box2DTestScene::load() {
 }
 
 void Box2DTestScene::loadEntities() {
+    using namespace ChaosEngine;
     LOG_INFO("Loading entities");
     mainCamera = createEntity();
     mainCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
@@ -117,15 +118,18 @@ void Box2DTestScene::loadEntities() {
     floor.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&redColor, sizeof(redColor), {&assetManager->getTexture("TestAtlas.jpg")}),
         quadROB);
+    floor.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor, floor.get<Transform>()));
 
     auto ball = createEntity();
     ball.setComponent<Meta>(Meta{"Tester"});
     ball.setComponent<Transform>(
-        Transform{glm::vec3(0, 0.0f, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+        Transform{glm::vec3(0, 6.0f, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 whiteColor(1, 1, 1, 1);
     ball.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
+    ball.setComponent<DynamicRigidBodyComponent>(
+        RigidBody2D::CreateDynamicRigidBody(ball, ball.get<Transform>(), 1, 0.3f));
 }
 
 void Box2DTestScene::update(float /*deltaTime*/) {
@@ -138,7 +142,7 @@ void Box2DTestScene::updateImGui() {
     ImGui::NewFrame();
 
     ImGui::Begin("Info");
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Text("Viewport Size: %f x %f", io.DisplaySize.x, io.DisplaySize.y);

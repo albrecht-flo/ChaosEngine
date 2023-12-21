@@ -15,7 +15,7 @@ namespace ChaosEngine {
         ~PhysicsSystem2D();
 
         void init(const SceneConfiguration& config);
-        void update(const ECS& ecs, float deltaTime);
+        void update(ECS& ecs, float deltaTime);
 
     private:
         friend Physics2DBody;

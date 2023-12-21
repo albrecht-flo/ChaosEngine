@@ -1,5 +1,6 @@
 #pragma once
 #include <box2d/b2_body.h>
+#include <glm/glm.hpp>
 
 struct StaticRigidBodyComponent;
 struct DynamicRigidBodyComponent;
@@ -21,15 +22,21 @@ namespace ChaosEngine {
 
     // Implement move construction and assignment
     Physics2DBody(Physics2DBody&& o) noexcept: body(o.body) {
+      o.body = nullptr;
     }
 
     Physics2DBody& operator=(Physics2DBody&& o) noexcept {
       if (this == &o) return *this;
       destroy();
       body = o.body;
+      o.body = nullptr;
       return *this;
     }
 
+    [[nodiscard]] Transform getTransform() const;
+
+  private:
+    friend class RigidBody2D;
     b2Fixture* CreateFixture(const b2FixtureDef& def) { return body->CreateFixture(&def); }
 
   private:
@@ -41,6 +48,6 @@ namespace ChaosEngine {
   class RigidBody2D {
   public:
     static StaticRigidBodyComponent CreateStaticRigidBody(const Entity& entity, const Transform& transform);
-    static DynamicRigidBodyComponent CreateDynamicRigidBody(const Entity& entity, const Transform& transform, float density, float friction);
+    static DynamicRigidBodyComponent CreateDynamicRigidBody(const Entity& entity, const Transform& transform, float density, float friction, bool useGravity=true);
   };
 }

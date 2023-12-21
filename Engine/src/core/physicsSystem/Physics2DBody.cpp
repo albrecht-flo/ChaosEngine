@@ -7,11 +7,22 @@
 
 namespace ChaosEngine {
   void Physics2DBody::destroy() {
-    PhysicsSystem2D::globalInstance->destroyBody(body);
+    if (body != nullptr)
+      PhysicsSystem2D::globalInstance->destroyBody(body);
 #ifndef NDEBUG
     body = nullptr;
 #endif
   }
+
+  Transform Physics2DBody::getTransform() const {
+    const auto position = body->GetPosition();
+    return Transform{
+      .position = glm::vec3(position.x, position.y, 0),
+      .rotation = glm::vec3(0, 0, body->GetAngle()),
+      .scale = glm::vec3()
+    };
+  }
+
 
   StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(const Entity& entity, const Transform& transform) {
     b2BodyDef def{};
@@ -34,18 +45,20 @@ namespace ChaosEngine {
     return StaticRigidBodyComponent{.body = std::move(body)};
   }
 
-  DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(const Entity& entity, const Transform& transform, float density, float friction) {
+  DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(const Entity& entity, const Transform& transform,
+                                                                float density, float friction, bool useGravity) {
     b2BodyDef def{};
     def.position.Set(transform.position.x, transform.position.y);
     def.angle = glm::radians(transform.rotation.z);
     def.type = b2_dynamicBody;
     def.userData.pointer = static_cast<uintptr_t>(entity.entity);
+    def.gravityScale = useGravity ? 1.0f : 0.0f;
 
     auto body = PhysicsSystem2D::globalInstance->createBody(def);
 
     // TODO: multiple shapes
     b2PolygonShape shape;
-    shape.SetAsBox(transform.scale.x, transform.scale.y);
+    shape.SetAsBox(transform.scale.x - 0.005f, transform.scale.y - 0.005f); // -0.5(cm) to compensate for skin collision
 
     b2FixtureDef fixtureDef{};
     fixtureDef.shape = &shape;
