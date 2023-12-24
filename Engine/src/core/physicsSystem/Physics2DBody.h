@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <box2d/b2_body.h>
 #include <glm/glm.hpp>
 
@@ -11,8 +12,7 @@ namespace ChaosEngine {
 
   class Physics2DBody {
   public:
-    explicit Physics2DBody(b2Body* body) : body(body) {
-    }
+    explicit Physics2DBody(b2Body* body) : body(body) {}
 
     ~Physics2DBody() { destroy(); }
 
@@ -49,7 +49,17 @@ namespace ChaosEngine {
 
   class RigidBody2D {
   public:
-    static StaticRigidBodyComponent CreateStaticRigidBody(const Entity& entity, const Transform& transform);
-    static DynamicRigidBodyComponent CreateDynamicRigidBody(const Entity& entity, const Transform& transform, float density, float friction, bool useGravity=true);
+    enum RigitBody2DShapeType { Cricle, Line, Box, Polygon };
+
+    struct RigitBody2DShape {
+      RigitBody2DShapeType type;
+      glm::vec2 dimension;
+      std::vector<glm::vec2> vertices;
+    };
+
+  public:
+    static StaticRigidBodyComponent CreateStaticRigidBody(Entity& entity, const RigitBody2DShape& shape);
+    static DynamicRigidBodyComponent CreateDynamicRigidBody(Entity& entity, const RigitBody2DShape& shape,
+                                                            float density, float friction, bool useGravity = true);
   };
 }

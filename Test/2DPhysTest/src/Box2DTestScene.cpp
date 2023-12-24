@@ -88,6 +88,9 @@ void Box2DTestScene::load() {
     auto plainTex = Texture::Create("noTex.jpg");
     assetManager->registerTexture("Square", std::move(plainTex),
                                   AssetManager::TextureInfo{});
+    auto ballTex = Texture::Create("ball.png");
+    assetManager->registerTexture("ball", std::move(ballTex),
+                                  AssetManager::TextureInfo{});
 
     LOG_INFO("Loading base font");
     assetManager->loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf",
@@ -101,6 +104,9 @@ void Box2DTestScene::load() {
 
 void Box2DTestScene::loadEntities() {
     using namespace ChaosEngine;
+    using RigitBody2DShapeType = RigidBody2D::RigitBody2DShapeType;
+    using RigitBody2DShape = RigidBody2D::RigitBody2DShape;
+
     LOG_INFO("Loading entities");
     mainCamera = createEntity();
     mainCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
@@ -112,26 +118,38 @@ void Box2DTestScene::loadEntities() {
         .mainCamera = true,
     });
 
+    auto background = createEntity();
+    background.setComponent<Meta>(Meta{"Background"});
+    background.setComponent<Transform>(
+        Transform{glm::vec3(0, 0, 0), glm::vec3(), glm::vec3(20, 16, 0.1)});
+    const glm::vec4 greyColor(0.66f, 0.66f, 0.70f, 1);
+    background.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&greyColor, sizeof(greyColor), {&assetManager->getTexture("Square")}),
+        quadROB);
+
     auto floor = createEntity();
     floor.setComponent<Meta>(Meta{"Floor"});
     floor.setComponent<Transform>(
         Transform{glm::vec3(0, -8.0f, 0), glm::vec3(), glm::vec3(5, 1, 1)});
-    glm::vec4 redColor(1, 0, 0, 1);
+    const glm::vec4 redColor(1, 0, 0, 1);
     floor.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&redColor, sizeof(redColor), {&assetManager->getTexture("TestAtlas.jpg")}),
         quadROB);
-    floor.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor, floor.get<Transform>()));
+    floor.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor,
+        RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{5, 1}}));
 
-    auto ball = createEntity();
-    ball.setComponent<Meta>(Meta{"Gravity test"});
-    ball.setComponent<Transform>(
+    const glm::vec4 whiteColor(1, 1, 1, 1);
+
+    auto square = createEntity();
+    square.setComponent<Meta>(Meta{"Gravity test"});
+    square.setComponent<Transform>(
         Transform{glm::vec3(0, 6.0f, 0), glm::vec3(0, 0, 40), glm::vec3(1, 1, 1)});
-    glm::vec4 whiteColor(1, 1, 1, 1);
-    ball.setComponent<RenderComponent>(
+    square.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
-    ball.setComponent<DynamicRigidBodyComponent>(
-        RigidBody2D::CreateDynamicRigidBody(ball, ball.get<Transform>(), 1, 0.3f, true));
+    square.setComponent<DynamicRigidBodyComponent>(
+        RigidBody2D::CreateDynamicRigidBody(square, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{1, 1}}, 1,
+                                            0.3f, true));
 
 
     auto floor1 = createEntity();
@@ -141,7 +159,9 @@ void Box2DTestScene::loadEntities() {
     floor1.setComponent<RenderComponent>(
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("TestAtlas.jpg")}),
         quadROB);
-    floor1.setComponent<StaticRigidBodyComponent>(RigidBody2D::CreateStaticRigidBody(floor1, floor1.get<Transform>()));
+    floor1.setComponent<StaticRigidBodyComponent>(
+        RigidBody2D::CreateStaticRigidBody(floor1, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{2, 1}}));
+
     auto jumper = createEntity();
     jumper.setComponent<Meta>(Meta{"Gravity test"});
     jumper.setComponent<Transform>(
@@ -150,10 +170,43 @@ void Box2DTestScene::loadEntities() {
         texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
         quadROB);
     jumper.setComponent<DynamicRigidBodyComponent>(
-        RigidBody2D::CreateDynamicRigidBody(jumper, jumper.get<Transform>(), 1, 0.3f, true));
+        RigidBody2D::CreateDynamicRigidBody(jumper, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{1}}, 1, 0.3f,
+                                            true));
     auto jumperScript = std::unique_ptr<NativeScript>(new JumperScript(jumper, 14.0f));
     jumper.setComponent<NativeScriptComponent>(std::move(jumperScript), true);
-    LOG_INFO("Jumper entity has ID {}", static_cast<uint32_t>(jumper));
+
+
+    // -----------------------------------------------------------------------------------------------------------------
+    const glm::vec4 blueColor(0, 0, 0.7f, 1);
+    auto funnelL = createEntity();
+    funnelL.setComponent<Meta>(Meta{"Funnel left"});
+    funnelL.setComponent<Transform>(
+        Transform{glm::vec3(9.1f, -5.0f, 0), glm::vec3(0, 0, -45), glm::vec3(4, 1, 1)});
+    funnelL.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&blueColor, sizeof(blueColor), {&assetManager->getTexture("Square")}),
+        quadROB);
+    funnelL.setComponent<StaticRigidBodyComponent>(
+        RigidBody2D::CreateStaticRigidBody(funnelL, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{4, 1}}));
+    auto funnelR = createEntity();
+    funnelR.setComponent<Meta>(Meta{"Funnel right"});
+    funnelR.setComponent<Transform>(
+        Transform{glm::vec3(13.1f, -5.0f, 0), glm::vec3(0, 0, 45), glm::vec3(4, 1, 1)});
+    funnelR.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&blueColor, sizeof(blueColor), {&assetManager->getTexture("Square")}),
+        quadROB);
+    funnelR.setComponent<StaticRigidBodyComponent>(
+        RigidBody2D::CreateStaticRigidBody(funnelR, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{4, 1}}));
+
+    auto ball = createEntity();
+    ball.setComponent<Meta>(Meta{"Ball"});
+    ball.setComponent<Transform>(
+        Transform{glm::vec3(14, 7.0f, 0), glm::vec3(), glm::vec3(0.5f, 0.5f, 1)});
+    ball.setComponent<RenderComponent>(
+        texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("ball")}),
+        quadROB);
+    ball.setComponent<DynamicRigidBodyComponent>(
+        RigidBody2D::CreateDynamicRigidBody(ball, RigitBody2DShape{RigitBody2DShapeType::Cricle, glm::vec2{0.5}}, 3,
+                                            1.8f, true));
 }
 
 void Box2DTestScene::update(float /*deltaTime*/) {

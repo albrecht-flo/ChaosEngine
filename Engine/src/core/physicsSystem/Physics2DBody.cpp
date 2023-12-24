@@ -4,6 +4,7 @@
 
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 namespace ChaosEngine {
   void Physics2DBody::destroy() {
@@ -28,8 +29,31 @@ namespace ChaosEngine {
   }
 
 
-  StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(const Entity& entity, const Transform& transform) {
+  static std::unique_ptr<b2Shape> getBox2DShape(const RigidBody2D::RigitBody2DShape& shape) {
+    constexpr float skin = b2_polygonRadius / 2;
+    switch (shape.type) {
+    case RigidBody2D::Box: {
+      auto ret = std::make_unique<b2PolygonShape>();
+      ret->SetAsBox(shape.dimension.x - skin, shape.dimension.y - skin);
+      return ret;
+    }
+    case RigidBody2D::Cricle: {
+      auto ret = std::make_unique<b2CircleShape>();
+      ret->m_p.SetZero();
+      ret->m_radius = shape.dimension.x - skin;
+      return ret;
+    }
+    default:
+      assert("Unsupported 2D Shape" && false);
+      break;
+    }
+    return nullptr;
+  }
+
+  StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(Entity& entity, const RigitBody2DShape& shapeDef) {
     // LOG_DEBUG("Creating StaticRigidBody2D for entity {}", static_cast<uint32_t>(entity));
+    const auto transform = entity.get<Transform>();
+
     b2BodyDef def{};
     def.position.Set(transform.position.x, transform.position.y);
     def.angle = glm::radians(transform.rotation.z);
@@ -38,22 +62,20 @@ namespace ChaosEngine {
 
     auto body = PhysicsSystem2D::globalInstance->createBody(def);
 
-    // TODO: multiple shapes
-    b2PolygonShape shape;
-    shape.SetAsBox(transform.scale.x, transform.scale.y);
+    auto shape = getBox2DShape(shapeDef);
 
     b2FixtureDef fixtureDef{};
-    fixtureDef.shape = &shape;
+    fixtureDef.shape = shape.get();
     fixtureDef.density = 0.0f;
 
     body.CreateFixture(fixtureDef);
     return StaticRigidBodyComponent{.body = std::move(body)};
   }
 
-  DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(const Entity& entity, const Transform& transform,
+  DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(Entity& entity, const RigitBody2DShape& shapeDef,
                                                                 float density, float friction, bool useGravity) {
     // LOG_DEBUG("Creating DynamicRigidBody2D for entity {}", static_cast<uint32_t>(entity));
-
+    const auto transform = entity.get<Transform>();
     b2BodyDef def{};
     def.position.Set(transform.position.x, transform.position.y);
     def.angle = glm::radians(transform.rotation.z);
@@ -63,13 +85,10 @@ namespace ChaosEngine {
 
     auto body = PhysicsSystem2D::globalInstance->createBody(def);
 
-    // TODO: multiple shapes
-    b2PolygonShape shape;
-    shape.SetAsBox(transform.scale.x - 0.0051f, transform.scale.y - 0.0051f);
-    // -0.51(cm) to compensate for skin collision
+    auto shape = getBox2DShape(shapeDef);
 
     b2FixtureDef fixtureDef{};
-    fixtureDef.shape = &shape;
+    fixtureDef.shape = shape.get();
     fixtureDef.density = density;
     fixtureDef.friction = friction;
 

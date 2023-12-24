@@ -20,5 +20,8 @@ void main() {
     vec4 color = texture(diffuseTexture, in_fragUVs);
 
     // Combine calculated texture color with fragment color // used for tinting models
-    out_Color = vec4(color.rgb * in_fragColor, color.a) * materialData.color;
+    vec4 c = vec4(color.rgb * in_fragColor, color.a) * materialData.color;
+    if(c.a <= 0.01)
+        discard;
+    out_Color = c;
 }

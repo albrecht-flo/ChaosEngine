@@ -33,13 +33,16 @@ void PhysicsSystem2D::Physics2DCollisionListener::EndContact(b2Contact* contact)
     const auto entityA = static_cast<entt::entity>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
     const auto entityB = static_cast<entt::entity>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-    if (ecs.getRegistry().any_of<NativeScriptComponent>(entityA)) {
-        const auto other = Entity(ecs.getEntity(entityB));
-        ecs.getRegistry().get<NativeScriptComponent>(entityA).script->onCollisionExit(other);
-    }
-    if (ecs.getRegistry().any_of<NativeScriptComponent>(entityB)) {
-        const auto other = Entity(ecs.getEntity(entityA));
-        ecs.getRegistry().get<NativeScriptComponent>(entityB).script->onCollisionExit(other);
+    // This check can fail when one of the entities got destroyed
+    if (ecs.getRegistry().valid(entityA) && ecs.getRegistry().valid(entityB)) {
+        if (ecs.getRegistry().any_of<NativeScriptComponent>(entityA)) {
+            const auto other = Entity(ecs.getEntity(entityB));
+            ecs.getRegistry().get<NativeScriptComponent>(entityA).script->onCollisionExit(other);
+        }
+        if (ecs.getRegistry().any_of<NativeScriptComponent>(entityB)) {
+            const auto other = Entity(ecs.getEntity(entityA));
+            ecs.getRegistry().get<NativeScriptComponent>(entityB).script->onCollisionExit(other);
+        }
     }
 }
 
