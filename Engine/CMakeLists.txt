@@ -77,6 +77,10 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestTexture.cpp
         )
 
+add_library(Engine ${ENGINE_SOURCES})
+
+find_package(Vulkan REQUIRED)
+
 set(ADDITIONAL_INCLUDE_DIRS
         ../dep/glm
         ../dep/glfw/include
@@ -90,21 +94,22 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/stb
         ../dep/spdlog/include
         ../dep/box2d/include
+        ${Vulkan_INCLUDE_DIR}
         src/
         )
 
-add_library(Engine ${ENGINE_SOURCES})
 target_include_directories(Engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUDE_DIRS})
 
 if (WIN32)
-    target_link_directories(Engine PUBLIC ../dep/lib/win)
+    target_link_directories(Engine PUBLIC ../dep/lib/win ${Vulkan_LIBRARY})
     target_link_libraries(Engine vulkan-1 glfw3 freetype box2d)
 elseif (UNIX AND NOT APPLE)
-    target_link_directories(Engine PUBLIC ../dep/lib/linux)
+    target_link_directories(Engine PUBLIC ../dep/lib/linux ${Vulkan_LIBRARY})
     target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype box2d)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()
+
 add_compile_definitions(GLFW_INCLUDE_NONE)
 
 
