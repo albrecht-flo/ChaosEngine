@@ -34,6 +34,7 @@ add_custom_command(
 )
 
 # ------------------------------------- Shaders ---------------------------------------------------
+find_package(Vulkan REQUIRED)
 
 set(GLSL_SOURCE_FILES
         "res/shaders/ENGINE_2DBase.vert"
@@ -50,7 +51,8 @@ set(GLSL_SOURCE_FILES
         "res/shaders/2DStaticTexturedSprite.frag"
         )
 
-find_program(GLSLC glslc)
+set(GLSLC ${Vulkan_GLSLC_EXECUTABLE})
+message(STATUS "Found glslc at ${GLSLC}")
 foreach (GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)
     set(SPIRV "${CMAKE_CURRENT_BINARY_DIR}/shaders/${FILE_NAME}.spv")
