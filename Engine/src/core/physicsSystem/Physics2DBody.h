@@ -53,8 +53,8 @@ namespace ChaosEngine {
 
     struct RigitBody2DShape {
       RigitBody2DShapeType type;
-      glm::vec2 dimension;
-      std::vector<glm::vec2> vertices;
+      glm::vec2 dimension = glm::vec2{1};
+      std::vector<glm::vec2> vertices = {};
     };
 
   public:
