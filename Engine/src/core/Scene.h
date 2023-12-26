@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Ecs.h"
+#include "physicsSystem/PhysicsWorld.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
 #include "Engine/src/renderer/window/Window.h"
 
@@ -40,6 +41,7 @@ namespace ChaosEngine {
         Entity createEntity() { return ecs.addEntity(); }
 
     protected:
+        PhysicsWorld physicsWorld;
         ECS ecs;
         //TOBE: Scene tree
     };

@@ -33,7 +33,7 @@ void PhysicsSystem2D::Physics2DCollisionListener::EndContact(b2Contact* contact)
     const auto entityA = static_cast<entt::entity>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
     const auto entityB = static_cast<entt::entity>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 
-    // This check can fail when one of the entities got destroyed
+    // This check can fail when one of the entities got destroyed TODO: Fix this propperly
     if (ecs.getRegistry().valid(entityA) && ecs.getRegistry().valid(entityB)) {
         if (ecs.getRegistry().any_of<NativeScriptComponent>(entityA)) {
             const auto other = Entity(ecs.getEntity(entityB));

@@ -18,9 +18,11 @@ set(ENGINE_SOURCES
         src/core/assets/FontManager.cpp
         src/core/utils/Logger.cpp
         src/core/utils/STDExtensions.cpp
+        src/core/utils/GLMCustomExtension.cpp
         src/core/scriptSystem/NativeScriptSystem.cpp
         src/core/scriptSystem/NativeScript.cpp
         src/core/uiSystem/UISystem.cpp
+        src/core/physicsSystem/PhysicsWorld.cpp
         src/core/physicsSystem/PhysicsSystem2D.cpp
         src/core/physicsSystem/Physics2DBody.cpp
         src/core/assets/Font.cpp

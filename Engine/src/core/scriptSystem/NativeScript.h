@@ -67,6 +67,11 @@ namespace ChaosEngine {
             return entity.get<Component...>();
         }
 
+        template <typename... Component>
+        [[nodiscard]] decltype(auto) getComponent() const {
+            return entity.get<Component...>();
+        }
+
         /**
          * Check if the entity this script belongs to, has a component of type <i>Component</i>.
          * @tparam Component
