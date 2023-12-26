@@ -45,6 +45,12 @@ namespace ChaosEngine {
             return registry->get<Component...>(entity);
         }
 
+        template <typename... Component>
+        [[nodiscard]] decltype(auto) get() const {
+            assert("Registry must not be null" && registry != nullptr);
+            return registry->get<Component...>(entity);
+        }
+
         /**
          * Check if the entity has a component of type <i>Component</i>.
          * @tparam Component
