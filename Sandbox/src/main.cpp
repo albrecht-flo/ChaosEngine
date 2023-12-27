@@ -66,10 +66,12 @@ int main() {
         std::cerr << "[FATAL] Unhandled exception!" << std::endl;
         std::cerr << ex.what() << std::endl;
         std::cerr << "[FATAL] Aborting!" << std::endl;
+        std::cin.get();
         return EXIT_FAILURE;
     } catch (...) {
         std::cerr << "[FATAL] Unhandled AND Unknown exception!" << std::endl;
         std::cerr << "[FATAL] Aborting!" << std::endl;
+        std::cin.get();
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
