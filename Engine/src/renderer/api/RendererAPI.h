@@ -8,11 +8,18 @@
 #include <cassert>
 
 #include "Engine/src/core/Components.h"
+#include "Engine/src/core/assets/Mesh.h"
 #include "Engine/src/renderer/api/RenderPass.h"
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/Framebuffer.h"
 
 namespace Renderer {
+
+    struct DebugRenderData {
+        std::vector<VertexPCU> points{};
+        std::vector<VertexPCU> lines{};
+        std::vector<VertexPCU> triangles{};
+    };
 
     enum class RendererType {
         RENDERER2D
@@ -63,6 +70,8 @@ namespace Renderer {
         /// Resizes the scene viewport, after the next frame has been submited to the GPU
         virtual void requestViewportResize(const glm::vec2 &viewportSize) = 0;
 
+        virtual void prepareDebugData(const DebugRenderData& debugData) = 0;
+
         // ------------------------------------ Rendering commands -----------------------------------------------------
 
         /// Render an object with its material and model matrix
@@ -75,6 +84,10 @@ namespace Renderer {
 
         /// Render a mesh with a material and model matrix
         virtual void drawUI(const glm::mat4 &viewMatrix, const RenderMesh &mesh, const MaterialInstance &material) = 0;
+
+        /// Render scene debug data
+        virtual void drawSceneDebug(const glm::mat4 &viewMat, const CameraComponent &camera,
+                                    const Renderer::DebugRenderData &debugRenderData) = 0;
 
         // ------------------------------------ Getters ----------------------------------------------------------------
 

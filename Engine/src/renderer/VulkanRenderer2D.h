@@ -1,9 +1,12 @@
 #pragma once
 
+#include <optional>
+
 #include "Engine/src/renderer/api/RendererAPI.h"
 
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/passes/SpriteRenderingPass.h"
+#include "Engine/src/renderer/passes/DebugRenderingPass.h"
 #include "Engine/src/renderer/passes/UIRenderingPass.h"
 #include "Engine/src/renderer/passes/ImGuiRenderingPass.h"
 #include "Engine/src/renderer/passes/PostProcessingPass.h"
@@ -23,6 +26,7 @@ private:
 private:
     VulkanRenderer2D(VulkanContext &context,
                      SpriteRenderingPass &&spriteRenderingPass,
+                     std::optional<DebugRenderingPass> &&debugRenderingPass,
                      UIRenderingPass &&uiRenderPass,
                      UIRenderingPass &&textRenderPass,
                      PostProcessingPass &&postProcessingPass,
@@ -40,7 +44,8 @@ public:
 
     VulkanRenderer2D &operator=(VulkanRenderer2D &&o) = delete;
 
-    static std::unique_ptr<VulkanRenderer2D> Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain);
+    static std::unique_ptr<VulkanRenderer2D>
+    Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain, bool enableDebugRendering);
 
     // Lifecycle
 
@@ -81,18 +86,25 @@ public:
     /// Resizes the scene viewport
     void requestViewportResize(const glm::vec2 &viewportSize) override;
 
+    void prepareDebugData(const Renderer::DebugRenderData& debugRenderData) override;
+
     // Rendering commands
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
 
     /// Render an indexed vertex buffer with its material
     void drawText(const Renderer::Buffer &vertexBuffer, const Renderer::Buffer &indexBuffer,
-                uint32_t indexCount, uint32_t indexOffset,
-                const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
+                  uint32_t indexCount, uint32_t indexOffset,
+                  const glm::mat4 &modelMat, const Renderer::MaterialInstance &materialInstance) override;
 
     /// Render a mesh with a material and model matrix
     void drawUI(const glm::mat4 &viewMatrix, const Renderer::RenderMesh &mesh,
                 const Renderer::MaterialInstance &material) override;
+
+
+    /// Render scene debug data
+    void drawSceneDebug(const glm::mat4 &viewMat, const CameraComponent &camera,
+                        const Renderer::DebugRenderData &debugRenderData) override;
 
     /// Gets the appropriate render pass for the requested shader stage
     [[nodiscard]] const Renderer::RenderPass &
@@ -109,6 +121,7 @@ private:
     VulkanContext &context;
 
     SpriteRenderingPass spriteRenderingPass;
+    std::optional<DebugRenderingPass> debugRenderingPass;
     UIRenderingPass uiRenderingPass;
     UIRenderingPass textRenderingPass;
     PostProcessingPass postProcessingPass;
@@ -116,6 +129,6 @@ private:
 
     bool renderingSceneToSwapchain;
     glm::uvec2 sceneResize{0, 0};
-
+    std::vector<std::unique_ptr<VulkanBuffer>> debugBuffers{};
 };
 

@@ -62,6 +62,7 @@ namespace ChaosEngine {
         // Scene Data
         std::shared_ptr<AssetManager> assetManager;
         std::unique_ptr<Scene> scene;
+        bool physicsDebug = false;
 
         // FPS counter
         std::chrono::time_point<std::chrono::high_resolution_clock> deltaTimer;

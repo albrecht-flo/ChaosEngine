@@ -63,6 +63,8 @@ namespace Renderer::TestRenderer {
         /// Resizes the scene viewport
         void requestViewportResize(const glm::vec2 &viewportSize) override;
 
+        void prepareDebugData(const Renderer::DebugRenderData& debugRenderData) override;
+
         // ------------------------------------ Rendering commands -----------------------------------------------------
 
         /// Render an object with its material and model matrix
@@ -75,6 +77,10 @@ namespace Renderer::TestRenderer {
 
         /// Render a mesh with a material and model matrix
         void drawUI(const glm::mat4 &viewMatrix, const RenderMesh &mesh, const MaterialInstance &material) override;
+
+        /// Render scene debug data
+        void drawSceneDebug(const glm::mat4 &viewMat, const CameraComponent &camera,
+                            const Renderer::DebugRenderData &debugRenderData) override;
 
         // ------------------------------------ Getters ----------------------------------------------------------------
 

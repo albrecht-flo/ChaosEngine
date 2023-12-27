@@ -17,8 +17,9 @@ VulkanMemory VulkanMemory::Create(const VulkanDevice &device, const VulkanInstan
     allocatorInfo.instance = instance.vk();
 
     VmaAllocator allocator;
-    if (vmaCreateAllocator(&allocatorInfo, &allocator) != VK_SUCCESS) {
-        throw std::runtime_error("[VMA] Failed to create VulkanMemoryAllocator!");
+    if (int res = vmaCreateAllocator(&allocatorInfo, &allocator) != VK_SUCCESS) {
+        throw std::runtime_error(
+                std::string("[VMA] Failed to create VulkanMemoryAllocator! Error code: ") + std::to_string(res));
     }
 
     return VulkanMemory(device, commandPool, allocator);
@@ -67,8 +68,8 @@ VulkanMemory::createBuffer(VkDeviceSize size, VkBufferUsageFlagBits bufferUsage,
 
     VkBuffer buffer{};
     VmaAllocation allocation{};
-    if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("[VMA] Failed to create buffer!");
+    if (int res = vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &buffer, &allocation, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error(std::string("[VMA] Failed to create buffer! Error code: ") + std::to_string(res));
     }
 
     return VulkanBuffer{*this, buffer, allocation};
@@ -208,8 +209,8 @@ const {
 
     VkImage image{};
     VmaAllocation allocation{};
-    if (vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("[VMA] Failed to create Image!");
+    if (int res = vmaCreateImage(allocator, &imageInfo, &allocInfo, &image, &allocation, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error(std::string("[VMA] Failed to create Image! Error code: ") + std::to_string(res));
     }
 
     return VulkanImage{*this, image, allocation, static_cast<uint32_t>(width), static_cast<uint32_t>(height), format};

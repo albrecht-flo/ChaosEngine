@@ -14,7 +14,7 @@ void PusherScript::onStart() {
     body.setVelocity(glm::vec3(velocity, 0));
 }
 
-void PusherScript::onUpdate(float deltaTime) {
+void PusherScript::onUpdate(float) {
     auto curP = glm::vec2{getComponent<Transform>().position};
 
     float distance = glm::distance(origin, curP);
