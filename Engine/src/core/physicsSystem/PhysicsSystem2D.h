@@ -18,9 +18,9 @@ namespace ChaosEngine {
     class PhysicsSystem2D {
         class Physics2DCollisionListener : public b2ContactListener {
         public:
-            Physics2DCollisionListener(ECS &ecs);
+            explicit Physics2DCollisionListener(ECS &ecs);
 
-            ~Physics2DCollisionListener();
+            ~Physics2DCollisionListener() override;
 
             void BeginContact(b2Contact *contact) override;
 
@@ -76,7 +76,7 @@ namespace ChaosEngine {
 
         ~PhysicsSystem2D();
 
-        void init(const SceneConfiguration &config, ECS &ecs);
+        void init(Scene &scene);
 
         void update(ECS &ecs, float deltaTime);
 
@@ -89,13 +89,13 @@ namespace ChaosEngine {
 
         void destroyBody(b2Body *body) {
             if (body == nullptr) return;
-            world.DestroyBody(body);
+            world->DestroyBody(body);
         }
 
-        Physics2DBody createBody(const b2BodyDef &def) { return Physics2DBody{world.CreateBody(&def)}; }
+        Physics2DBody createBody(const b2BodyDef &def) { return Physics2DBody{world->CreateBody(&def)}; }
 
     private:
-        b2World world;
+        b2World *world;
         std::unique_ptr<Physics2DCollisionListener> collusionListener = nullptr;
         std::unique_ptr<Physics2DDebugDraw> debugDrawer = nullptr;
 

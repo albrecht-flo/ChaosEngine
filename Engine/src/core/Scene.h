@@ -12,7 +12,6 @@ namespace ChaosEngine {
     struct SceneConfiguration {
         Renderer::RendererType rendererType; // TOBE: Abstraction layer
         bool renderSceneToOffscreenBuffer;
-        glm::vec2 gravity = glm::vec2(0, 0);
         bool debugRenderingEnabled = false;
     };
 
@@ -23,7 +22,9 @@ namespace ChaosEngine {
         friend class Engine;
 
     public:
-        Scene() = default;
+        Scene() : physicsWorld(glm::vec2(0, 0)), ecs() {}
+
+        Scene(const glm::vec2 &gravity) : physicsWorld(gravity), ecs() {}
 
         virtual ~Scene() = default;
 
@@ -44,6 +45,10 @@ namespace ChaosEngine {
         virtual void updateImGui() = 0;
 
         Entity createEntity() { return ecs.addEntity(); }
+
+        ECS &getECS() { return ecs; }
+
+        PhysicsWorld &getPhysicsWorld() { return physicsWorld; }
 
     protected:
         PhysicsWorld physicsWorld;

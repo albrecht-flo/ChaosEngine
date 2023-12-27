@@ -35,7 +35,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     debugRenderingEnabled = config.debugRenderingEnabled;
 
     renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, debugRenderingEnabled);
-    physicsSystem.init(config, scene->ecs);
+    physicsSystem.init(*scene);
 
     scene->load();
 
