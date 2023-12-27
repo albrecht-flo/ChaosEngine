@@ -44,6 +44,12 @@ namespace ChaosEngine {
 
         std::shared_ptr<AssetManager> getAssetManager() { return assetManager; }
 
+        // ------------------------------------ Runtime adjustable functions -------------------------------------------
+
+        [[nodiscard]] bool getPhysicsDebug() const { return physicsDebug; }
+
+        void setPhysicsDebug(bool physicsDebugOn) { physicsDebug = physicsDebugOn; }
+
         // ------------------------------------ Static Getters ---------------------------------------------------------
         inline static Engine *getEngineInstance() { return s_engineInstance; }
 
@@ -62,6 +68,7 @@ namespace ChaosEngine {
         // Scene Data
         std::shared_ptr<AssetManager> assetManager;
         std::unique_ptr<Scene> scene;
+        bool debugRenderingEnabled = false;
         bool physicsDebug = false;
 
         // FPS counter

@@ -17,6 +17,8 @@ Engine::Engine()
           physicsSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),
+          debugRenderingEnabled(false),
+          physicsDebug(false),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     if (s_engineInstance != nullptr) {
@@ -30,8 +32,9 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     assert("A Scene is required." && pScene != nullptr);
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(*this);
-    physicsDebug = true;
-    renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, physicsDebug);
+    debugRenderingEnabled = config.debugRenderingEnabled;
+
+    renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, debugRenderingEnabled);
     physicsSystem.init(config, scene->ecs);
 
     scene->load();
@@ -73,7 +76,7 @@ void Engine::run() {
         // Handle user input on ui elements
         uiSystem.update(scene->ecs);
         // Update render system
-        if(physicsDebug) {
+        if (debugRenderingEnabled && physicsDebug) {
             auto debugData = physicsSystem.getDebugData();
             renderingSys.renderEntities(scene->ecs, debugData);
         } else

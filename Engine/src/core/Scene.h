@@ -13,6 +13,7 @@ namespace ChaosEngine {
         Renderer::RendererType rendererType; // TOBE: Abstraction layer
         bool renderSceneToOffscreenBuffer;
         glm::vec2 gravity = glm::vec2(0, 0);
+        bool debugRenderingEnabled = false;
     };
 
     /**
@@ -25,6 +26,10 @@ namespace ChaosEngine {
         Scene() = default;
 
         virtual ~Scene() = default;
+
+        Scene(const Scene &o) = delete;
+
+        Scene &operator=(const Scene &o) = delete;
 
         /// Returns the configuration of the engine for this scene.
         virtual SceneConfiguration configure(Engine &engine) = 0;
