@@ -154,7 +154,7 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawPoint(const b2Vec2 &p, float size,
 
 PhysicsSystem2D *PhysicsSystem2D::globalInstance = nullptr;
 
-PhysicsSystem2D::PhysicsSystem2D() : world(b2Vec2(0, -10)) {
+PhysicsSystem2D::PhysicsSystem2D() : world(nullptr) {
     assert("Global physics2D instance is already set" && globalInstance == nullptr);
     globalInstance = this;
 }
@@ -163,17 +163,21 @@ PhysicsSystem2D::~PhysicsSystem2D() {
     globalInstance = nullptr;
 }
 
-void PhysicsSystem2D::init(const SceneConfiguration &, ECS &ecs) {
-    collusionListener = std::make_unique<Physics2DCollisionListener>(ecs);
-    world.SetContactListener(collusionListener.get());
+void PhysicsSystem2D::init(Scene &scene) {
+    collusionListener = std::make_unique<Physics2DCollisionListener>(scene.getECS());
+    world = &scene.getPhysicsWorld().getPhysicsWorldRef();
+    world->SetContactListener(collusionListener.get());
 
     debugDrawer = std::make_unique<Physics2DDebugDraw>();
     debugDrawer->SetFlags(b2Draw::e_shapeBit);
-    world.SetDebugDraw(debugDrawer.get());
+    world->SetDebugDraw(debugDrawer.get());
 }
 
 void PhysicsSystem2D::update(ECS &ecs, float deltaTime) {
-    world.Step(deltaTime, velocityIterations, positionIterations);
+    if (world == nullptr)
+        return;
+
+    world->Step(deltaTime, velocityIterations, positionIterations);
 
     auto view = ecs.getRegistry().view<Transform, DynamicRigidBodyComponent>();
     for (auto [entity, transform, body]: view.each()) {
@@ -186,6 +190,6 @@ void PhysicsSystem2D::update(ECS &ecs, float deltaTime) {
 
 std::shared_ptr<Renderer::DebugRenderData> PhysicsSystem2D::getDebugData() {
     debugDrawer->tick();
-    world.DebugDraw();
+    world->DebugDraw();
     return debugDrawer->getData();
 }

@@ -15,7 +15,6 @@ Box2DTestScene::configure(ChaosEngine::Engine &engine) {
     return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D,
             .renderSceneToOffscreenBuffer = false,
-            .gravity = glm::vec2(0, -10),
             .debugRenderingEnabled = true,
     };
 }
