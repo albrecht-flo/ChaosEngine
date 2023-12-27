@@ -130,7 +130,6 @@ void Box2DTestScene::loadEntities() {
             texturedMaterial.instantiate(&greyColor, sizeof(greyColor), {&assetManager->getTexture("Square")}),
             quadROB);
 
-
     auto floor1 = createEntity();
     floor1.setComponent<Meta>(Meta{"Floor 2"});
     floor1.setComponent<Transform>(

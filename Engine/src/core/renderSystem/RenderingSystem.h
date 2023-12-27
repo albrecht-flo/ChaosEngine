@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <optional>
+
 #include "Engine/src/core/Ecs.h"
 #include "Engine/src/core/Components.h"
 #include "Engine/src/renderer/api/RendererAPI.h"
@@ -19,9 +21,10 @@ namespace ChaosEngine {
         void updateComponents(ECS &ecs);
 
         /// Processes all entities to create the next frame
-        void renderEntities(ECS &ecs);
+        void renderEntities(ECS &ecs, const std::optional<std::shared_ptr<Renderer::DebugRenderData>> &debugData);
 
-        void createRenderer(Renderer::RendererType rendererType, bool renderSceneToOffscreenBuffer);
+        void createRenderer(Renderer::RendererType rendererType, bool renderSceneToOffscreenBuffer,
+                            bool enableDebugRendering);
 
         static Renderer::GraphicsContext &GetContext() {
             assert("Context MUST not be empty!" && Context != nullptr);

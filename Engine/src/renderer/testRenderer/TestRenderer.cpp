@@ -50,6 +50,11 @@ void TestRenderer::beginTextOverlay(const glm::mat4 &/*viewMatrix*/) {
 void TestRenderer::endTextOverlay() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
+
+void TestRenderer::prepareDebugData(const Renderer::DebugRenderData& debugRenderData) {
+    LOG_DEBUG(__PRETTY_FUNCTION__);
+}
+
 void TestRenderer::flush() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
@@ -63,8 +68,8 @@ void TestRenderer::draw(const glm::mat4 &/*viewMatrix*/, const RenderComponent &
 }
 
 void TestRenderer::drawText(const Buffer &/*vertexBuffer*/, const Buffer &/*indexBuffer*/,
-                          uint32_t /*indexCount*/, uint32_t /*indexOffset*/,
-                          const glm::mat4 &/*modelMat*/, const MaterialInstance &/*materialInstance*/) {
+                            uint32_t /*indexCount*/, uint32_t /*indexOffset*/,
+                            const glm::mat4 &/*modelMat*/, const MaterialInstance &/*materialInstance*/) {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
@@ -82,4 +87,10 @@ TestRenderer::getRenderPassForShaderStage(Renderer::ShaderPassStage /*stage*/) c
 const Renderer::Framebuffer &TestRenderer::getFramebuffer() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
     return testPass.getFramebuffer();
+}
+
+void TestRenderer::drawSceneDebug(const glm::mat4 &/*viewMat*/, const CameraComponent &/*camera*/,
+                                  const Renderer::DebugRenderData &/*debugRenderData*/) {
+
+    LOG_DEBUG(__PRETTY_FUNCTION__);
 }

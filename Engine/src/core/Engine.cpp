@@ -30,7 +30,8 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     assert("A Scene is required." && pScene != nullptr);
     scene = std::move(pScene);
     SceneConfiguration config = scene->configure(*this);
-    renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer);
+    physicsDebug = true;
+    renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, physicsDebug);
     physicsSystem.init(config, scene->ecs);
 
     scene->load();
@@ -72,7 +73,11 @@ void Engine::run() {
         // Handle user input on ui elements
         uiSystem.update(scene->ecs);
         // Update render system
-        renderingSys.renderEntities(scene->ecs);
+        if(physicsDebug) {
+            auto debugData = physicsSystem.getDebugData();
+            renderingSys.renderEntities(scene->ecs, debugData);
+        } else
+            renderingSys.renderEntities(scene->ecs, std::nullopt);
 
         // Run all script updates
         nativeScriptSystem.update(scene->ecs, deltaTime);

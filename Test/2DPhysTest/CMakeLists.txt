@@ -40,6 +40,8 @@ find_package(Vulkan REQUIRED)
 set(GLSL_SOURCE_FILES
         "res/shaders/ENGINE_2DBase.vert"
         "res/shaders/ENGINE_2DBase.frag"
+        "res/shaders/ENGINE_DEBUG.vert"
+        "res/shaders/ENGINE_DEBUG.frag"
         "res/shaders/ENGINE_UIBase.vert"
         "res/shaders/ENGINE_UIBase.frag"
         "res/shaders/ENGINE_UIText.frag"

@@ -8,10 +8,19 @@
 
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
-std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain) {
+std::unique_ptr<VulkanRenderer2D>
+VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext, bool renderingSceneToSwapchain,
+                         bool enableDebugRendering) {
     auto &context = dynamic_cast<VulkanContext &>(graphicsContext);
     auto spriteRenderingPass = SpriteRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                            context.getSwapChain().getHeight());
+
+    std::optional<DebugRenderingPass> debugRenderingPass =
+            (enableDebugRendering) ?
+            std::make_optional(DebugRenderingPass::Create(context, spriteRenderingPass.getOpaquePass(),
+                                                          context.getSwapChain().getWidth(),
+                                                          context.getSwapChain().getHeight()))
+                                   : std::nullopt;
 
     auto uiRenderingPass = UIRenderingPass::Create(context, context.getSwapChain().getWidth(),
                                                    context.getSwapChain().getHeight());
@@ -28,7 +37,7 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
     auto imGuiRenderingPass = ImGuiRenderingPass::Create(context, context.getWindow(), !renderingSceneToSwapchain);
 
     return std::unique_ptr<VulkanRenderer2D>(
-            new VulkanRenderer2D(context, std::move(spriteRenderingPass),
+            new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(debugRenderingPass),
                                  std::move(uiRenderingPass), std::move(textRenderingPass),
                                  std::move(postProcessingPass), std::move(imGuiRenderingPass),
                                  renderingSceneToSwapchain));
@@ -36,12 +45,14 @@ std::unique_ptr<VulkanRenderer2D> VulkanRenderer2D::Create(Renderer::GraphicsCon
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context,
                                    SpriteRenderingPass &&spriteRenderingPass,
+                                   std::optional<DebugRenderingPass> &&debugRenderingPass,
                                    UIRenderingPass &&uiRenderPass,
                                    UIRenderingPass &&textRenderPass,
                                    PostProcessingPass &&postProcessingPass,
                                    ImGuiRenderingPass &&imGuiRenderingPass,
                                    bool renderingSceneToSwapchain)
         : context(context), spriteRenderingPass(std::move(spriteRenderingPass)),
+          debugRenderingPass(std::move(debugRenderingPass)),
           uiRenderingPass(std::move(uiRenderPass)), textRenderingPass(std::move(textRenderPass)),
           postProcessingPass(std::move(postProcessingPass)), imGuiRenderingPass(std::move(imGuiRenderingPass)),
           renderingSceneToSwapchain(renderingSceneToSwapchain) {}
@@ -61,6 +72,21 @@ void VulkanRenderer2D::setup() {
 //
 //    quadMesh = std::make_unique<RenderMesh>(
 //            std::move(vertexBuffer), std::move(indexBuffer), static_cast<uint32_t>(quad.indices.size()));
+    for (int i = 0; i < 3; ++i) {
+//        std::vector<VertexPCU> data{
+//            VertexPCU{.pos{0, 0, 1}, .color{1, 1, 0, 1}, .uv{}},
+//            VertexPCU{.pos{10, 10, 1}, .color{1, 1, 0, 1}, .uv{}},
+//        };
+        std::vector<uint8_t> data;
+        size_t size = sizeof(VertexPCU) * 1024;
+        data.reserve(size);
+        debugBuffers.emplace_back(std::unique_ptr<VulkanBuffer>(dynamic_cast<VulkanBuffer *>(
+                                                                        VulkanBuffer::CreateStreaming(
+                                                                                data.data(),
+                                                                                size,
+                                                                                Renderer::BufferType::Vertex).release()))
+        );
+    }
 }
 
 
@@ -114,6 +140,9 @@ void VulkanRenderer2D::recreateSwapChain() {
     // Update framebuffer attachments
     if (renderingSceneToSwapchain) {
         spriteRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
+        if (debugRenderingPass.has_value())
+            debugRenderingPass->resizeAttachments(context.getSwapChain().getWidth(),
+                                                  context.getSwapChain().getHeight());
         uiRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
         textRenderingPass.resizeAttachments(context.getSwapChain().getWidth(), context.getSwapChain().getHeight());
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), uiRenderingPass.getFramebuffer(),
@@ -122,6 +151,8 @@ void VulkanRenderer2D::recreateSwapChain() {
     } else if (sceneResize != glm::uvec2{0, 0}) {
         Logger::D("VulkanRenderer2D", "Resizing scene viewport during swapchain recreation");
         spriteRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
+        if (debugRenderingPass.has_value())
+            debugRenderingPass->resizeAttachments(sceneResize.x, sceneResize.y);
         uiRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         textRenderingPass.resizeAttachments(sceneResize.x, sceneResize.y);
         postProcessingPass.resizeAttachments(spriteRenderingPass.getFramebuffer(), uiRenderingPass.getFramebuffer(),
@@ -140,6 +171,7 @@ void VulkanRenderer2D::requestViewportResize(const glm::vec2 &viewportSize) {
 }
 
 void VulkanRenderer2D::flush() {
+//    Logger::W("VulkanRenderer2D", "Flushing...");
     if (!context.flushCommands()) {
         // Display surface has changed -> update framebuffer attachments
         recreateSwapChain();
@@ -161,6 +193,14 @@ void VulkanRenderer2D::flush() {
                                              sceneResize.x, sceneResize.y);
         sceneResize = {0, 0};
     }
+}
+
+void VulkanRenderer2D::prepareDebugData(const Renderer::DebugRenderData &debugRenderData) {
+    uint32_t currentFrame = context.getCurrentFrame();
+    LOG_WARN("current frame {}", currentFrame);
+
+     debugBuffers[currentFrame]->copy((void *) debugRenderData.lines.data(),
+                                      debugRenderData.lines.size() * sizeof(VertexPCU));
 }
 
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
@@ -187,6 +227,16 @@ void VulkanRenderer2D::drawUI(const glm::mat4 &modelMat, const Renderer::RenderM
     uiRenderingPass.drawUI(*vulkanVBuffer, *vulkanIBuffer, mesh.getIndexCount(), 0, modelMat, vulkanMaterialI);
 }
 
+void VulkanRenderer2D::drawSceneDebug(const glm::mat4 &viewMat, const CameraComponent &camera,
+                                      const Renderer::DebugRenderData &debugRenderData) {
+    if (!debugRenderingPass.has_value())
+        return;
+    debugRenderingPass->begin(viewMat, camera, spriteRenderingPass.getFramebuffer());
+
+    uint32_t currentFrame = context.getCurrentFrame();
+    debugRenderingPass->drawLines(*debugBuffers[currentFrame], debugRenderData.lines.size());
+}
+
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {
     switch (stage) {
         case Renderer::ShaderPassStage::Opaque:
@@ -195,3 +245,4 @@ const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Render
             throw std::runtime_error("[Renderer] Shader stage is not supported in VulkanRenderer2D.");
     }
 }
+

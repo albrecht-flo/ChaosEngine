@@ -27,12 +27,13 @@ RenderingSystem::~RenderingSystem() {
     Context = nullptr;
 }
 
-void RenderingSystem::createRenderer(RendererType rendererType, bool renderSceneToOffscreenBuffer) {
+void RenderingSystem::createRenderer(RendererType rendererType, bool renderSceneToOffscreenBuffer,
+                                     bool enableDebugRendering) {
     LOG_DEBUG("[RenderingSystem] currentAPI {}", Context->currentAPI);
     if (Context->currentAPI == Renderer::GraphicsAPI::Vulkan) {
         switch (rendererType) {
             case Renderer::RendererType::RENDERER2D :
-                Renderer = VulkanRenderer2D::Create(*Context, !renderSceneToOffscreenBuffer);
+                Renderer = VulkanRenderer2D::Create(*Context, !renderSceneToOffscreenBuffer, enableDebugRendering);
                 break;
             default:
                 assert("Unknown renderer for 'Vulkan' GraphicsAPI" && false);
@@ -56,18 +57,26 @@ void RenderingSystem::updateComponents(ECS &/*ecs*/) {
     Context->tickFrame();
 }
 
-void RenderingSystem::renderEntities(ECS &ecs) {
+void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_ptr<DebugRenderData>>& debugData) {
     assert("Renderer must be initialized" && Renderer != nullptr);
     auto view = ecs.getRegistry().view<const Transform, const RenderComponent>();
     auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
+
+    if (debugData) {
+        Renderer->prepareDebugData(**debugData);
+    }
 
     Context->beginFrame();
     Renderer->beginFrame();
 
     bool rendered = false;
+    glm::mat4 modelMat{};
+    CameraComponent currentCamera{};
     for (const auto&[entity, transform, camera]: cameras.each()) {
         if (camera.active && !rendered) {
-            Renderer->beginScene(transform.getModelMatrix(), camera);
+            modelMat = transform.getModelMatrix();
+            currentCamera = camera;
+            Renderer->beginScene(modelMat, currentCamera);
             rendered = true;
         } else if (camera.active && rendered) {
             LOG_WARN("Only one camera can be active at a time!");
@@ -81,6 +90,8 @@ void RenderingSystem::renderEntities(ECS &ecs) {
     for (const auto&[entity, transform, renderComp]: view.each()) {
         Renderer->draw(transform.getModelMatrix(), renderComp);
     }
+    if(debugData)
+        Renderer->drawSceneDebug(modelMat, currentCamera, **debugData);
     Renderer->endScene();
 
     uiRenderSubSystem->render(ecs, *Renderer);
