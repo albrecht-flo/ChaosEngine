@@ -60,9 +60,10 @@ void PhysicsSystem2D::Physics2DDebugDraw::tick() {
     data->lines.clear();
 }
 
+// Rendering functions derived from Box2D testbed rendering
+
 void
 PhysicsSystem2D::Physics2DDebugDraw::DrawPolygon(const b2Vec2 *vertices, int32_t vertexCount, const b2Color &color) {
-//    const glm::vec4 renderingColor{0, 1, 0.68f, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
 
     b2Vec2 p1 = vertices[vertexCount - 1];
@@ -76,7 +77,6 @@ PhysicsSystem2D::Physics2DDebugDraw::DrawPolygon(const b2Vec2 *vertices, int32_t
 
 void PhysicsSystem2D::Physics2DDebugDraw::DrawSolidPolygon(const b2Vec2 *vertices, int32 vertexCount,
                                                            const b2Color &color) {
-//    const glm::vec4 renderingColor{0, 1, 0.68f, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
 
     b2Vec2 p1 = vertices[vertexCount - 1];
@@ -89,7 +89,6 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawSolidPolygon(const b2Vec2 *vertice
 }
 
 void PhysicsSystem2D::Physics2DDebugDraw::DrawCircle(const b2Vec2 &center, float radius, const b2Color &color) {
-//    const glm::vec4 renderingColor{0, 1, 0.68f, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
 
     const float k_segments = 16.0f;
@@ -113,7 +112,6 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawCircle(const b2Vec2 &center, float
 
 void PhysicsSystem2D::Physics2DDebugDraw::DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis,
                                                           const b2Color &color) {
-//    const glm::vec4 renderingColor{0, 1, 0.68f, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
 
     const float k_segments = 16.0f;
@@ -139,7 +137,6 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawSolidCircle(const b2Vec2 &center, 
 }
 
 void PhysicsSystem2D::Physics2DDebugDraw::DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const b2Color &color) {
-//    const glm::vec4 renderingColor{0, 1, 0.68f, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
     data->lines.emplace_back(VertexPC{.pos{p1.x, p1.y, 1}, .color=renderingColor});
     data->lines.emplace_back(VertexPC{.pos{p2.x, p2.y, 1}, .color=renderingColor});
@@ -148,7 +145,6 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawSegment(const b2Vec2 &p1, const b2
 void PhysicsSystem2D::Physics2DDebugDraw::DrawTransform(const b2Transform &xf) {}
 
 void PhysicsSystem2D::Physics2DDebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
-//    const glm::vec4 renderingColor{1, 1, 0, 1};
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
     data->lines.emplace_back(VertexPC{.pos{p.x, p.y, 1}, .color=renderingColor});
     data->lines.emplace_back(VertexPC{.pos{p.x, p.y, 1}, .color=renderingColor});

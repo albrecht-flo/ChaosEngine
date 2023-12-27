@@ -4,7 +4,7 @@
 
 class Box2DTestScene : public ChaosEngine::Scene {
 public:
-    Box2DTestScene() : Scene(), window(nullptr) {}
+    Box2DTestScene() : Scene(), engine(nullptr), window(nullptr) {}
 
     ~Box2DTestScene() override = default;
 
@@ -18,6 +18,7 @@ public:
 private:
     void loadEntities();
 private:
+    ChaosEngine::Engine* engine;
     Window *window;
     std::shared_ptr<ChaosEngine::AssetManager> assetManager;
 

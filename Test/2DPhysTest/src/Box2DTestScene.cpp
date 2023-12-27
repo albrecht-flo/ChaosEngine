@@ -8,13 +8,15 @@
 
 ChaosEngine::SceneConfiguration
 Box2DTestScene::configure(ChaosEngine::Engine &engine) {
-    LOG_INFO("Configurig Engine");
+    LOG_INFO("Configuring Engine");
+    this->engine = &engine;
     window = &engine.getEngineWindow();
     assetManager = engine.getAssetManager();
     return ChaosEngine::SceneConfiguration{
             .rendererType = Renderer::RendererType::RENDERER2D,
             .renderSceneToOffscreenBuffer = false,
             .gravity = glm::vec2(0, -10),
+            .debugRenderingEnabled = true,
     };
 }
 
@@ -246,7 +248,9 @@ void Box2DTestScene::updateImGui() {
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Text("Viewport Size: %f x %f", io.DisplaySize.x, io.DisplaySize.y);
+    ImGui::Separator();
+    if (ImGui::Button("Toggle BoundingBoxes")) {
+        engine->setPhysicsDebug(!engine->getPhysicsDebug());
+    }
     ImGui::End();
-    // const auto &fb = ChaosEngine::RenderingSystem::GetCurrentRenderer().getFramebuffer();
-    // auto size = CustomImGui::CoreImGui::RenderSceneViewport(fb, "Scene", &viewportInFocus);
 }
