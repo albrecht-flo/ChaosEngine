@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "CameraScript.h"
 #include "JumperScript.h"
 #include "PusherScript.h"
 
@@ -54,12 +55,13 @@ void Box2DTestScene::load() {
                                     .type = ShaderBindingType::UniformBuffer,
                                     .stage = ShaderStage::Fragment,
                                     .name = "materialData",
-                                    .layout = std::make_optional(std::vector<ShaderBindingLayout>({
-                                                                                                          ShaderBindingLayout{
-                                                                                                                  .type = ShaderValueType::Vec4,
-                                                                                                                  .name = "color"
-                                                                                                          },
-                                                                                                  }))
+                                    .layout = std::make_optional(
+                                            std::vector<ShaderBindingLayout>({
+                                                                                     ShaderBindingLayout{
+                                                                                             .type = ShaderValueType::Vec4,
+                                                                                             .name = "color"
+                                                                                     },
+                                                                             }))
                             }
                     })),
             .set1ExpectedCount = 64,
@@ -118,6 +120,8 @@ void Box2DTestScene::loadEntities() {
             .active = true,
             .mainCamera = true,
     });
+    auto script = std::unique_ptr<ChaosEngine::NativeScript>(new CameraScript(mainCamera));
+    mainCamera.setComponent<NativeScriptComponent>(std::move(script), true);
 
     const glm::vec4 whiteColor(1, 1, 1, 1);
 

@@ -32,6 +32,15 @@ struct VertexPCU {
     };
 };
 
+struct VertexPC {
+    glm::vec3 pos;
+    glm::vec4 color;
+
+    bool operator==(const VertexPC &o) const {
+        return pos == o.pos && color == o.color;
+    };
+};
+
 // Needed to enable Vertex instances as keys in unordered_maps
 namespace std {
     template<>
@@ -42,6 +51,11 @@ namespace std {
     template<>
     struct hash<VertexPCU> {
         size_t operator()(VertexPCU const &vertex) const noexcept;
+    };
+
+    template<>
+    struct hash<VertexPC> {
+        size_t operator()(VertexPC const &vertex) const noexcept;
     };
 }
 

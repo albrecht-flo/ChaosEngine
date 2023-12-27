@@ -168,10 +168,10 @@ VulkanPipeline VulkanPipelineBuilder::build() {
     colorBlendAttachment.srcColorBlendFactor = (alphaBlendingEnabled) ? VK_BLEND_FACTOR_SRC_ALPHA : VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstColorBlendFactor = (alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA
                                                                       : VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.colorBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_MULTIPLY_EXT :VK_BLEND_OP_ADD;
+    colorBlendAttachment.colorBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_ADD :VK_BLEND_OP_ADD;
     colorBlendAttachment.srcAlphaBlendFactor = (false && alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE : VK_BLEND_FACTOR_ONE;
     colorBlendAttachment.dstAlphaBlendFactor = (false && alphaBlendingEnabled) ? VK_BLEND_FACTOR_ONE : VK_BLEND_FACTOR_ZERO;
-    colorBlendAttachment.alphaBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_MULTIPLY_EXT : VK_BLEND_OP_ADD;
+    colorBlendAttachment.alphaBlendOp = (alphaBlendingEnabled) ? VK_BLEND_OP_ADD : VK_BLEND_OP_ADD;
 
     // Manages color attachment blending ops
     VkPipelineColorBlendStateCreateInfo colorBlending = {};

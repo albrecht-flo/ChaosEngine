@@ -24,7 +24,7 @@ private:
         alignas(16) glm::mat4 proj;
     };
 private:
-    explicit DebugRenderingPass(const VulkanContext &context, const VulkanRenderPass *pass)
+    explicit DebugRenderingPass(const VulkanContext &context, const VulkanRenderPass& pass)
             : context(context), renderPass(pass) {}
 
     void init(uint32_t width, uint32_t height);
@@ -43,7 +43,7 @@ public:
     static DebugRenderingPass
     Create(const VulkanContext &context, const VulkanRenderPass &pass, uint32_t width, uint32_t height);
 
-    void begin(const glm::mat4 &viewMat, const CameraComponent &camera, const VulkanFramebuffer &framebuffer);
+    void begin(const glm::mat4 &viewMat, const CameraComponent &camera);
 
 
     void resizeAttachments(uint32_t width, uint32_t height);
@@ -59,12 +59,11 @@ private:
 
 private:
     const VulkanContext &context;
-    const VulkanRenderPass *renderPass;
+    const VulkanRenderPass& renderPass;
 
     // Dynamic resources ------------------------------------------------------
     std::unique_ptr<VulkanDescriptorPool> descriptorPool;
     std::unique_ptr<VulkanDescriptorSetLayout> cameraDescriptorLayout;
-    std::unique_ptr<VulkanDescriptorSetLayout> materialDescriptorLayout;
     std::unique_ptr<VulkanPipeline> pipeline;
 
     // Per Frame resources ----------------------------------------------------

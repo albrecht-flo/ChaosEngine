@@ -62,10 +62,6 @@ void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_p
     auto view = ecs.getRegistry().view<const Transform, const RenderComponent>();
     auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
 
-    if (debugData) {
-        Renderer->prepareDebugData(**debugData);
-    }
-
     Context->beginFrame();
     Renderer->beginFrame();
 
