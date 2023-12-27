@@ -63,8 +63,6 @@ namespace Renderer::TestRenderer {
         /// Resizes the scene viewport
         void requestViewportResize(const glm::vec2 &viewportSize) override;
 
-        void prepareDebugData(const Renderer::DebugRenderData& debugRenderData) override;
-
         // ------------------------------------ Rendering commands -----------------------------------------------------
 
         /// Render an object with its material and model matrix

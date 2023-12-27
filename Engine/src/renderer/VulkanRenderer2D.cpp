@@ -1,10 +1,11 @@
 #include "VulkanRenderer2D.h"
 
 #include "core/utils/Logger.h"
-#include "renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
 #include "core/assets/Mesh.h"
-#include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 #include "renderer/api/Material.h"
+#include "renderer/api/GraphicsContext.h"
+#include "renderer/vulkan/pipeline/VulkanPipelineBuilder.h"
+#include "renderer/vulkan/rendering/VulkanAttachmentBuilder.h"
 
 // ------------------------------------ Class Construction -------------------------------------------------------------
 
@@ -40,7 +41,7 @@ VulkanRenderer2D::Create(Renderer::GraphicsContext &graphicsContext, bool render
             new VulkanRenderer2D(context, std::move(spriteRenderingPass), std::move(debugRenderingPass),
                                  std::move(uiRenderingPass), std::move(textRenderingPass),
                                  std::move(postProcessingPass), std::move(imGuiRenderingPass),
-                                 renderingSceneToSwapchain));
+                                 renderingSceneToSwapchain, enableDebugRendering));
 }
 
 VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context,
@@ -50,42 +51,30 @@ VulkanRenderer2D::VulkanRenderer2D(VulkanContext &context,
                                    UIRenderingPass &&textRenderPass,
                                    PostProcessingPass &&postProcessingPass,
                                    ImGuiRenderingPass &&imGuiRenderingPass,
-                                   bool renderingSceneToSwapchain)
+                                   bool renderingSceneToSwapchain,
+                                   bool debugRenderingEnabled)
         : context(context), spriteRenderingPass(std::move(spriteRenderingPass)),
           debugRenderingPass(std::move(debugRenderingPass)),
           uiRenderingPass(std::move(uiRenderPass)), textRenderingPass(std::move(textRenderPass)),
           postProcessingPass(std::move(postProcessingPass)), imGuiRenderingPass(std::move(imGuiRenderingPass)),
-          renderingSceneToSwapchain(renderingSceneToSwapchain) {}
+          renderingSceneToSwapchain(renderingSceneToSwapchain), debugRenderingEnabled(debugRenderingEnabled) {}
 
 
 // ------------------------------------ Lifecycle methods --------------------------------------------------------------
 
 void VulkanRenderer2D::setup() {
-//    auto quad = ModelLoader::getQuad();
-//    VulkanBuffer vertexBuffer = context.getMemory().createInputBuffer(
-//            quad.vertices.size() * sizeof(quad.vertices[0]), reinterpret_cast<const char *>(quad.vertices.data()),
-//            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-//
-//    VulkanBuffer indexBuffer = context.getMemory().createInputBuffer(
-//            quad.indices.size() * sizeof(quad.indices[0]), reinterpret_cast<const char *>(quad.indices.data()),
-//            VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-//
-//    quadMesh = std::make_unique<RenderMesh>(
-//            std::move(vertexBuffer), std::move(indexBuffer), static_cast<uint32_t>(quad.indices.size()));
-    for (int i = 0; i < 3; ++i) {
-//        std::vector<VertexPCU> data{
-//            VertexPCU{.pos{0, 0, 1}, .color{1, 1, 0, 1}, .uv{}},
-//            VertexPCU{.pos{10, 10, 1}, .color{1, 1, 0, 1}, .uv{}},
-//        };
-        std::vector<uint8_t> data;
-        size_t size = sizeof(VertexPCU) * 1024;
-        data.reserve(size);
-        debugBuffers.emplace_back(std::unique_ptr<VulkanBuffer>(dynamic_cast<VulkanBuffer *>(
-                                                                        VulkanBuffer::CreateStreaming(
-                                                                                data.data(),
-                                                                                size,
-                                                                                Renderer::BufferType::Vertex).release()))
-        );
+    if(debugRenderingEnabled) {
+        for (int i = 0; i < Renderer::GraphicsContext::maxFramesInFlight; ++i) {
+            std::vector<uint8_t> data;
+            size_t size = sizeof(VertexPC) * maxDebugVertices;
+            data.reserve(size);
+            debugBuffers.emplace_back(std::unique_ptr<VulkanBuffer>(dynamic_cast<VulkanBuffer *>(
+                                                                            VulkanBuffer::CreateStreaming(
+                                                                                    data.data(),
+                                                                                    size,
+                                                                                    Renderer::BufferType::Vertex).release()))
+            );
+        }
     }
 }
 
@@ -195,14 +184,6 @@ void VulkanRenderer2D::flush() {
     }
 }
 
-void VulkanRenderer2D::prepareDebugData(const Renderer::DebugRenderData &debugRenderData) {
-    uint32_t currentFrame = context.getCurrentFrame();
-    LOG_WARN("current frame {}", currentFrame);
-
-     debugBuffers[currentFrame]->copy((void *) debugRenderData.lines.data(),
-                                      debugRenderData.lines.size() * sizeof(VertexPCU));
-}
-
 void VulkanRenderer2D::draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) {
     const auto &mesh = dynamic_cast<const VulkanRenderMesh &>(*(renderComponent.mesh));
     const auto &material = dynamic_cast<const VulkanMaterialInstance &>(*(renderComponent.materialInstance));
@@ -231,9 +212,20 @@ void VulkanRenderer2D::drawSceneDebug(const glm::mat4 &viewMat, const CameraComp
                                       const Renderer::DebugRenderData &debugRenderData) {
     if (!debugRenderingPass.has_value())
         return;
-    debugRenderingPass->begin(viewMat, camera, spriteRenderingPass.getFramebuffer());
 
     uint32_t currentFrame = context.getCurrentFrame();
+
+    size_t size = debugRenderData.lines.size();
+    if(size > maxDebugVertices) {
+        LOG_WARN("Too many debug vertices {}/{} ignore overhead!", size, maxDebugVertices);
+        size = maxDebugVertices;
+    }
+
+    debugBuffers[currentFrame]->copy((void *) debugRenderData.lines.data(),
+                                     size * sizeof(VertexPC));
+
+    debugRenderingPass->begin(viewMat, camera);
+
     debugRenderingPass->drawLines(*debugBuffers[currentFrame], debugRenderData.lines.size());
 }
 

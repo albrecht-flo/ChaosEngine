@@ -14,7 +14,7 @@ using namespace Renderer;
 
 DebugRenderingPass
 DebugRenderingPass::Create(const VulkanContext &context, const VulkanRenderPass& pass, uint32_t width, uint32_t height) {
-    auto ret = DebugRenderingPass(context, &pass);
+    auto ret = DebugRenderingPass(context, pass);
     ret.init(width, height);
     return ret;
 }
@@ -23,7 +23,6 @@ DebugRenderingPass::DebugRenderingPass(DebugRenderingPass &&o) noexcept:
         context(o.context), renderPass(o.renderPass),
         descriptorPool(std::move(o.descriptorPool)),
         cameraDescriptorLayout(std::move(o.cameraDescriptorLayout)),
-        materialDescriptorLayout(std::move(o.materialDescriptorLayout)),
         pipeline(std::move(o.pipeline)),
         perFrameDescriptorSets(std::move(o.perFrameDescriptorSets)),
         perFrameUniformBuffers(std::move(o.perFrameUniformBuffers)),
@@ -43,12 +42,11 @@ void DebugRenderingPass::createStandardPipeline() {
 
     pipeline = std::make_unique<VulkanPipeline>(
             VulkanPipelineBuilder(
-                    context.getDevice(), *renderPass,
+                    context.getDevice(), renderPass,
                     std::move(pipelineLayout),
-                    VertexAttributeBuilder(0, sizeof(VertexPCU), InputRate::Vertex)
+                    VertexAttributeBuilder(0, sizeof(VertexPC), InputRate::Vertex)
                             .addAttribute(0, VertexFormat::RGB_FLOAT, offsetof(VertexPCU, pos))
                             .addAttribute(1, VertexFormat::RGBA_FLOAT, offsetof(VertexPCU, color))
-                            .addAttribute(2, VertexFormat::RG_FLOAT, offsetof(VertexPCU, uv))
                             .build(),
                     "ENGINE_DEBUG")
                     .setFragmentShader("ENGINE_DEBUG")
@@ -57,7 +55,7 @@ void DebugRenderingPass::createStandardPipeline() {
                     .setCullFace(Renderer::CullFace::CCLW)
                     .setDepthTestEnabled(false)
                     .setDepthCompare(Renderer::CompareOp::Less)
-                    .setAlphaBlendingEnabled(true)
+                    .setAlphaBlendingEnabled(false)
                     .build());
 
     descriptorPool = std::make_unique<VulkanDescriptorPool>(
@@ -111,7 +109,7 @@ void DebugRenderingPass::updateUniformBuffer(const glm::mat4 &viewMat, const Cam
                                        uboContent->data(), uboContent->size(), 0);
 }
 
-void DebugRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera, const VulkanFramebuffer& framebuffer) {
+void DebugRenderingPass::begin(const glm::mat4 &viewMat, const CameraComponent &camera) {
     updateUniformBuffer(viewMat, camera, viewportSize);
 
     auto &commandBuffer = context.getCurrentPrimaryCommandBuffer();

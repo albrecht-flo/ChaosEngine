@@ -16,9 +16,7 @@
 namespace Renderer {
 
     struct DebugRenderData {
-        std::vector<VertexPCU> points{};
-        std::vector<VertexPCU> lines{};
-        std::vector<VertexPCU> triangles{};
+        std::vector<VertexPC> lines{};
     };
 
     enum class RendererType {
@@ -69,8 +67,6 @@ namespace Renderer {
 
         /// Resizes the scene viewport, after the next frame has been submited to the GPU
         virtual void requestViewportResize(const glm::vec2 &viewportSize) = 0;
-
-        virtual void prepareDebugData(const DebugRenderData& debugData) = 0;
 
         // ------------------------------------ Rendering commands -----------------------------------------------------
 

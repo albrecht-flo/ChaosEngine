@@ -31,7 +31,8 @@ private:
                      UIRenderingPass &&textRenderPass,
                      PostProcessingPass &&postProcessingPass,
                      ImGuiRenderingPass &&imGuiRenderingPass,
-                     bool renderingSceneToSwapchain);
+                     bool renderingSceneToSwapchain,
+                     bool debugRenderingEnabled);
 
 public:
     ~VulkanRenderer2D() = default;
@@ -86,8 +87,6 @@ public:
     /// Resizes the scene viewport
     void requestViewportResize(const glm::vec2 &viewportSize) override;
 
-    void prepareDebugData(const Renderer::DebugRenderData& debugRenderData) override;
-
     // Rendering commands
     /// Render an object with its material and model matrix
     void draw(const glm::mat4 &modelMat, const RenderComponent &renderComponent) override;
@@ -128,7 +127,10 @@ private:
     ImGuiRenderingPass imGuiRenderingPass;
 
     bool renderingSceneToSwapchain;
+    bool debugRenderingEnabled;
     glm::uvec2 sceneResize{0, 0};
     std::vector<std::unique_ptr<VulkanBuffer>> debugBuffers{};
+
+    const size_t maxDebugVertices = 2048;
 };
 

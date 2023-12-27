@@ -3,6 +3,7 @@ set(BOX2DTEST_SOURCES
         src/Box2DTestScene.cpp
         src/JumperScript.cpp
         src/PusherScript.cpp
+        src/CameraScript.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS

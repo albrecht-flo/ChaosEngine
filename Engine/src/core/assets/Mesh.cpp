@@ -25,4 +25,11 @@ namespace std {
         hash_combine(value, hash<glm::vec2>()(vertex.uv));
         return value;
     }
+
+    size_t hash<VertexPC>::operator()(VertexPC const &vertex) const noexcept {
+        size_t value = 0;
+        hash_combine(value, hash<glm::vec3>()(vertex.pos));
+        hash_combine(value, hash<glm::vec4>()(vertex.color));
+        return value;
+    }
 }

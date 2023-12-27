@@ -317,7 +317,7 @@ static std::tuple<VkQueue, uint32_t> getTransferQueue(VkDevice device, QueueFami
 
 const std::vector<const char *> VulkanDevice::requiredDeviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME, // TODO: This is not supported by RenderDoc !!!
+//        VK_EXT_BLEND_OPERATION_ADVANCED_EXTENSION_NAME, // TODO: This is not supported by RenderDoc !!!
 };
 
 const std::vector<VkFormat> VulkanDevice::requiredTextureFormats = {

@@ -51,10 +51,6 @@ void TestRenderer::endTextOverlay() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
 
-void TestRenderer::prepareDebugData(const Renderer::DebugRenderData& debugRenderData) {
-    LOG_DEBUG(__PRETTY_FUNCTION__);
-}
-
 void TestRenderer::flush() {
     LOG_DEBUG(__PRETTY_FUNCTION__);
 }
