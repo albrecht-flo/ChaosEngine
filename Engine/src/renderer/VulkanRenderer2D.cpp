@@ -226,7 +226,7 @@ void VulkanRenderer2D::drawSceneDebug(const glm::mat4 &viewMat, const CameraComp
 
     debugRenderingPass->begin(viewMat, camera);
 
-    debugRenderingPass->drawLines(*debugBuffers[currentFrame], debugRenderData.lines.size());
+    debugRenderingPass->drawLines(*debugBuffers[currentFrame], static_cast<uint32_t>(debugRenderData.lines.size()));
 }
 
 const Renderer::RenderPass &VulkanRenderer2D::getRenderPassForShaderStage(Renderer::ShaderPassStage stage) const {

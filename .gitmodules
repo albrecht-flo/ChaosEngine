@@ -47,3 +47,6 @@
 [submodule "dep/box2d"]
 	path = dep/box2d
 	url = git@github.com:erincatto/box2d.git
+[submodule "dep/openal-soft"]
+	path = dep/openal-soft
+	url = git@github.com:kcat/openal-soft.git
