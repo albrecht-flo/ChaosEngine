@@ -25,6 +25,7 @@ set(ENGINE_SOURCES
         src/core/physicsSystem/PhysicsWorld.cpp
         src/core/physicsSystem/PhysicsSystem2D.cpp
         src/core/physicsSystem/Physics2DBody.cpp
+        src/core/audioSystem/AudioSystem.cpp
         src/core/assets/Font.cpp
         #     Engine API classes
         src/renderer/api/RenderMesh.cpp
@@ -97,6 +98,7 @@ set(ADDITIONAL_INCLUDE_DIRS
         ../dep/stb
         ../dep/spdlog/include
         ../dep/box2d/include
+        ../dep/openal-soft/include
         ${Vulkan_INCLUDE_DIR}
         src/
         )
@@ -105,10 +107,10 @@ target_include_directories(Engine PUBLIC ${CMAKE_SOURCE_DIR} ${ADDITIONAL_INCLUD
 
 if (WIN32)
     target_link_directories(Engine PUBLIC ../dep/lib/win ${Vulkan_LIBRARY})
-    target_link_libraries(Engine vulkan-1 glfw3 freetype box2d)
+    target_link_libraries(Engine vulkan-1 glfw3 freetype box2d OpenAL32 winmm)
 elseif (UNIX AND NOT APPLE)
     target_link_directories(Engine PUBLIC ../dep/lib/linux ${Vulkan_LIBRARY})
-    target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype box2d)
+    target_link_libraries(Engine X11 dl pthread vulkan glfw3 freetype box2d OpenAL32)
 else ()
     message(SEND_ERROR, "Unsuported platform")
 endif ()
