@@ -19,6 +19,7 @@ Engine::Engine()
           scene(nullptr),
           debugRenderingEnabled(false),
           physicsDebug(false),
+          audioSystem(),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     if (s_engineInstance != nullptr) {
@@ -36,6 +37,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
 
     renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, debugRenderingEnabled);
     physicsSystem.init(*scene);
+    audioSystem.init(*scene);
 
     scene->load();
 
