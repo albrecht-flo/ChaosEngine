@@ -95,6 +95,9 @@ void SoundTestScene::load() {
                            FontStyle::Italic, 16.0f, 95.0f);
     assetManager->loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf",
                            FontStyle::Bold, 16.0f, 95.0f);
+
+    backgroundAudioBuffer = AudioBuffer::Create("sounds/test.ogg");
+
     loadEntities();
 }
 
@@ -103,7 +106,8 @@ void SoundTestScene::loadEntities() {
 
     LOG_INFO("Loading entities");
     mainCamera = createEntity();
-    mainCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    auto mainCameraTransform = Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)};
+    mainCamera.setComponent<Transform>(mainCameraTransform);
     mainCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -113,6 +117,11 @@ void SoundTestScene::loadEntities() {
     });
     auto script = std::unique_ptr<ChaosEngine::NativeScript>(new CameraScript(mainCamera));
     mainCamera.setComponent<NativeScriptComponent>(std::move(script), true);
+    mainCamera.setComponent<AudioListenerComponent>(true, mainCameraTransform.position);
+    mainCamera.setComponent<AudioSourceComponent>(
+            AudioSource::Create(mainCameraTransform.position, false),
+            mainCameraTransform.position);
+    mainCamera.get<AudioSourceComponent>().source.setBuffer(backgroundAudioBuffer);
 
     const glm::vec4 whiteColor(1, 1, 1, 1);
 
@@ -124,7 +133,6 @@ void SoundTestScene::loadEntities() {
     background.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&greyColor, sizeof(greyColor), {&assetManager->getTexture("Square")}),
             quadROB);
-
 }
 
 void SoundTestScene::update(float /*deltaTime*/) {
@@ -132,6 +140,8 @@ void SoundTestScene::update(float /*deltaTime*/) {
     if (window->isKeyDown(GLFW_KEY_ESCAPE) ||
         (window->isKeyDown(GLFW_KEY_Q) && window->isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window->close(); }
 }
+
+static bool looping = false;
 
 void SoundTestScene::updateImGui() {
     ImGui::NewFrame();
@@ -141,5 +151,57 @@ void SoundTestScene::updateImGui() {
     // Basic info
     ImGui::Text("Frame: %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
     ImGui::Text("Viewport Size: %f x %f", io.DisplaySize.x, io.DisplaySize.y);
+
+    ImGui::Separator();
+    auto &bgAudioSource = mainCamera.get<AudioSourceComponent>().source;
+    ImGui::Text("Audio controls");
+    ImGui::Columns(2, "background_ctrls");
+
+    if (ImGui::Button("Play bg"))
+        bgAudioSource.play();
+    ImGui::NextColumn();
+    if (ImGui::Button("Pause bg"))
+        bgAudioSource.pause();
+    ImGui::NextColumn();
+    if (ImGui::Button("Rewind bg"))
+        bgAudioSource.rewind();
+    ImGui::NextColumn();
+    if (ImGui::Button("Stop bg"))
+        bgAudioSource.stop();
+    ImGui::NextColumn();
+
+    ImGui::Separator();
+    ImGui::Text("BG looping:");
+    ImGui::NextColumn();
+    ImGui::Text("%s", (looping ? "ON" : "OFF"));
+    ImGui::NextColumn();
+    if (ImGui::Button("Toggle bg looping")) {
+        looping = !looping;
+        bgAudioSource.setLooping(looping);
+    }
+    ImGui::NextColumn();
+    ImGui::NextColumn();
+
+    ImGui::Separator();
+    const auto &bgBuffer = bgAudioSource.getBuffer();
+    auto sourcePos = bgAudioSource.getBufferPosition() / bgBuffer.getSampleSize();
+    auto bufferLength = bgBuffer.getSamples() * bgBuffer.getSampleSize();
+    float totalSeconds = (float) ((bgBuffer.getSamples() / bgBuffer.getSampleRate()));
+    ImGui::Text("Time:");
+    ImGui::NextColumn();
+    ImGui::Text("%.1fs /%.1fs",
+                totalSeconds * (((float) sourcePos / (float) bgBuffer.getSamples()) / bgBuffer.getChannels()),
+                totalSeconds);
+    ImGui::NextColumn();
+    ImGui::Text("BG buffer offset:");
+    ImGui::NextColumn();
+    ImGui::Text("%lld", sourcePos);
+    ImGui::NextColumn();
+    ImGui::Text("BG buffer length:");
+    ImGui::NextColumn();
+    ImGui::Text("%lld", bufferLength);
+    ImGui::NextColumn();
+
+
     ImGui::End();
 }

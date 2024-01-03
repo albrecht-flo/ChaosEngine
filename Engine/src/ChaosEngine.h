@@ -3,12 +3,17 @@
 #include "core/utils/Logger.h"
 #include "core/Engine.h"
 #include "core/Scene.h"
-#include "Engine/src/core/renderSystem/RenderingSystem.h"
 #include "core/Components.h"
 #include "core/Ecs.h"
 #include "core/Entity.h"
 #include "core/assets/ModelLoader.h"
 #include "core/assets/Mesh.h"
+#include "Engine/src/core/renderSystem/RenderingSystem.h"
+
+// Audio API ------------------------------------------------------------------
+
+#include "core/audioSystem/api/AudioBuffer.h"
+#include "core/audioSystem/api/AudioSource.h"
 
 // Rendering API --------------------------------------------------------------
 #include "renderer/api/GraphicsContext.h"

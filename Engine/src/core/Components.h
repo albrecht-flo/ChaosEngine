@@ -16,7 +16,8 @@
 #include "Engine/src/renderer/api/RenderMesh.h"
 #include "Engine/src/core/scriptSystem/NativeScript.h"
 #include "Engine/src/core/assets/Font.h"
-#include "physicsSystem/Physics2DBody.h"
+#include "Engine/src/core/physicsSystem/Physics2DBody.h"
+#include "Engine/src/core/audioSystem/api/AudioSource.h"
 
 struct Meta {
     std::string name;
@@ -107,10 +108,23 @@ struct UIRenderComponent {
 };
 
 // Physics components ---------------------------------------------------------------------
+
 struct StaticRigidBodyComponent {
     ChaosEngine::Physics2DBody body;
 };
 
 struct DynamicRigidBodyComponent {
     ChaosEngine::Physics2DBody body;
+};
+
+// Audio components ---------------------------------------------------------------------
+
+struct AudioListenerComponent {
+    bool active;
+    glm::vec3 oldPosition; // Used for velocity calculation
+};
+
+struct AudioSourceComponent {
+    ChaosEngine::AudioSource source;
+    glm::vec3 oldPosition; // Used for velocity calculation
 };

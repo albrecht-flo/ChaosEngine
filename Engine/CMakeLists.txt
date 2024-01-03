@@ -27,8 +27,12 @@ set(ENGINE_SOURCES
         src/core/physicsSystem/PhysicsSystem2D.cpp
         src/core/physicsSystem/Physics2DBody.cpp
         src/core/audioSystem/AudioSystem.cpp
+        src/core/audioSystem/OpenALHelpers.cpp
         src/core/assets/Font.cpp
-        #     Engine API classes
+        #     Audio Engine API classes
+        src/core/audioSystem/api/AudioBuffer.cpp
+        src/core/audioSystem/api/AudioSource.cpp
+        #     Rendering Engine API classes
         src/renderer/api/RenderMesh.cpp
         src/renderer/api/Buffer.cpp
         src/renderer/api/Material.cpp

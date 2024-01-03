@@ -8,6 +8,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+
 namespace ChaosEngine {
 
     class AudioSystem {
@@ -21,15 +22,10 @@ namespace ChaosEngine {
         void update(ECS &ecs, float deltaTime);
 
     private:
-        ALenum getALFormat(const AudioFormat &format);
-
-    private:
         std::vector<std::string> availableAudioDevices;
         ALCdevice* openALDevice = nullptr;
         // to be moved
         ALCcontext *openALContext = nullptr;
-        ALuint source1 = 0;
-        ALuint buffer1 = 0;
     };
 
 }

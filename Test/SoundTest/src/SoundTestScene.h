@@ -25,6 +25,7 @@ private:
 
     std::shared_ptr<Renderer::RenderMesh> quadROB = nullptr;
     Renderer::MaterialRef texturedMaterial  = Renderer::MaterialRef(nullptr);
+    std::shared_ptr<ChaosEngine::AudioBuffer> backgroundAudioBuffer = nullptr;
 
     ChaosEngine::Entity mainCamera;
 
