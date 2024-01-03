@@ -12,6 +12,7 @@ set(ENGINE_SOURCES
         src/core/renderSystem/UIRenderSubSystem.cpp
         src/core/assets/Mesh.cpp
         src/core/assets/ModelLoader.cpp
+        src/core/assets/RawAudio.cpp
         src/core/assets/RawImage.cpp
         src/core/assets/AssetManager.cpp
         src/core/assets/AssetLoader.cpp

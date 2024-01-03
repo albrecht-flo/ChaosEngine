@@ -10,4 +10,6 @@ PUSH_MINIMAL_WARNING_LEVEL
 
 #include "stb_image_write.h"
 
+#include "stb_vorbis.c"
+
 POP_MINIMAL_WARNING_LEVEL
