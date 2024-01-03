@@ -19,9 +19,21 @@ namespace ChaosEngine {
 
         RawAudio &operator=(const RawAudio &o) = delete;
 
-        RawAudio(RawAudio &&o) = delete;
+        RawAudio(RawAudio &&o) noexcept
+                : channels(o.channels), sampleRate(o.sampleRate), samples(o.samples), data(std::move(o.data)),
+                  format(o.format) {}
 
-        RawAudio &operator=(RawAudio &&o) = delete;
+        RawAudio &operator=(RawAudio &&o) noexcept {
+            if (&o == this)
+                return *this;
+
+            channels = o.channels;
+            sampleRate = o.sampleRate;
+            samples = o.samples;
+            data = std::move(o.data);
+            format = o.format;
+            return *this;
+        }
 
         // Creation api --------------------------------------------------------------------------
 
