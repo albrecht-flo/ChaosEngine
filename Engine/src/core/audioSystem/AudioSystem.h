@@ -21,6 +21,10 @@ namespace ChaosEngine {
 
         void update(ECS &ecs, float deltaTime);
 
+        // Debug Information
+
+        static Transform GetListenerPosition();
+
     private:
         std::vector<std::string> availableAudioDevices;
         ALCdevice* openALDevice = nullptr;
