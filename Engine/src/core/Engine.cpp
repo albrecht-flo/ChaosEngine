@@ -88,6 +88,8 @@ void Engine::run() {
         nativeScriptSystem.update(scene->ecs, deltaTime);
         // Tick rendering system
         physicsSystem.update(scene->ecs, deltaTime);
+        // Tick audio system
+        audioSystem.update(scene->ecs, deltaTime);
 
         // Update Scene
         scene->update(deltaTime);

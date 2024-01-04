@@ -125,3 +125,12 @@ void AudioSystem::update(ECS &ecs, float deltaTime) {
         source.source.setPosition(pos);
     }
 }
+
+Transform AudioSystem::GetListenerPosition() {
+    float x, y, z;
+    alGetListener3f(AL_POSITION, &x, &y, &z);
+    checkALErrors("alGetListener3f(AL_POSITION)");
+    return Transform{
+        .position{x, y, z}
+    };
+}

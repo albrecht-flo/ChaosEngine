@@ -15,7 +15,7 @@ AudioSource AudioSource::Create(const glm::vec3 &position, bool looping) {
     ALuint source;
     alGenSources(1, &source);
     checkALErrors("alGenSources", source);
-    if (!source)
+    if (source == 0)
         throw std::runtime_error("[AudioSource] Failed to create new OpenAL source");
 
     alSourcef(source, AL_PITCH, 1);
@@ -60,11 +60,6 @@ void AudioSource::pause() {
 void AudioSource::stop() {
     alSourceStop(handle);
     checkALErrors("alSourceStop", handle);
-}
-
-void AudioSource::rewind() {
-    alSourceRewind(handle);
-    checkALErrors("alSourceRewind", handle);
 }
 
 void AudioSource::setPosition(const glm::vec3 &position) {

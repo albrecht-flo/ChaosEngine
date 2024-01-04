@@ -20,7 +20,7 @@ namespace ChaosEngine {
         AudioSource &operator=(const AudioSource &o) = delete;
 
         AudioSource(AudioSource &&o) noexcept
-                : handle(o.handle) { o.handle = 0; }
+                : handle(o.handle), buffer(std::move(o.buffer)) { o.handle = 0; }
 
         AudioSource &operator=(AudioSource &&o) noexcept {
             if (&o == this)
@@ -28,6 +28,7 @@ namespace ChaosEngine {
             destroy();
             handle = o.handle;
             o.handle = 0;
+            buffer = std::move(o.buffer);
             return *this;
         }
 
@@ -44,8 +45,6 @@ namespace ChaosEngine {
         void pause();
 
         void stop();
-
-        void rewind();
 
         void setPitch(float pitch);
 

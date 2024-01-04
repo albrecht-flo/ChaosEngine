@@ -2,6 +2,7 @@ set(SoundTest_SOURCES
         src/main.cpp
         src/SoundTestScene.cpp
         src/CameraScript.cpp
+        src/SoundButtonScript.cpp
         )
 
 set(ADDITIONAL_INCLUDE_DIRS
@@ -51,10 +52,8 @@ set(GLSL_SOURCE_FILES
         "res/shaders/ENGINE_2DPostProcessing.vert"
         "res/shaders/ENGINE_2DPostProcessing.frag"
         "res/shaders/2DSprite.vert"
-        "res/shaders/2DPostProcessing.vert"
-        "res/shaders/2DPostProcessing.frag"
-        "res/shaders/2DStaticColoredSprite.frag"
         "res/shaders/2DStaticTexturedSprite.frag"
+        "res/shaders/UI.frag"
         )
 
 set(GLSLC ${Vulkan_GLSLC_EXECUTABLE})

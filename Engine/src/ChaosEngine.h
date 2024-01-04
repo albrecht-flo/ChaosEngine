@@ -9,6 +9,7 @@
 #include "core/assets/ModelLoader.h"
 #include "core/assets/Mesh.h"
 #include "Engine/src/core/renderSystem/RenderingSystem.h"
+#include "Engine/src/core/audioSystem/AudioSystem.h"
 
 // Audio API ------------------------------------------------------------------
 
