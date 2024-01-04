@@ -186,7 +186,7 @@ void SoundTestScene::loadEntities() {
 
 
     audioTesterSurround = createEntity();
-    auto audioTesterTransform = Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)};
+    auto audioTesterTransform = Transform{glm::vec3(0, 0, -4), glm::vec3(), glm::vec3(1, 1, 1)};
     surroundOriginalPosition = audioTesterTransform.position;
     audioTesterSurround.setComponent<Meta>(Meta{"Steps"});
     audioTesterSurround.setComponent<Transform>(audioTesterTransform);
@@ -254,7 +254,7 @@ void SoundTestScene::update(float deltaTime) {
     if (surroundRunning) {
         const auto &center = mainCamera.get<Transform>().position;
         path += deltaTime * surroundSpeed;
-        glm::vec3 newPos = glm::rotate(glm::qua(glm::vec3{0, path, 0}), center + surroundOriginalPosition) - center;
+        glm::vec3 newPos = glm::rotate(glm::qua(glm::vec3{0, path, 0}), surroundOriginalPosition - center) + center;
         audioTesterSurround.get<Transform>().position = newPos;
         LOG_DEBUG("New position ({}, {}, {})", newPos.x, newPos.y, newPos.z);
     }
