@@ -46,7 +46,7 @@ void UISystem::init(ECS &/*ecs*/) {
 }
 
 void UISystem::update(ECS &ecs) {
-    auto scripts = ecs.getRegistry().view<Transform, UIComponent>();
+    auto scripts = ecs.getRegistry().view<const Transform, const UIComponent>();
 
     // Handle mouse input and dispatch events for UI Component
     auto mouse = window.getAbsoluteMousePos();
@@ -58,8 +58,8 @@ void UISystem::update(ECS &ecs) {
 
     // Relative mouse position in viewport
     glm::vec2 mousePos{mouse.x - viewportExtent.first.x, mouse.y - viewportExtent.first.y};
-    // LOG_DEBUG("Mouse position {}x{}", mousePos.x, mousePos.y);
-    for (auto&&[entity, transform, ui]: scripts.each()) {
+//    LOG_DEBUG("Mouse position {}x{}", mousePos.x, mousePos.y);
+    for (const auto &[entity, transform, ui]: scripts.each()) {
         if (!ui.active)
             continue;
         bool isMouseOver = ((transform.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?

@@ -66,13 +66,7 @@ public:
         viewportMax = max;
     }
 
-    [[nodiscard]] std::pair<glm::ivec2, glm::ivec2> getGameWindowExtent() const {
-        if (viewportMax.x == 0 && viewportMax.y == 0) {
-            auto size = getFrameBufferSize();
-            return {glm::ivec2{0, 0}, size};
-        }
-        return {viewportMin, viewportMax};
-    }
+    [[nodiscard]] std::pair<glm::ivec2, glm::ivec2> getGameWindowExtent() const;
 
     // Vulkan specific code
     [[nodiscard]] VkSurfaceKHR createSurface(const VkInstance &instance) const;
