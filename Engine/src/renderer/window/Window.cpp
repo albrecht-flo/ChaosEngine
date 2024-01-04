@@ -99,3 +99,13 @@ VkSurfaceKHR Window::createSurface(const VkInstance &instance) const {
 
     return surface;
 }
+
+std::pair<glm::ivec2, glm::ivec2> Window::getGameWindowExtent() const {
+    if (viewportMax.x == 0 && viewportMax.y == 0) {
+        auto size = getFrameBufferSize();
+        glm::ivec2 windowPos{};
+        glfwGetWindowPos(window, &windowPos.x, &windowPos.y);
+        return {windowPos, windowPos + size};
+    }
+    return {viewportMin, viewportMax};
+}
