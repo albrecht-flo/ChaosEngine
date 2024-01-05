@@ -14,10 +14,11 @@ using namespace ChaosEngine;
 using namespace OpenALHelpers;
 
 std::shared_ptr<AudioBuffer> AudioBuffer::Create(const std::string &filename) {
+    ALuint buffer;
+
     auto audio = RawAudio::loadOggFile(filename);
     ALenum format = getALFormat(audio.getFormat());
 
-    ALuint buffer;
     alGenBuffers(1, &buffer);
     checkALErrors("alGenSources", buffer);
 
@@ -26,8 +27,9 @@ std::shared_ptr<AudioBuffer> AudioBuffer::Create(const std::string &filename) {
 
     alBufferData(buffer, format, audio.getData(), (int) audio.getSize(), audio.getSampleRate());
     checkALErrors("alBufferData", buffer);
+
     return std::make_shared<AudioBuffer>(buffer, audio.getFormat(), audio.getSampleRate(), audio.getChannels(),
-                                         audio.getSamples());
+                                         audio.getSamples(), RawAudio(0, 0, 0, nullptr));
 }
 
 void AudioBuffer::destroy() {

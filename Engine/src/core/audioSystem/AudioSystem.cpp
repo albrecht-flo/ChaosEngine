@@ -8,29 +8,19 @@ using namespace ChaosEngine;
 using namespace OpenALHelpers;
 
 AudioSystem::AudioSystem() {
-    ALboolean enumeration;
-
-    enumeration = alcIsExtensionPresent(nullptr, "ALC_ENUMERATION_EXT");
     availableAudioDevices.clear();
-    if (enumeration == AL_FALSE) {
+
+    ALboolean enumeration1 = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
+    ALboolean enumeration2 = alcIsExtensionPresent(NULL, "ALC_enumerate_all_EXT");
+    if (enumeration1 == AL_FALSE || enumeration2 == AL_FALSE) {
         Logger::E("OpenAL", "Audio device enumeration not possible falling back to default device");
     } else {
-        const ALCchar *defaultDevice = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
-        if (defaultDevice == nullptr) {
-            Logger::E("OpenAL", "Error, no audio devices present");
-        } else {
-            availableAudioDevices.emplace_back(defaultDevice);
-        }
-
-        const ALCchar *devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+        const ALCchar *devices = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
         if (reinterpret_cast<uint64_t>(devices) != AL_INVALID_ENUM) {
             const char *ptr = devices;
-            while (*(ptr + 1) != '\0') {
+            while (*ptr != '\0') {
                 const std::string str(ptr);
-                if (std::find(availableAudioDevices.begin(),
-                              availableAudioDevices.end(), str) == availableAudioDevices.end()) {
-                    availableAudioDevices.emplace_back(str);
-                }
+                availableAudioDevices.emplace_back(str);
                 ptr += availableAudioDevices.back().size() + 1;
             }
             Logger::I("OpenAL", "Available devices");
@@ -65,7 +55,7 @@ AudioSystem::~AudioSystem() {
         alcCloseDevice(openALDevice);
 }
 
-void AudioSystem::init(Scene &scene) {
+void AudioSystem::init(Scene &/*scene*/) {
     if (openALDevice == nullptr)
         return;
     if (openALContext != nullptr) {
@@ -96,7 +86,7 @@ void AudioSystem::init(Scene &scene) {
     checkALErrors("alListenerfv(AL_ORIENTATION)");
 }
 
-void AudioSystem::update(ECS &ecs, float deltaTime) {
+void AudioSystem::update(ECS &ecs, float /*deltaTime*/) {
     auto listeners = ecs.getRegistry().view<const Transform, const AudioListenerComponent>();
     auto sources = ecs.getRegistry().view<const Transform, AudioSourceComponent>();
 
@@ -120,9 +110,12 @@ void AudioSystem::update(ECS &ecs, float deltaTime) {
         }
     }
 
+
     for (const auto &[entity, transform, source]: sources.each()) {
         const auto &pos = transform.position;
-        source.source.setPosition(pos);
+        glm::vec3 velocity = transform.position - source.oldPosition;
+        source.oldPosition = pos;
+        source.source.setPositionAndVelocity(pos, velocity);
     }
 }
 
@@ -131,6 +124,8 @@ Transform AudioSystem::GetListenerPosition() {
     alGetListener3f(AL_POSITION, &x, &y, &z);
     checkALErrors("alGetListener3f(AL_POSITION)");
     return Transform{
-        .position{x, y, z}
+            .position{x, y, z},
+            .rotation{},
+            .scale{}
     };
 }

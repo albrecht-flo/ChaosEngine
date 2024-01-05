@@ -11,26 +11,29 @@ namespace ChaosEngine {
 
     class RawAudio {
     public:
-        RawAudio(int channels, int sampleRate, int samples, std::unique_ptr<short> data);
+        RawAudio(int channels, int sampleRate, int samples, short* data);
 
-        ~RawAudio() = default;
+        ~RawAudio() {
+            free(data);
+        };
 
         RawAudio(const RawAudio &o) = delete;
 
         RawAudio &operator=(const RawAudio &o) = delete;
 
         RawAudio(RawAudio &&o) noexcept
-                : channels(o.channels), sampleRate(o.sampleRate), samples(o.samples), data(std::move(o.data)),
+                : channels(o.channels), sampleRate(o.sampleRate), samples(o.samples), data(o.data),
                   format(o.format) {}
 
         RawAudio &operator=(RawAudio &&o) noexcept {
             if (&o == this)
                 return *this;
-
+            if(data != nullptr)
+                free(data);
             channels = o.channels;
             sampleRate = o.sampleRate;
             samples = o.samples;
-            data = std::move(o.data);
+            data = o.data;
             format = o.format;
             return *this;
         }
@@ -47,7 +50,7 @@ namespace ChaosEngine {
 
         [[nodiscard]] int getSamples() const { return samples; }
 
-        [[nodiscard]] short *getData() const { return data.get(); }
+        [[nodiscard]] short *getData() const { return data; }
 
         [[nodiscard]] size_t getSize() const { return sizeof(short) * samples * channels; }
 
@@ -57,7 +60,7 @@ namespace ChaosEngine {
         int channels;
         int sampleRate;
         int samples;
-        std::unique_ptr<short> data;
+        short* data;
         AudioFormat format;
     };
 }

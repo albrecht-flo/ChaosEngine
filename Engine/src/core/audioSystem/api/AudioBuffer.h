@@ -5,11 +5,12 @@
 #include "core/assets/RawAudio.h"
 
 namespace ChaosEngine {
-
     class AudioBuffer {
     public:
-        explicit AudioBuffer(uint32_t handle, AudioFormat format, int sampleRate, int channels, int samples)
-                : handle(handle), format(format), sampleRate(sampleRate), channels(channels), samples(samples) {}
+        explicit AudioBuffer(uint32_t handle, AudioFormat format, int sampleRate, int channels, int samples,
+                             RawAudio audio)
+                : handle(handle), format(format), sampleRate(sampleRate), channels(channels), samples(samples),
+                  audio(std::move(audio)) {}
 
         ~AudioBuffer() { destroy(); }
 
@@ -18,8 +19,8 @@ namespace ChaosEngine {
         AudioBuffer &operator=(const AudioBuffer &o) = delete;
 
         AudioBuffer(AudioBuffer &&o) noexcept
-                : handle(o.handle), format(o.format), channels(o.channels), sampleRate(o.sampleRate),
-                  samples(o.samples) { o.handle = 0; }
+                : handle(o.handle), format(o.format), sampleRate(o.sampleRate), channels(o.channels),
+                  samples(o.samples), audio(std::move(audio)) { o.handle = 0; }
 
         AudioBuffer &operator=(AudioBuffer &&o) noexcept {
             if (&o == this)
@@ -29,9 +30,10 @@ namespace ChaosEngine {
             o.handle = 0;
 
             format = o.format;
-            channels = o.channels;
             sampleRate = o.sampleRate;
+            channels = o.channels;
             samples = o.samples;
+            audio = std::move(o.audio);
             return *this;
         }
 
@@ -64,7 +66,7 @@ namespace ChaosEngine {
         int sampleRate;
         int channels;
         int samples;
+        RawAudio audio;
     };
-
 }
 
