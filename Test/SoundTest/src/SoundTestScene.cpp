@@ -199,7 +199,7 @@ void SoundTestScene::loadEntities() {
     audioTesterSurround.setComponent<AudioSourceComponent>(std::move(audioTSource), audioTesterTransform.position);
 
     glm::vec3 positions[] = {glm::vec3(0, 0, 0), glm::vec3(-2, 0, -2), glm::vec3(2, 0, -2), glm::vec3(0, 0, -4)};
-    for (int i = 0; i < spatialTesters.max_size(); ++i) {
+    for (uint32_t i = 0; i < spatialTesters.max_size(); ++i) {
         const glm::vec4 spatialColor(0, 0.1f, 0.66f, 1);
         auto transform = Transform{positions[i], glm::vec3(), glm::vec3(1, 1, 1)};
 
@@ -231,7 +231,7 @@ void SoundTestScene::loadEntities() {
             .scaleOffset = glm::vec3(0, 0, 0),
     });
     button.setComponent<UIComponent>(
-            UIComponent{.active = true, .offsetPosition={35, 15, -0.1f}, .offsetRotation{0},
+            UIComponent{.active = true, .offsetPosition={35, 15, -0.1f}, .offsetRotation= glm::vec3{0},
                     .offsetScale{50, 20, 1}});
     button.setComponent<UITextComponent>(UITextComponent{
             .font = assetManager->loadFont("OpenSauceSans", "fonts/OpenSauceSans-Bold.ttf", FontStyle::Bold,
@@ -241,7 +241,7 @@ void SoundTestScene::loadEntities() {
             .text = "Click me",
     });
 
-    auto buttonScript = std::unique_ptr<ChaosEngine::NativeScript>(new SoundButtonScript(button, mainCamera));
+    auto buttonScript = std::unique_ptr<NativeScript>(new SoundButtonScript(button, mainCamera));
     button.setComponent<NativeScriptComponent>(std::move(buttonScript), true);
 
 }
@@ -256,7 +256,7 @@ void SoundTestScene::update(float deltaTime) {
         path += deltaTime * surroundSpeed;
         glm::vec3 newPos = glm::rotate(glm::qua(glm::vec3{0, path, 0}), surroundOriginalPosition - center) + center;
         audioTesterSurround.get<Transform>().position = newPos;
-        LOG_DEBUG("New position ({}, {}, {})", newPos.x, newPos.y, newPos.z);
+//        LOG_DEBUG("New position ({}, {}, {})", newPos.x, newPos.y, newPos.z);
     }
 }
 
@@ -280,7 +280,7 @@ void SoundTestScene::updateImGui() {
                 listenerInfo.position.z);
     const auto &surroundTesterPos = audioTesterSurround.get<Transform>().position;
     ImGui::Text("Surround position (%.2f, %.2f, %.2f)", surroundTesterPos.x, surroundTesterPos.y, surroundTesterPos.z);
-    for (int i = 0; i < spatialTesters.size(); ++i) {
+    for (uint32_t i = 0; i < spatialTesters.size(); ++i) {
         const auto &pos = spatialTesters[i].get<Transform>().position;
         ImGui::Text("Spatial Tester %d position (%.2f, %.2f, %.2f)", i, pos.x, pos.y, pos.z);
     }
@@ -314,9 +314,9 @@ void SoundTestScene::updateImGui() {
 
     ImGui::Separator();
     const auto &bgBuffer = bgAudioSource.getBuffer();
-    auto sourcePos = bgAudioSource.getBufferPosition() / bgBuffer.getSampleSize();
-    auto bufferLength = bgBuffer.getSamples() * bgBuffer.getSampleSize();
-    float totalSeconds = (float) ((bgBuffer.getSamples() / bgBuffer.getSampleRate()));
+    const uint32_t sourcePos = bgAudioSource.getBufferPosition() / bgBuffer.getSampleSize();
+    const uint32_t bufferLength = bgBuffer.getSamples() * bgBuffer.getSampleSize();
+    const float totalSeconds = (float) ((bgBuffer.getSamples() / bgBuffer.getSampleRate()));
     ImGui::Text("Time:");
     ImGui::NextColumn();
     ImGui::Text("%.1fs /%.1fs",
@@ -325,11 +325,11 @@ void SoundTestScene::updateImGui() {
     ImGui::NextColumn();
     ImGui::Text("BG buffer offset:");
     ImGui::NextColumn();
-    ImGui::Text("%lld", sourcePos);
+    ImGui::Text("%ud", sourcePos);
     ImGui::NextColumn();
     ImGui::Text("BG buffer length:");
     ImGui::NextColumn();
-    ImGui::Text("%lld", bufferLength);
+    ImGui::Text("%ud", bufferLength);
     ImGui::NextColumn();
 
     ImGui::Columns(1);

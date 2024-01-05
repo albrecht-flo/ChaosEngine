@@ -142,9 +142,9 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawSegment(const b2Vec2 &p1, const b2
     data->lines.emplace_back(VertexPC{.pos{p2.x, p2.y, 1}, .color=renderingColor});
 }
 
-void PhysicsSystem2D::Physics2DDebugDraw::DrawTransform(const b2Transform &xf) {}
+void PhysicsSystem2D::Physics2DDebugDraw::DrawTransform(const b2Transform &) {}
 
-void PhysicsSystem2D::Physics2DDebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color) {
+void PhysicsSystem2D::Physics2DDebugDraw::DrawPoint(const b2Vec2 &p, float /*size*/, const b2Color &color) {
     const glm::vec4 renderingColor{color.r, color.g, color.b, 1};
     data->lines.emplace_back(VertexPC{.pos{p.x, p.y, 1}, .color=renderingColor});
     data->lines.emplace_back(VertexPC{.pos{p.x, p.y, 1}, .color=renderingColor});

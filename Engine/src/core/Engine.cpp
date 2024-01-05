@@ -15,11 +15,11 @@ Engine::Engine()
           uiSystem(renderingSys, window),
           nativeScriptSystem(),
           physicsSystem(),
+          audioSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),
           debugRenderingEnabled(false),
           physicsDebug(false),
-          audioSystem(),
           deltaTimer(std::chrono::high_resolution_clock::now()),
           frameCounter(0), fpsDelta(0) {
     if (s_engineInstance != nullptr) {

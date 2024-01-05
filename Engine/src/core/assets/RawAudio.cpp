@@ -23,18 +23,18 @@ RawAudio RawAudio::loadOggFile(const std::string &filename) {
         throw std::runtime_error("[stb_vorbis] File does not exist " + filename);
     }
 
-    int vorbisErr = 0;
-    std::unique_ptr<stb_vorbis, void (*)(stb_vorbis *ptr)>
-            oggStream(stb_vorbis_open_filename(filename.c_str(), &vorbisErr, nullptr),
-                      [](stb_vorbis *ptr) -> void {
-                          stb_vorbis_close(ptr);
-                      });
-
-    if (oggStream == nullptr) {
-        throw std::runtime_error("[stb_vorbis] Failed to open audio file " + filename);
-    }
-    stb_vorbis_info info = stb_vorbis_get_info(oggStream.get());
-    show_info(info, filename);
+//    int vorbisErr = 0;
+//    std::unique_ptr<stb_vorbis, void (*)(stb_vorbis *ptr)>
+//            oggStream(stb_vorbis_open_filename(filename.c_str(), &vorbisErr, nullptr),
+//                      [](stb_vorbis *ptr) -> void {
+//                          stb_vorbis_close(ptr);
+//                      });
+//
+//    if (oggStream == nullptr) {
+//        throw std::runtime_error("[stb_vorbis] Failed to open audio file " + filename);
+//    }
+//    stb_vorbis_info info = stb_vorbis_get_info(oggStream.get());
+//    show_info(info, filename);
 
     short *output = nullptr;
     int channels, sample_rate;
@@ -43,11 +43,11 @@ RawAudio RawAudio::loadOggFile(const std::string &filename) {
         throw std::runtime_error("[stb_vorbis] Failed to decode audio file " + filename);
     }
 
-    return RawAudio{channels, sample_rate, samples, std::unique_ptr<short>(output)};
+    return RawAudio{channels, sample_rate, samples, output};
 }
 
-RawAudio::RawAudio(int channels, int sampleRate, int samples, std::unique_ptr<short> data)
-        : channels(channels), sampleRate(sampleRate), samples(samples), data(std::move(data)),
+RawAudio::RawAudio(int channels, int sampleRate, int samples, short *data)
+        : channels(channels), sampleRate(sampleRate), samples(samples), data(data),
           format(AudioFormat::MONO_8) {
     if (channels == 1) {
         format = AudioFormat::MONO_16;
