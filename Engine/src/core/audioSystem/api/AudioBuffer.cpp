@@ -29,7 +29,7 @@ std::shared_ptr<AudioBuffer> AudioBuffer::Create(const std::string &filename) {
     checkALErrors("alBufferData", buffer);
 
     return std::make_shared<AudioBuffer>(buffer, audio.getFormat(), audio.getSampleRate(), audio.getChannels(),
-                                         audio.getSamples(), RawAudio(0, 0, 0, nullptr));
+                                         audio.getSamples());
 }
 
 void AudioBuffer::destroy() {

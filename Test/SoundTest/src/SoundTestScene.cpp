@@ -314,8 +314,8 @@ void SoundTestScene::updateImGui() {
 
     ImGui::Separator();
     const auto &bgBuffer = bgAudioSource.getBuffer();
-    const uint32_t sourcePos = bgAudioSource.getBufferPosition() / bgBuffer.getSampleSize();
-    const uint32_t bufferLength = bgBuffer.getSamples() * bgBuffer.getSampleSize();
+    const auto sourcePos = bgAudioSource.getBufferPosition() / bgBuffer.getSampleSize();
+    const auto bufferLength = bgBuffer.getSamples() * bgBuffer.getSampleSize();
     const float totalSeconds = (float) ((bgBuffer.getSamples() / bgBuffer.getSampleRate()));
     ImGui::Text("Time:");
     ImGui::NextColumn();
@@ -325,11 +325,11 @@ void SoundTestScene::updateImGui() {
     ImGui::NextColumn();
     ImGui::Text("BG buffer offset:");
     ImGui::NextColumn();
-    ImGui::Text("%ud", sourcePos);
+    ImGui::Text("%u", sourcePos);
     ImGui::NextColumn();
     ImGui::Text("BG buffer length:");
     ImGui::NextColumn();
-    ImGui::Text("%ud", bufferLength);
+    ImGui::Text("%u", bufferLength);
     ImGui::NextColumn();
 
     ImGui::Columns(1);

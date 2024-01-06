@@ -4,10 +4,13 @@
 #include "Engine/src/core/Components.h"
 #include "OpenALHelpers.h"
 
+#include "AL/efx.h"
+
 using namespace ChaosEngine;
 using namespace OpenALHelpers;
 
 AudioSystem::AudioSystem() {
+    const int audioDevice = -1;
     availableAudioDevices.clear();
 
     ALboolean enumeration1 = alcIsExtensionPresent(NULL, "ALC_ENUMERATION_EXT");
@@ -32,10 +35,13 @@ AudioSystem::AudioSystem() {
         }
     }
 
-    if (availableAudioDevices.empty())
+    if (availableAudioDevices.empty() || audioDevice < 0 || availableAudioDevices.size() >= audioDevice) {
+        Logger::I("OpenAL", "Using default audio device");
         openALDevice = alcOpenDevice(nullptr);
-    else
-        openALDevice = alcOpenDevice(availableAudioDevices[0].c_str());
+    } else if (audioDevice >= 0) {
+        Logger::I("OpenAL", "Using audio device: " + availableAudioDevices[audioDevice]);
+        openALDevice = alcOpenDevice(availableAudioDevices[audioDevice].c_str());
+    }
 
     if (openALDevice == nullptr) {
         Logger::C("OpenAL", "Failed to initialize OpenAL -> AudioSystem will remain offline");
@@ -43,7 +49,11 @@ AudioSystem::AudioSystem() {
     }
     checkALCErrors(openALDevice, "TEST AFTER INIT");
 
-    Logger::I("OpenAL", "Using audio device: " + availableAudioDevices[0]);
+    bool isEffectsEnginePresent = alcIsExtensionPresent(openALDevice, "ALC_EXT_EFX");
+    checkALCErrors(openALDevice, "alcIsExtensionPresent(ALC_EXT_EFX)");
+    if (isEffectsEnginePresent == AL_FALSE)
+        Logger::W("OpenAL", "Effects engine is not present");
+
 }
 
 AudioSystem::~AudioSystem() {
@@ -63,12 +73,21 @@ void AudioSystem::init(Scene &/*scene*/) {
         checkALCErrors(openALDevice, "Context destruction");
     }
 
-    openALContext = alcCreateContext(openALDevice, nullptr);
+    ALint openALAttribs[4] = {0};
+    openALAttribs[0] = ALC_MAX_AUXILIARY_SENDS; // request 4 auxiliary channels for effects
+    openALAttribs[1] = 4;
+
+    openALContext = alcCreateContext(openALDevice, openALAttribs);
     checkALCErrors(openALDevice, "alcCreateContext");
     if (openALContext == nullptr) {
         Logger::C("OpenAL", "Failed to initialize OpenAL Context -> AudioSystem will remain offline");
         return;
     }
+
+    ALint iSends;
+    alcGetIntegerv(openALDevice, ALC_MAX_AUXILIARY_SENDS, 1, &iSends);
+    checkALCErrors(openALDevice, "alcGetIntegerv(ALC_MAX_AUXILIARY_SENDS)");
+    Logger::D("OpenAL", "Available aux channels per source " + std::to_string(iSends));
 
     if (!alcMakeContextCurrent(openALContext)) {
         checkALCErrors(openALDevice, "alcMakeContextCurrent");
