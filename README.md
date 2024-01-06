@@ -26,13 +26,11 @@ These are the sources I used the most
 - `steps.ogg` -- created using samples by TinyWorlds from [OpenGameArt](https://opengameart.org/content/different-steps-on-wood-stone-leaves-gravel-and-mud) -- License: CC0
 ## License
 
-This project is published under the Apache 2 license in the [LICENSE](./LICENSE) file. projects in the dependency folder
-have different.
-**BUT** the projects that this depends on have their own licenses, which need to be considered when building the project
-and publishing any created artifacts.
+This project is published under the Apache 2 license in the [LICENSE](./LICENSE) file.
+**BUT** the projects that this application depends on (`dep/`) have their own licenses,
+which need to be considered when building the project and publishing any created artifacts.
 
 I try to only rely on opensource projects but some of them have more restrictive licenses than this code itself.
-
 
 ## Features
 
@@ -43,6 +41,7 @@ I try to only rely on opensource projects but some of them have more restrictive
 - [x] Basic UI components
 - [x] UI Text components
 - [x] 3D Audio
+- [x] 2D Physics using [Box2d](https://box2d.org/)
 
 For planned features see the project board.
 
