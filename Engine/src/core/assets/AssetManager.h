@@ -18,6 +18,7 @@ namespace ChaosEngine {
     class AssetManager {
     public:
         using NativeScriptCreator = std::function<std::unique_ptr<NativeScript>(Entity)>;
+
         enum class ResourceType {
             Scene, Entity, Mesh, Material, Texture, Script
         };
@@ -33,6 +34,9 @@ namespace ChaosEngine {
         };
 
         struct ScriptInfo {
+        };
+
+        struct AudioBufferInfo {
         };
     public:
         AssetManager() = default;
@@ -111,11 +115,27 @@ namespace ChaosEngine {
 
         [[nodiscard]] decltype(auto) getAllFonts() const { return fontManager.getAll(); }
 
+
+        // ------------------------------------ AudioBuffers -----------------------------------------------------------
+        void registerAudioBuffer(const std::string &uri, const std::shared_ptr<AudioBuffer> &ref,
+                                 AudioBufferInfo bufferInfo) {
+            audioBuffers.emplace(uri, std::make_pair(ref, bufferInfo));
+        }
+
+        [[nodiscard]] std::shared_ptr<AudioBuffer> getAudioBuffer(const std::string &uri) const {
+            return audioBuffers.at(uri).first;
+        }
+
+        [[nodiscard]] AudioBufferInfo getAudioBufferInfo(const std::string &uri) const {
+            return audioBuffers.at(uri).second;
+        }
+
     private:
         std::unordered_map<std::string, std::pair<std::shared_ptr<Renderer::RenderMesh>, MeshInfo>> meshes{};
         std::unordered_map<std::string, std::pair<Renderer::MaterialRef, MaterialInfo>> materials{};
         std::unordered_map<std::string, std::pair<std::unique_ptr<Renderer::Texture>, TextureInfo>> textures{};
         std::unordered_map<std::string, std::pair<NativeScriptCreator, ScriptInfo>> scripts{};
+        std::unordered_map<std::string, std::pair<std::shared_ptr<AudioBuffer>, AudioBufferInfo>> audioBuffers{};
         FontManager fontManager;
     };
 
