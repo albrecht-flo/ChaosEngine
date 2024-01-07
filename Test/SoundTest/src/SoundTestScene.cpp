@@ -154,7 +154,7 @@ void SoundTestScene::loadEntities() {
     LOG_INFO("Loading entities");
     mainCamera = createEntity();
     auto mainCameraTransform = Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)};
-    mainCamera.setComponent<Transform>(mainCameraTransform);
+    mainCamera.setComponent<TransformComponent>(mainCameraTransform);
     mainCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -177,7 +177,7 @@ void SoundTestScene::loadEntities() {
 
     auto background = createEntity();
     background.setComponent<Meta>(Meta{"Background"});
-    background.setComponent<Transform>(
+    background.setComponent<TransformComponent>(
             Transform{glm::vec3(0, 0, -10), glm::vec3(), glm::vec3(20, 16, 0.1)});
     const glm::vec4 greyColor(0.66f, 0.66f, 0.70f, 1);
     background.setComponent<RenderComponent>(
@@ -189,7 +189,7 @@ void SoundTestScene::loadEntities() {
     auto audioTesterTransform = Transform{glm::vec3(0, 0, -4), glm::vec3(), glm::vec3(1, 1, 1)};
     surroundOriginalPosition = audioTesterTransform.position;
     audioTesterSurround.setComponent<Meta>(Meta{"Steps"});
-    audioTesterSurround.setComponent<Transform>(audioTesterTransform);
+    audioTesterSurround.setComponent<TransformComponent>(audioTesterTransform);
     audioTesterSurround.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&redColor, sizeof(redColor), {&assetManager->getTexture("Square")}),
             quadROB);
@@ -205,7 +205,7 @@ void SoundTestScene::loadEntities() {
 
         auto entity = createEntity();
         entity.setComponent<Meta>(Meta{"Spatial test" + std::to_string(i)});
-        entity.setComponent<Transform>(transform);
+        entity.setComponent<TransformComponent>(transform);
 
         auto audioSource = AudioSource::Create(transform.position, false);
         audioSource.setBuffer(stepsAudioBuffer);
@@ -222,7 +222,7 @@ void SoundTestScene::loadEntities() {
 
     auto button = createEntity();
     button.setComponent<Meta>("Test Button");
-    button.setComponent<Transform>(
+    button.setComponent<TransformComponent>(
             Transform{glm::vec3{800, 128, 1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     button.setComponent<UIRenderComponent>(UIRenderComponent{
             .materialInstance = uiMaterial.instantiate(&buttonColor, sizeof(buttonColor),
@@ -252,10 +252,10 @@ void SoundTestScene::update(float deltaTime) {
         (window->isKeyDown(GLFW_KEY_Q) && window->isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window->close(); }
 
     if (surroundRunning) {
-        const auto &center = mainCamera.get<Transform>().position;
+        const auto &center = mainCamera.get<TransformComponent>().local.position;
         path += deltaTime * surroundSpeed;
         glm::vec3 newPos = glm::rotate(glm::qua(glm::vec3{0, path, 0}), surroundOriginalPosition - center) + center;
-        audioTesterSurround.get<Transform>().position = newPos;
+        audioTesterSurround.get<TransformComponent>().local.position = newPos;
 //        LOG_DEBUG("New position ({}, {}, {})", newPos.x, newPos.y, newPos.z);
     }
 }
@@ -278,10 +278,10 @@ void SoundTestScene::updateImGui() {
     Transform listenerInfo = AudioSystem::GetListenerPosition();
     ImGui::Text("Listener Position (%.2f, %.2f, %.2f)", listenerInfo.position.x, listenerInfo.position.y,
                 listenerInfo.position.z);
-    const auto &surroundTesterPos = audioTesterSurround.get<Transform>().position;
+    const auto &surroundTesterPos = audioTesterSurround.get<TransformComponent>().local.position;
     ImGui::Text("Surround position (%.2f, %.2f, %.2f)", surroundTesterPos.x, surroundTesterPos.y, surroundTesterPos.z);
     for (uint32_t i = 0; i < spatialTesters.size(); ++i) {
-        const auto &pos = spatialTesters[i].get<Transform>().position;
+        const auto &pos = spatialTesters[i].get<TransformComponent>().local.position;
         ImGui::Text("Spatial Tester %d position (%.2f, %.2f, %.2f)", i, pos.x, pos.y, pos.z);
     }
 

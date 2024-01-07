@@ -179,12 +179,13 @@ void PhysicsSystem2D::update(ECS &ecs, float deltaTime) {
 
     world->Step(deltaTime, velocityIterations, positionIterations);
 
-    auto view = ecs.getRegistry().view<Transform, DynamicRigidBodyComponent>();
+    auto view = ecs.getRegistry().view<TransformComponent, DynamicRigidBodyComponent>();
     for (auto [entity, transform, body]: view.each()) {
         const Transform phyTransform = body.body.getTransform();
-        transform.position.x = phyTransform.position.x;
-        transform.position.y = phyTransform.position.y;
-        transform.rotation.z = glm::degrees(phyTransform.rotation.z);
+        // TODO how to deal with parent?
+        transform.local.position.x = phyTransform.position.x;
+        transform.local.position.y = phyTransform.position.y;
+        transform.local.rotation.z = glm::degrees(phyTransform.rotation.z);
     }
 }
 

@@ -46,7 +46,7 @@ void UISystem::init(ECS &/*ecs*/) {
 }
 
 void UISystem::update(ECS &ecs) {
-    auto scripts = ecs.getRegistry().view<const Transform, const UIComponent>();
+    auto scripts = ecs.getRegistry().view<const TransformComponent, const UIComponent>();
 
     // Handle mouse input and dispatch events for UI Component
     auto mouse = window.getAbsoluteMousePos();
@@ -62,8 +62,8 @@ void UISystem::update(ECS &ecs) {
     for (const auto &[entity, transform, ui]: scripts.each()) {
         if (!ui.active)
             continue;
-        bool isMouseOver = ((transform.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?
-                           pointInAxisAlignedBox(transform, ui, mousePos) : pointInRectangle(transform, ui, mousePos);
+        bool isMouseOver = ((transform.local.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?
+                           pointInAxisAlignedBox(transform.local, ui, mousePos) : pointInRectangle(transform.local, ui, mousePos);
         if (isMouseOver) {
             Entity entityH = ecs.getEntity(entity);
             if (entityH.has<NativeScriptComponent>()) {

@@ -12,8 +12,8 @@ namespace ChaosEngine {
         friend class ECS;
 
     private:
-        Entity(entt::registry* registry, entt::entity entity)
-            : registry(registry), entity(entity) {
+        Entity(entt::registry *registry, entt::entity entity)
+                : registry(registry), entity(entity) {
         }
 
     public:
@@ -28,8 +28,8 @@ namespace ChaosEngine {
          * @tparam Args
          * @param args to be passed to the constructor of Component
          */
-        template <typename Component, typename... Args>
-        inline void setComponent(Args&&... args) {
+        template<typename Component, typename... Args>
+        inline void setComponent(Args &&... args) {
             assert("Registry must not be null" && registry != nullptr);
             registry->emplace_or_replace<Component>(entity, std::forward<Args>(args)...);
         }
@@ -39,16 +39,39 @@ namespace ChaosEngine {
          * @tparam Component
          * @return Component
          */
-        template <typename... Component>
+        template<typename... Component>
         [[nodiscard]] decltype(auto) get() {
             assert("Registry must not be null" && registry != nullptr);
             return registry->get<Component...>(entity);
         }
 
-        template <typename... Component>
+        /**
+         * @copydoc get
+         */
+        template<typename... Component>
         [[nodiscard]] decltype(auto) get() const {
             assert("Registry must not be null" && registry != nullptr);
             return registry->get<Component...>(entity);
+        }
+
+        /**
+         * Try to get the component of type <i>Component</i> of this entity;
+         * @tparam Component
+         * @return pointer to component or nullptr if not present
+         */
+        template<typename... Component>
+        [[nodiscard]] decltype(auto) try_get() {
+            assert("Registry must not be null" && registry != nullptr);
+            return registry->try_get<Component...>(entity);
+        }
+
+        /**
+         * @copydoc try_get
+         */
+        template<typename... Component>
+        [[nodiscard]] decltype(auto) try_get() const {
+            assert("Registry must not be null" && registry != nullptr);
+            return registry->try_get<Component...>(entity);
         }
 
         /**
@@ -56,7 +79,7 @@ namespace ChaosEngine {
          * @tparam Component
          * @return bool
          */
-        template <typename... Component>
+        template<typename... Component>
         [[nodiscard]] decltype(auto) has() {
             assert("Registry must not be null" && registry != nullptr);
             return registry->all_of<Component...>(entity);
@@ -70,6 +93,7 @@ namespace ChaosEngine {
 
     private:
         friend class RigidBody2D;
+
         /**
          * ONLY USE WHEN ABSOLUTELY NESCESSARY. This function exposes the underlying entity
          * @return Underlying entity
@@ -77,7 +101,7 @@ namespace ChaosEngine {
         entt::entity raw() { return entity; }
 
     private:
-        entt::registry* registry;
+        entt::registry *registry;
         entt::entity entity;
     };
 }

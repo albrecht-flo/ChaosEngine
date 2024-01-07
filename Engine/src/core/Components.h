@@ -19,6 +19,15 @@
 #include "Engine/src/core/physicsSystem/Physics2DBody.h"
 #include "Engine/src/core/audioSystem/api/AudioSource.h"
 
+
+namespace ChaosEngine {
+    class RenderingSystem;
+
+    class SceneGraphSystem;
+
+    class NativeScriptSystem;
+}
+
 struct Meta {
     std::string name;
 };
@@ -34,6 +43,27 @@ struct Transform {
         ret *= glm::toMat4(glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)}));
         return glm::scale(ret, scale);;
     }
+};
+
+// ---------------------------------------------------------------------------------------------------------------------
+
+struct TransformComponent {
+    Transform local; // To be set from scripts
+    explicit TransformComponent(const Transform &transform) : local(transform), global(transform),
+                                                              parent(entt::null), needsGlobalRecalculation(false) {}
+
+    TransformComponent(const Transform &transform, entt::entity parent) : local(transform), global(Transform{}),
+                                                                          parent(parent),
+                                                                          needsGlobalRecalculation(true) {}
+
+private: // Internals
+    friend class ChaosEngine::RenderingSystem;
+
+    friend class ChaosEngine::SceneGraphSystem;
+
+    entt::entity parent;
+    Transform global; // To be updated from SceneGraph system according to transform tree
+    bool needsGlobalRecalculation;
 };
 
 struct RenderComponent {
@@ -55,7 +85,6 @@ struct CameraComponent {
     bool mainCamera = true;
 };
 
-namespace ChaosEngine { class NativeScriptSystem; }
 struct NativeScriptComponent {
     friend class ChaosEngine::NativeScriptSystem;
 

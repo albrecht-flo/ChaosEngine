@@ -113,7 +113,7 @@ void Box2DTestScene::loadEntities() {
 
     LOG_INFO("Loading entities");
     mainCamera = createEntity();
-    mainCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    mainCamera.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     mainCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -128,7 +128,7 @@ void Box2DTestScene::loadEntities() {
 
     auto background = createEntity();
     background.setComponent<Meta>(Meta{"Background"});
-    background.setComponent<Transform>(
+    background.setComponent<TransformComponent>(
             Transform{glm::vec3(0, 0, 0), glm::vec3(), glm::vec3(20, 16, 0.1)});
     const glm::vec4 greyColor(0.66f, 0.66f, 0.70f, 1);
     background.setComponent<RenderComponent>(
@@ -137,7 +137,7 @@ void Box2DTestScene::loadEntities() {
 
     auto floor1 = createEntity();
     floor1.setComponent<Meta>(Meta{"Floor 2"});
-    floor1.setComponent<Transform>(
+    floor1.setComponent<TransformComponent>(
             Transform{glm::vec3(-8, -7.0f, 0), glm::vec3(), glm::vec3(2, 1, 1)});
     floor1.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("TestAtlas.jpg")}),
@@ -147,7 +147,7 @@ void Box2DTestScene::loadEntities() {
 
     auto jumper = createEntity();
     jumper.setComponent<Meta>(Meta{"Gravity test"});
-    jumper.setComponent<Transform>(
+    jumper.setComponent<TransformComponent>(
             Transform{glm::vec3(-8, 7.0f, 0), glm::vec3(), glm::vec3(1)});
     jumper.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("Square")}),
@@ -164,7 +164,7 @@ void Box2DTestScene::loadEntities() {
     const glm::vec4 blueColor(0, 0, 0.7f, 1);
     auto funnelL = createEntity();
     funnelL.setComponent<Meta>(Meta{"Funnel left"});
-    funnelL.setComponent<Transform>(
+    funnelL.setComponent<TransformComponent>(
             Transform{glm::vec3(9.1f, -5.0f, 0), glm::vec3(0, 0, -45), glm::vec3(4, 1, 1)});
     funnelL.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&blueColor, sizeof(blueColor), {&assetManager->getTexture("Square")}),
@@ -173,7 +173,7 @@ void Box2DTestScene::loadEntities() {
             RigidBody2D::CreateStaticRigidBody(funnelL, RigitBody2DShape{RigitBody2DShapeType::Box, glm::vec2{4, 1}}));
     auto funnelR = createEntity();
     funnelR.setComponent<Meta>(Meta{"Funnel right"});
-    funnelR.setComponent<Transform>(
+    funnelR.setComponent<TransformComponent>(
             Transform{glm::vec3(13.1f, -5.0f, 0), glm::vec3(0, 0, 45), glm::vec3(4, 1, 1)});
     funnelR.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&blueColor, sizeof(blueColor), {&assetManager->getTexture("Square")}),
@@ -183,7 +183,7 @@ void Box2DTestScene::loadEntities() {
 
     auto ball = createEntity();
     ball.setComponent<Meta>(Meta{"Ball"});
-    ball.setComponent<Transform>(
+    ball.setComponent<TransformComponent>(
             Transform{glm::vec3(14, 7.0f, 0), glm::vec3(), glm::vec3(0.5f, 0.5f, 1)});
     ball.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("ball")}),
@@ -196,7 +196,7 @@ void Box2DTestScene::loadEntities() {
     glm::vec4 darkGrey{0.33, 0.5, 0.33, 1};
     auto slope1 = createEntity();
     slope1.setComponent<Meta>(Meta{"Slope 1"});
-    slope1.setComponent<Transform>(
+    slope1.setComponent<TransformComponent>(
             Transform{glm::vec3(-1.5, 3.0f, 0), glm::vec3(0, 0, 30), glm::vec3(0.5f, 2, 1)});
     slope1.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&darkGrey, sizeof(darkGrey), {&assetManager->getTexture("Square")}),
@@ -210,7 +210,7 @@ void Box2DTestScene::loadEntities() {
 
     auto slope2 = createEntity();
     slope2.setComponent<Meta>(Meta{"Slope 2"});
-    slope2.setComponent<Transform>(
+    slope2.setComponent<TransformComponent>(
             Transform{glm::vec3(3, 3.0f, 0), glm::vec3(0, 0, 30), glm::vec3(5, 0.5f, 1)});
     slope2.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&darkGrey, sizeof(darkGrey), {&assetManager->getTexture("Square")}),
@@ -222,7 +222,7 @@ void Box2DTestScene::loadEntities() {
 
     auto ball2 = createEntity();
     ball2.setComponent<Meta>(Meta{"Push tester"});
-    ball2.setComponent<Transform>(
+    ball2.setComponent<TransformComponent>(
             Transform{glm::vec3(1, 5.0f, 0), glm::vec3(0, 0, 0), glm::vec3(0.5, 0.5, 0.5)});
     ball2.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteColor, sizeof(whiteColor), {&assetManager->getTexture("ball")}),

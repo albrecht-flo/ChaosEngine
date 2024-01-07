@@ -10,16 +10,10 @@
 
 /* TODOs:
 
-    To Think:
-		- use factory Create() instead of init (https://abseil.io/tips/42)
-        - Consider PIMPL pattern https://oliora.github.io/2015/12/29/pimpl-and-rule-of-zero.html
-		- Learn about image layouts +  layout transitions
-
 	Refactor:
 		- Pipeline handling
 			- Shaders
         - use precompiled header
-		- Migrate to Vulkan C++ headers
 
 		- Swap chain
 			- Creation -> Parameters

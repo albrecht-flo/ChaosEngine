@@ -121,20 +121,20 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
     // Render UI elements
     {
         renderer.beginUI(glm::mat4(1.0f));
-        const auto uiComps = ecs.getRegistry().view<const Transform, const UIRenderComponent>();
+        const auto uiComps = ecs.getRegistry().view<const TransformComponent, const UIRenderComponent>();
         for (auto &&[entity, transform, ui]: uiComps.each()) {
             const auto *uiC = ecs.getRegistry().try_get<UIComponent>(entity);
             if (uiC == nullptr)
-                renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
+                renderer.drawUI(calculateTextModelMatrix(transform.local, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
             else
-                renderer.drawUI(calculateTextModelMatrix(transform, ui.scaleOffset, *uiC), *ui.mesh,
+                renderer.drawUI(calculateTextModelMatrix(transform.local, ui.scaleOffset, *uiC), *ui.mesh,
                                 *ui.materialInstance);
         }
         renderer.endUI();
     }
     // Render Text
     {
-        auto uiTexts = ecs.getRegistry().view<Transform, UITextComponent>();
+        auto uiTexts = ecs.getRegistry().view<TransformComponent, UITextComponent>();
         uint32_t totalGlyphCount = 0;
         auto *vBufferRef = static_cast<VertexPCU *>(textVertexBuffers[currentBufferedFrame]->map());
         auto *iBufferRef = static_cast<uint32_t *>(textIndexBuffers[currentBufferedFrame]->map());
@@ -147,7 +147,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
             }
 
             auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
-            glm::mat4 modelMat = calculateTextModelMatrix(transform);
+            glm::mat4 modelMat = calculateTextModelMatrix(transform.local);
             renderer.drawText(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
                             glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
 

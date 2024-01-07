@@ -4,7 +4,7 @@
 
 
 void CameraScript::onStart() {
-    origin = getComponent<Transform>().position;
+    origin = getComponent<TransformComponent>().local.position;
 }
 
 
@@ -20,5 +20,5 @@ void CameraScript::onUpdate(float deltaTime) {
         getComponent<CameraComponent>().fieldOfView += 5 * deltaTime;
     }
 
-    getComponent<Transform>().position = origin;
+    getComponent<TransformComponent>().local.position = origin;
 }

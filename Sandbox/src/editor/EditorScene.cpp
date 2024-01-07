@@ -38,7 +38,8 @@ void EditorScene::load() {
     baseAssets->loadBaseScripts();
 
     editorCamera = createEntity();
-    editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    editorCamera.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    editorCamera.setComponent<Meta>("Editor -- Camera");
     editorCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -72,13 +73,12 @@ void EditorScene::update(float /*deltaTime*/) {
     // Camera controls
     dynamic_cast<EditorCameraScript &>(*(editorCamera.get<NativeScriptComponent>().script)).setActive(viewportInFocus);
 
-
 }
 
 void EditorScene::addNewEntity() {
     auto entity = ecs.addEntity();
     entity.setComponent<Meta>(Meta{"New Entity"});
-    entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+    entity.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
 }
 
 void EditorScene::imGuiMainMenu() {

@@ -59,8 +59,8 @@ void RenderingSystem::updateComponents(ECS &/*ecs*/) {
 
 void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_ptr<DebugRenderData>>& debugData) {
     assert("Renderer must be initialized" && Renderer != nullptr);
-    auto view = ecs.getRegistry().view<const Transform, const RenderComponent>();
-    auto cameras = ecs.getRegistry().view<const Transform, const CameraComponent>();
+    auto view = ecs.getRegistry().view<const TransformComponent, const RenderComponent>();
+    auto cameras = ecs.getRegistry().view<const TransformComponent, const CameraComponent>();
 
     Context->beginFrame();
     Renderer->beginFrame();
@@ -70,7 +70,7 @@ void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_p
     CameraComponent currentCamera{};
     for (const auto&[entity, transform, camera]: cameras.each()) {
         if (camera.active && !rendered) {
-            modelMat = transform.getModelMatrix();
+            modelMat = transform.local.getModelMatrix();
             currentCamera = camera;
             Renderer->beginScene(modelMat, currentCamera);
             rendered = true;
@@ -84,7 +84,7 @@ void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_p
     }
 
     for (const auto&[entity, transform, renderComp]: view.each()) {
-        Renderer->draw(transform.getModelMatrix(), renderComp);
+        Renderer->draw(transform.local.getModelMatrix(), renderComp);
     }
     if(debugData)
         Renderer->drawSceneDebug(modelMat, currentCamera, **debugData);

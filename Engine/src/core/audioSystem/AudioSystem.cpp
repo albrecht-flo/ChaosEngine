@@ -106,18 +106,18 @@ void AudioSystem::init(Scene &/*scene*/) {
 }
 
 void AudioSystem::update(ECS &ecs, float /*deltaTime*/) {
-    auto listeners = ecs.getRegistry().view<const Transform, const AudioListenerComponent>();
-    auto sources = ecs.getRegistry().view<const Transform, AudioSourceComponent>();
+    auto listeners = ecs.getRegistry().view<const TransformComponent, const AudioListenerComponent>();
+    auto sources = ecs.getRegistry().view<const TransformComponent, AudioSourceComponent>();
 
     entt::entity mainListener = entt::null;
     for (const auto &[entity, transform, listener]: listeners.each()) {
         if (mainListener == entt::null && listener.active) {
             mainListener = entity;
-            const auto &pos = transform.position;
+            const auto &pos = transform.local.position;
             alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
             checkALErrors("alListener3f(AL_POSITION)");
 
-            const auto &rotation = transform.rotation;
+            const auto &rotation = transform.local.rotation;
             auto rot = glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)});
             glm::vec3 up = glm::toMat3(rot) * glm::vec3{0, 1, 0};
             glm::vec3 forward = glm::toMat3(rot) * glm::vec3{0, 0, -1};
@@ -131,8 +131,8 @@ void AudioSystem::update(ECS &ecs, float /*deltaTime*/) {
 
 
     for (const auto &[entity, transform, source]: sources.each()) {
-        const auto &pos = transform.position;
-        glm::vec3 velocity = transform.position - source.oldPosition;
+        const auto &pos = transform.local.position;
+        glm::vec3 velocity = transform.local.position - source.oldPosition;
         source.oldPosition = pos;
         source.source.setPositionAndVelocity(pos, velocity);
     }

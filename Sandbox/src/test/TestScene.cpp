@@ -115,7 +115,7 @@ void TestScene::load() {
 void TestScene::loadEntities() {
     LOG_INFO("Loading entities");
     editorCamera = createEntity();
-    editorCamera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+    editorCamera.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
     editorCamera.setComponent<CameraComponent>(CameraComponent{
             .fieldOfView = 10.0f,
             .near = 0.1f,
@@ -126,21 +126,21 @@ void TestScene::loadEntities() {
 
     auto yellowQuad = createEntity();
     yellowQuad.setComponent<Meta>(Meta{"Yellow quad"});
-    yellowQuad.setComponent<Transform>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
+    yellowQuad.setComponent<TransformComponent>(Transform{glm::vec3(), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 greenColor(1, 1, 0, 1);
     yellowQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&greenColor, sizeof(greenColor), {}),
                                              quadROB);
 
     auto greenQuad = createEntity();
     greenQuad.setComponent<Meta>(Meta{"Green quad"});
-    greenQuad.setComponent<Transform>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
+    greenQuad.setComponent<TransformComponent>(Transform{glm::vec3(3, 0, 0), glm::vec3(), glm::vec3(1, 1, 1)});
     glm::vec4 redColor(0, 1, 0, 1);
     greenQuad.setComponent<RenderComponent>(coloredMaterial.instantiate(&redColor, sizeof(redColor), {}),
                                             quadROB);
 
     auto texturedQuad = createEntity();
     texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
-    texturedQuad.setComponent<Transform>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
+    texturedQuad.setComponent<TransformComponent>(Transform{glm::vec3(-4, 0, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     texturedQuad.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
@@ -148,7 +148,7 @@ void TestScene::loadEntities() {
 
     auto hexagon = createEntity();
     hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
-    hexagon.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+    hexagon.setComponent<TransformComponent>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 blueColor(0, 0, 1, 1);
     hexagon.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}), hexROB);
@@ -186,7 +186,7 @@ void TestScene::update(float deltaTime) {
             editorCamera.get<CameraComponent>().fieldOfView += 5 * deltaTime;
         }
 
-        editorCamera.get<Transform>().position = origin;
+        editorCamera.get<TransformComponent>().local.position = origin;
     }
 
 }
@@ -194,7 +194,7 @@ void TestScene::update(float deltaTime) {
 void TestScene::addNewEntity() {
     auto entity = ecs.addEntity();
     entity.setComponent<Meta>(Meta{"New Entity"});
-    entity.setComponent<Transform>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+    entity.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
     glm::vec4 whiteTintColor(1, 1, 1, 1);
     entity.setComponent<RenderComponent>(
             texturedMaterial.instantiate(&whiteTintColor, sizeof(whiteTintColor), {fallbackTexture.get()}),
@@ -301,10 +301,10 @@ void TestScene::updateImGui() {
 
                     ImGui::Separator();
 
-                    auto &tc = entity.get<Transform>();
-                    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-                    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-                    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+                    auto &tc = entity.get<TransformComponent>();
+                    ImGui::DragFloat3("Position", &(tc.local.position.x), 0.25f * dragSpeed);
+                    ImGui::DragFloat3("Rotation", &(tc.local.rotation.x), 1.0f * dragSpeed);
+                    ImGui::DragFloat3("Scale", &(tc.local.scale.x), 0.25f * dragSpeed);
                     ImGui::Separator();
                     ImGui::ColorEdit4("Color", &(editTintColor.r));
                     if (ImGui::Button("Apply")) {

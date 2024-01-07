@@ -13,13 +13,13 @@ namespace Editor {
 
         auto camera = scene.createEntity();
         camera.setComponent<Meta>(Meta{"Main Camera"});
-        camera.setComponent<Transform>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
+        camera.setComponent<TransformComponent>(Transform{glm::vec3(0, 0, -2), glm::vec3(), glm::vec3(1, 1, 1)});
         camera.setComponent<CameraComponent>(
                 CameraComponent{.fieldOfView=10.0f, .near=0.1f, .far=100.0f, .active=false, .mainCamera = true});
 
         auto texturedQuad = scene.createEntity();
         texturedQuad.setComponent<Meta>(Meta{"Textured quad"});
-        texturedQuad.setComponent<Transform>(Transform{glm::vec3(2, -2, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
+        texturedQuad.setComponent<TransformComponent>(Transform{glm::vec3(2, -2, 0), glm::vec3(0, 0, 45), glm::vec3(1, 1, 1)});
         glm::vec4 whiteTintColor(1, 1, 1, 1);
         texturedQuad.setComponent<RenderComponent>(
                 assets.getTexturedMaterial().instantiate(
@@ -34,7 +34,7 @@ namespace Editor {
 
         auto hexagon = scene.createEntity();
         hexagon.setComponent<Meta>(Meta{"Textured hexagon"});
-        hexagon.setComponent<Transform>(Transform{glm::vec3(-2, -2, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+        hexagon.setComponent<TransformComponent>(Transform{glm::vec3(-2, -2, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
         hexagon.setComponent<RenderComponent>(
                 assets.getTexturedMaterial().instantiate(
                         &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
@@ -47,7 +47,7 @@ namespace Editor {
 
         auto hexagonD = scene.createEntity();
         hexagonD.setComponent<Meta>(Meta{"Debug hexagon"});
-        hexagonD.setComponent<Transform>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
+        hexagonD.setComponent<TransformComponent>(Transform{glm::vec3(0, 3, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
         glm::vec4 blueColor(0, 0, 1, 1);
         hexagonD.setComponent<RenderComponent>(
                 assets.getDebugMaterial().instantiate(&blueColor, sizeof(blueColor), {}),
@@ -59,7 +59,7 @@ namespace Editor {
         { // UI elements
             auto textTester = scene.createEntity();
             textTester.setComponent<Meta>("Text Tester Multiline");
-            textTester.setComponent<Transform>(
+            textTester.setComponent<TransformComponent>(
                     Transform{glm::vec3{16, 126, 2}, glm::vec3(0, 0, 33), glm::vec3(1, 1, 1)});
             textTester.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Regular, 16.0f, 95.0f)),
@@ -69,7 +69,7 @@ namespace Editor {
             });
             auto textTesterI = scene.createEntity();
             textTesterI.setComponent<Meta>("Text Tester Italic");
-            textTesterI.setComponent<Transform>(
+            textTesterI.setComponent<TransformComponent>(
                     Transform{glm::vec3{16, 210, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterI.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Italic, 16.0f, 95.0f)),
@@ -79,7 +79,7 @@ namespace Editor {
             });
             auto textTesterB = scene.createEntity();
             textTesterB.setComponent<Meta>("Text Tester Bold");
-            textTesterB.setComponent<Transform>(
+            textTesterB.setComponent<TransformComponent>(
                     Transform{glm::vec3{16, 240, 2}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             textTesterB.setComponent<UITextComponent>(UITextComponent{
                     .font = *(assetManager.getFont("OpenSauceSans", FontStyle::Bold, 16.0f, 95.0f)),
@@ -96,7 +96,7 @@ namespace Editor {
             glm::vec4 buttonColor0{1, 0.5f, 0.5f, 1};
             auto button0 = scene.createEntity();
             button0.setComponent<Meta>("Test Button with 8x4 pixel offset rendering");
-            button0.setComponent<Transform>(
+            button0.setComponent<TransformComponent>(
                     Transform{glm::vec3{512, 56, 1}, glm::vec3(0, 0, 0), glm::vec3(64, 25, 1)});
             button0.setComponent<UIRenderComponent>(UIRenderComponent{
                     .materialInstance = uiMaterial.instantiate(&buttonColor0, sizeof(buttonColor0), {&borderTexture}),
@@ -113,7 +113,7 @@ namespace Editor {
             glm::vec4 buttonColor1{0.5f, 0.5f, 1.0f, 1};
             auto button1 = scene.createEntity();
             button1.setComponent<Meta>("Test Button with rotation");
-            button1.setComponent<Transform>(
+            button1.setComponent<TransformComponent>(
                     Transform{glm::vec3{650, 128, 1}, glm::vec3(0, 0, 45.0f), glm::vec3(1, 1, 1)});
             button1.setComponent<UIRenderComponent>(UIRenderComponent{
                     .materialInstance = uiMaterial.instantiate(&buttonColor1, sizeof(buttonColor1), {&borderTexture}),
@@ -141,7 +141,7 @@ namespace Editor {
             glm::vec4 buttonColor2{0.1f, 0.0f, 0.7f, 1};
             auto button2 = scene.createEntity();
             button2.setComponent<Meta>("Opaque Test Button");
-            button2.setComponent<Transform>(
+            button2.setComponent<TransformComponent>(
                     Transform{glm::vec3{120, 400, 1}, glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)});
             button2.setComponent<UIRenderComponent>(UIRenderComponent{
                     .materialInstance = uiMaterial.instantiate(&buttonColor1, sizeof(buttonColor1), {&oBorderTexture}),

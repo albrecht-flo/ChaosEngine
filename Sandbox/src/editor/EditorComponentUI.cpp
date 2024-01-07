@@ -214,10 +214,10 @@ void EditorComponentUI::renderMetaComponentUI(ChaosEngine::Entity &entity) {
 }
 
 void EditorComponentUI::renderTransformComponentUI(ChaosEngine::Entity &entity) {
-    auto &tc = entity.get<Transform>();
-    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+    auto &tc = entity.get<TransformComponent>();
+    ImGui::DragFloat3("Position", &(tc.local.position.x), 0.25f * dragSpeed);
+    ImGui::DragFloat3("Rotation", &(tc.local.rotation.x), 1.0f * dragSpeed);
+    ImGui::DragFloat3("Scale", &(tc.local.scale.x), 0.25f * dragSpeed);
 }
 
 void EditorComponentUI::renderCameraComponentUI(ChaosEngine::Entity &entity) {
@@ -247,11 +247,11 @@ void EditorComponentUI::renderNativeScriptComponentUI(ChaosEngine::Entity &entit
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
     if (ImGui::CollapsingHeader("Native Script Component", flags)) {
         auto &scriptComponent = entity.get<NativeScriptComponent>();
-        auto &meta = entity.get<NativeScriptComponentMeta>();
+        const auto *meta = entity.try_get<NativeScriptComponentMeta>();
 
         ImGui::Checkbox("Active", &scriptComponent.active);
         ImGui::Text("Script:");
-        auto name = (meta.scriptName.empty()) ? "Empty Script" : meta.scriptName;
+        auto name = (meta == nullptr) ? "Unknown Script" : meta->scriptName;
         const auto &scripts = assetManager.getAllScripts();
         if (auto scriptSelection = assetSelector.render(name, scripts.begin(), scripts.end(),
                                                         [](const auto &e) { return e.first; }, "Script")) {
@@ -397,7 +397,7 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
     if (deleted)
         return true;
 
-    if (entity.has<Transform>()) {
+    if (entity.has<TransformComponent>()) {
         renderTransformComponentUI(entity);
         ImGui::Separator();
         ImGui::Spacing();

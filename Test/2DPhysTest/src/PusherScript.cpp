@@ -5,7 +5,7 @@
 using namespace GLMCustomExtension;
 
 void PusherScript::onStart() {
-    origin = glm::vec2{getComponent<Transform>().position};
+    origin = glm::vec2{getComponent<TransformComponent>().local.position};
     auto anchor = origin + glm::normalize(rotation2D(angle) * glm::vec2(1, 0));
     path = origin - anchor;
 
@@ -15,7 +15,7 @@ void PusherScript::onStart() {
 }
 
 void PusherScript::onUpdate(float) {
-    auto curP = glm::vec2{getComponent<Transform>().position};
+    auto curP = glm::vec2{getComponent<TransformComponent>().local.position};
 
     float distance = glm::distance(origin, curP);
     if (glm::dot(path, origin - curP) < 0)
