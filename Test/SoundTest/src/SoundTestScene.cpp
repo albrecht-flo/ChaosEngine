@@ -252,10 +252,10 @@ void SoundTestScene::update(float deltaTime) {
         (window->isKeyDown(GLFW_KEY_Q) && window->isKeyDown(GLFW_KEY_LEFT_CONTROL))) { window->close(); }
 
     if (surroundRunning) {
-        const auto &center = mainCamera.get<TransformComponent>().local.position;
+        const auto &center = mainCamera.get<TransformComponent>().getTransform().position;
         path += deltaTime * surroundSpeed;
         glm::vec3 newPos = glm::rotate(glm::qua(glm::vec3{0, path, 0}), surroundOriginalPosition - center) + center;
-        audioTesterSurround.get<TransformComponent>().local.position = newPos;
+        audioTesterSurround.get<TransformComponent>().setPosition(newPos);
 //        LOG_DEBUG("New position ({}, {}, {})", newPos.x, newPos.y, newPos.z);
     }
 }
@@ -278,10 +278,10 @@ void SoundTestScene::updateImGui() {
     Transform listenerInfo = AudioSystem::GetListenerPosition();
     ImGui::Text("Listener Position (%.2f, %.2f, %.2f)", listenerInfo.position.x, listenerInfo.position.y,
                 listenerInfo.position.z);
-    const auto &surroundTesterPos = audioTesterSurround.get<TransformComponent>().local.position;
+    const auto &surroundTesterPos = audioTesterSurround.get<TransformComponent>().getTransform().position;
     ImGui::Text("Surround position (%.2f, %.2f, %.2f)", surroundTesterPos.x, surroundTesterPos.y, surroundTesterPos.z);
     for (uint32_t i = 0; i < spatialTesters.size(); ++i) {
-        const auto &pos = spatialTesters[i].get<TransformComponent>().local.position;
+        const auto &pos = spatialTesters[i].get<TransformComponent>().getTransform().position;
         ImGui::Text("Spatial Tester %d position (%.2f, %.2f, %.2f)", i, pos.x, pos.y, pos.z);
     }
 

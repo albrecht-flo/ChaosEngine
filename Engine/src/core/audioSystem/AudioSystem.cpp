@@ -113,11 +113,11 @@ void AudioSystem::update(ECS &ecs, float /*deltaTime*/) {
     for (const auto &[entity, transform, listener]: listeners.each()) {
         if (mainListener == entt::null && listener.active) {
             mainListener = entity;
-            const auto &pos = transform.local.position;
+            const auto &pos = transform.getTransform().position;
             alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
             checkALErrors("alListener3f(AL_POSITION)");
 
-            const auto &rotation = transform.local.rotation;
+            const auto &rotation = transform.getTransform().rotation;
             auto rot = glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)});
             glm::vec3 up = glm::toMat3(rot) * glm::vec3{0, 1, 0};
             glm::vec3 forward = glm::toMat3(rot) * glm::vec3{0, 0, -1};
@@ -131,18 +131,18 @@ void AudioSystem::update(ECS &ecs, float /*deltaTime*/) {
 
 
     for (const auto &[entity, transform, source]: sources.each()) {
-        const auto &pos = transform.local.position;
-        glm::vec3 velocity = transform.local.position - source.oldPosition;
+        const auto &pos = transform.getTransform().position;
+        glm::vec3 velocity = transform.getTransform().position - source.oldPosition;
         source.oldPosition = pos;
         source.source.setPositionAndVelocity(pos, velocity);
     }
 }
 
-Transform AudioSystem::GetListenerPosition() {
+Components::Transform AudioSystem::GetListenerPosition() {
     float x, y, z;
     alGetListener3f(AL_POSITION, &x, &y, &z);
     checkALErrors("alGetListener3f(AL_POSITION)");
-    return Transform{
+    return Components::Transform{
             .position{x, y, z},
             .rotation{},
             .scale{}

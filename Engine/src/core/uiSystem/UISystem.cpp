@@ -62,8 +62,10 @@ void UISystem::update(ECS &ecs) {
     for (const auto &[entity, transform, ui]: scripts.each()) {
         if (!ui.active)
             continue;
-        bool isMouseOver = ((transform.local.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?
-                           pointInAxisAlignedBox(transform.local, ui, mousePos) : pointInRectangle(transform.local, ui, mousePos);
+        const auto &entityTransform = transform.getTransform();
+        bool isMouseOver = ((entityTransform.rotation + ui.offsetRotation) == glm::vec3(0, 0, 0)) ?
+                           pointInAxisAlignedBox(entityTransform, ui, mousePos) : pointInRectangle(entityTransform, ui,
+                                                                                                   mousePos);
         if (isMouseOver) {
             Entity entityH = ecs.getEntity(entity);
             if (entityH.has<NativeScriptComponent>()) {

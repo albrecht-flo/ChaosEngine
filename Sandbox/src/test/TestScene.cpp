@@ -186,7 +186,7 @@ void TestScene::update(float deltaTime) {
             editorCamera.get<CameraComponent>().fieldOfView += 5 * deltaTime;
         }
 
-        editorCamera.get<TransformComponent>().local.position = origin;
+        editorCamera.get<TransformComponent>().setPosition(origin);
     }
 
 }
@@ -301,7 +301,7 @@ void TestScene::updateImGui() {
 
                     ImGui::Separator();
 
-                    auto &tc = entity.get<TransformComponent>();
+                    auto &tc = entity.get<TransformComponent>().getTransform();
                     ImGui::DragFloat3("Position", &(tc.local.position.x), 0.25f * dragSpeed);
                     ImGui::DragFloat3("Rotation", &(tc.local.rotation.x), 1.0f * dragSpeed);
                     ImGui::DragFloat3("Scale", &(tc.local.scale.x), 0.25f * dragSpeed);

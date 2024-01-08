@@ -23,7 +23,7 @@ namespace ChaosEngine {
 
         // Debug Information
 
-        static Transform GetListenerPosition();
+        static Components::Transform GetListenerPosition();
 
     private:
         std::vector<std::string> availableAudioDevices;

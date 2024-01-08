@@ -6,9 +6,10 @@
 #include <box2d/b2_body.h>
 #include <glm/glm.hpp>
 
+#include "Engine/src/core/components/Transform.h"
+
 struct StaticRigidBodyComponent;
 struct DynamicRigidBodyComponent;
-struct Transform;
 
 namespace ChaosEngine {
     class Entity;
@@ -37,7 +38,7 @@ namespace ChaosEngine {
             return *this;
         }
 
-        [[nodiscard]] Transform getTransform() const;
+        [[nodiscard]] Components::Transform getTransform() const;
 
         void setPosition(const glm::vec3 &newPosition);
 

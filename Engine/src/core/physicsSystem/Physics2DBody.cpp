@@ -7,6 +7,8 @@
 #include <box2d/b2_circle_shape.h>
 
 namespace ChaosEngine {
+    using namespace Components;
+
     void Physics2DBody::destroy() {
         if (body != nullptr)
             PhysicsSystem2D::globalInstance->destroyBody(body);
@@ -64,7 +66,7 @@ namespace ChaosEngine {
 
     StaticRigidBodyComponent RigidBody2D::CreateStaticRigidBody(Entity &entity, const RigitBody2DShape &shapeDef) {
         // LOG_DEBUG("Creating StaticRigidBody2D for entity {}", static_cast<uint32_t>(entity));
-        const auto transform = entity.get<TransformComponent>().local;
+        const auto& transform = entity.get<TransformComponent>().getTransform();
 
         b2BodyDef def{};
         def.position.Set(transform.position.x, transform.position.y);
@@ -87,7 +89,7 @@ namespace ChaosEngine {
     DynamicRigidBodyComponent RigidBody2D::CreateDynamicRigidBody(Entity &entity, const RigitBody2DShape &shapeDef,
                                                                   float density, float friction, bool useGravity) {
         // LOG_DEBUG("Creating DynamicRigidBody2D for entity {}", static_cast<uint32_t>(entity));
-        const auto transform = entity.get<TransformComponent>().local;
+        const auto transform = entity.get<TransformComponent>().getTransform();
         b2BodyDef def{};
         def.position.Set(transform.position.x, transform.position.y);
         def.angle = glm::radians(transform.rotation.z);
@@ -110,7 +112,7 @@ namespace ChaosEngine {
 
     DynamicRigidBodyComponent RigidBody2D::CreateKineticRigidBody(Entity &entity, const RigitBody2DShape &shapeDef) {
         // LOG_DEBUG("Creating DynamicRigidBody2D for entity {}", static_cast<uint32_t>(entity));
-        const auto transform = entity.get<TransformComponent>().local;
+        const auto transform = entity.get<TransformComponent>().getTransform();
         b2BodyDef def{};
         def.position.Set(transform.position.x, transform.position.y);
         def.angle = glm::radians(transform.rotation.z);

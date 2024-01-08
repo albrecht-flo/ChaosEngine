@@ -1,16 +1,12 @@
 #pragma once
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // glm defaults to opengl depth -1 to 1, Vulkan is using 0 to 1
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include <glm/gtx/quaternion.hpp>
 #include <utility>
 #include <memory>
+
+
+#include "Engine/src/core/components/Transform.h"
+using namespace ChaosEngine::Components;
 
 #include "Engine/src/renderer/api/Material.h"
 #include "Engine/src/renderer/api/RenderMesh.h"
@@ -21,10 +17,6 @@
 
 
 namespace ChaosEngine {
-    class RenderingSystem;
-
-    class SceneGraphSystem;
-
     class NativeScriptSystem;
 }
 
@@ -33,38 +25,7 @@ struct Meta {
 };
 
 
-struct Transform {
-    glm::vec3 position;
-    glm::vec3 rotation;
-    glm::vec3 scale;
-
-    inline glm::mat4 getModelMatrix() const {
-        glm::mat4 ret = glm::translate(glm::mat4(1), position);
-        ret *= glm::toMat4(glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)}));
-        return glm::scale(ret, scale);;
-    }
-};
-
 // ---------------------------------------------------------------------------------------------------------------------
-
-struct TransformComponent {
-    Transform local; // To be set from scripts
-    explicit TransformComponent(const Transform &transform) : local(transform), global(transform),
-                                                              parent(entt::null), needsGlobalRecalculation(false) {}
-
-    TransformComponent(const Transform &transform, entt::entity parent) : local(transform), global(Transform{}),
-                                                                          parent(parent),
-                                                                          needsGlobalRecalculation(true) {}
-
-private: // Internals
-    friend class ChaosEngine::RenderingSystem;
-
-    friend class ChaosEngine::SceneGraphSystem;
-
-    entt::entity parent;
-    Transform global; // To be updated from SceneGraph system according to transform tree
-    bool needsGlobalRecalculation;
-};
 
 struct RenderComponent {
     RenderComponent(std::shared_ptr<Renderer::MaterialInstance> materialInstance,

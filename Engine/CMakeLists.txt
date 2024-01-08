@@ -49,6 +49,8 @@ set(ENGINE_SOURCES
         src/renderer/passes/PostProcessingPass.cpp
         src/renderer/passes/ImGuiRenderingPass.cpp
         src/renderer/VulkanRenderer2D.cpp
+        #       Components
+        src/core/components/Transform.cpp
         #       Vulkan Rendering files
         src/renderer/vulkan/api/VulkanMaterial.cpp
         src/renderer/vulkan/api/VulkanRenderMesh.cpp

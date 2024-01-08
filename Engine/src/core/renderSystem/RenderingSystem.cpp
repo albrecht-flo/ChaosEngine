@@ -57,6 +57,8 @@ void RenderingSystem::updateComponents(ECS &/*ecs*/) {
     Context->tickFrame();
 }
 
+using namespace ChaosEngine::Components;
+
 void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_ptr<DebugRenderData>>& debugData) {
     assert("Renderer must be initialized" && Renderer != nullptr);
     auto view = ecs.getRegistry().view<const TransformComponent, const RenderComponent>();
@@ -70,7 +72,7 @@ void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_p
     CameraComponent currentCamera{};
     for (const auto&[entity, transform, camera]: cameras.each()) {
         if (camera.active && !rendered) {
-            modelMat = transform.local.getModelMatrix();
+            modelMat = transform.getTransform().getModelMatrix();
             currentCamera = camera;
             Renderer->beginScene(modelMat, currentCamera);
             rendered = true;
@@ -84,7 +86,7 @@ void RenderingSystem::renderEntities(ECS &ecs, const std::optional<std::shared_p
     }
 
     for (const auto&[entity, transform, renderComp]: view.each()) {
-        Renderer->draw(transform.local.getModelMatrix(), renderComp);
+        Renderer->draw(transform.getTransform().getModelMatrix(), renderComp);
     }
     if(debugData)
         Renderer->drawSceneDebug(modelMat, currentCamera, **debugData);

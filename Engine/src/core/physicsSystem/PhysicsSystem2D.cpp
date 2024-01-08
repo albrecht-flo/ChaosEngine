@@ -151,6 +151,7 @@ void PhysicsSystem2D::Physics2DDebugDraw::DrawPoint(const b2Vec2 &p, float /*siz
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
+using namespace ChaosEngine::Components;
 
 PhysicsSystem2D *PhysicsSystem2D::globalInstance = nullptr;
 
@@ -182,10 +183,11 @@ void PhysicsSystem2D::update(ECS &ecs, float deltaTime) {
     auto view = ecs.getRegistry().view<TransformComponent, DynamicRigidBodyComponent>();
     for (auto [entity, transform, body]: view.each()) {
         const Transform phyTransform = body.body.getTransform();
+        const Transform oldTransform = transform.getTransform();
         // TODO how to deal with parent?
-        transform.local.position.x = phyTransform.position.x;
-        transform.local.position.y = phyTransform.position.y;
-        transform.local.rotation.z = glm::degrees(phyTransform.rotation.z);
+        transform.setPosition(glm::vec3{phyTransform.position.x, phyTransform.position.y, oldTransform.position.z});
+        transform.setRotation(
+                glm::vec3{oldTransform.rotation.x, oldTransform.rotation.y, glm::degrees(phyTransform.rotation.z)});
     }
 }
 

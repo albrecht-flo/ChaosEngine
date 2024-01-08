@@ -1,5 +1,6 @@
 #include "UIRenderSubSystem.h"
 
+#include "core/components/Transform.h"
 #include "core/Components.h"
 #include "core/utils/Logger.h"
 #include "Engine/src/renderer/api/GraphicsContext.h"
@@ -125,9 +126,9 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
         for (auto &&[entity, transform, ui]: uiComps.each()) {
             const auto *uiC = ecs.getRegistry().try_get<UIComponent>(entity);
             if (uiC == nullptr)
-                renderer.drawUI(calculateTextModelMatrix(transform.local, ui.scaleOffset), *ui.mesh, *ui.materialInstance);
+                renderer.drawUI(calculateTextModelMatrix(transform.getTransform(), ui.scaleOffset), *ui.mesh, *ui.materialInstance);
             else
-                renderer.drawUI(calculateTextModelMatrix(transform.local, ui.scaleOffset, *uiC), *ui.mesh,
+                renderer.drawUI(calculateTextModelMatrix(transform.getTransform(), ui.scaleOffset, *uiC), *ui.mesh,
                                 *ui.materialInstance);
         }
         renderer.endUI();
@@ -147,7 +148,7 @@ void UIRenderSubSystem::render(ECS &ecs, Renderer::RendererAPI &renderer) {
             }
 
             auto glyphCount = renderTextToBuffers(totalGlyphCount, vBufferRef, iBufferRef, text, glm::vec3());
-            glm::mat4 modelMat = calculateTextModelMatrix(transform.local);
+            glm::mat4 modelMat = calculateTextModelMatrix(transform.getTransform());
             renderer.drawText(*textVertexBuffers[currentBufferedFrame], *textIndexBuffers[currentBufferedFrame],
                             glyphCount * 6, totalGlyphCount * 6, modelMat, *fontMaterialInstances[text.font.get()]);
 
