@@ -2,6 +2,8 @@
 
 #include <entt/entity/registry.hpp>
 
+struct Transform;
+
 namespace ChaosEngine {
     /**
      * This is a handler to an entity for modifying associated data.
@@ -27,11 +29,12 @@ namespace ChaosEngine {
          * @tparam Component
          * @tparam Args
          * @param args to be passed to the constructor of Component
+         * @return Reference to the emplaced component
          */
         template <typename Component, typename... Args>
-        inline void setComponent(Args&&... args) {
+        inline decltype(auto) setComponent(Args&&... args) {
             assert("Registry must not be null" && registry != nullptr);
-            registry->emplace_or_replace<Component>(entity, std::forward<Args>(args)...);
+            return registry->emplace_or_replace<Component>(entity, std::forward<Args>(args)...);
         }
 
         /**
@@ -45,10 +48,34 @@ namespace ChaosEngine {
             return registry->get<Component...>(entity);
         }
 
+        /**
+         * @copydoc get
+         */
         template <typename... Component>
         [[nodiscard]] decltype(auto) get() const {
             assert("Registry must not be null" && registry != nullptr);
             return registry->get<Component...>(entity);
+        }
+
+        /**
+         * Try to a pointer to the component of type <i>Component</i> of this entity.
+         * Returns nullptr if not found
+         * @tparam Component
+         * @return Component*
+         */
+        template <typename... Component>
+        [[nodiscard]] decltype(auto) try_get() {
+            assert("Registry must not be null" && registry != nullptr);
+            return registry->try_get<Component...>(entity);
+        }
+
+        /**
+         * @copydoc try_get
+         */
+        template <typename... Component>
+        [[nodiscard]] decltype(auto) try_get() const {
+            assert("Registry must not be null" && registry != nullptr);
+            return registry->try_get<Component...>(entity);
         }
 
         /**
@@ -68,12 +95,20 @@ namespace ChaosEngine {
             return static_cast<uint32_t>(entity);
         }
 
+        // Advanced Entity functions -----------------------------------------------------------------------------------
+
+        void makeParentOf(Entity& entity);
+
+        void makeChildOf(Entity& entity);
+
+        // Advanced Entity operation functions -------------------------------------------------------------------------
+
+        void move(const Transform& newTransform);
+
     private:
         friend class RigidBody2D;
-        /**
-         * ONLY USE WHEN ABSOLUTELY NESCESSARY. This function exposes the underlying entity
-         * @return Underlying entity
-         */
+        friend class SceneGraphSystem;
+
         entt::entity raw() { return entity; }
 
     private:

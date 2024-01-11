@@ -56,7 +56,79 @@ namespace Editor {
         hexagonD.setComponent<RenderComponentMeta>(assets.getHexMeshName(), assets.getDebugMaterial()->getName(),
                                                    std::nullopt);
 
-        { // UI elements
+        // Scene graph example
+        {
+            auto parent = scene.createEntity();
+            parent.setComponent<Meta>("Parent entity");
+            parent.setComponent<Transform>(Transform{glm::vec3{10, 0, 0}, glm::vec3{0}, glm::vec3{1}});
+
+            auto child1 = scene.createEntity();
+            child1.setComponent<Meta>("Child entity 1");
+            child1.setComponent<Transform>(Transform{glm::vec3{0}, glm::vec3{0}, glm::vec3{1}});
+            child1.setComponent<RenderComponent>(
+                    assets.getTexturedMaterial().instantiate(
+                            &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
+                    assets.getQuadMesh()
+            );
+            child1.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
+                                                     assets.getTexturedMaterial()->getName(),
+                                                     std::make_optional(std::vector<TextureMeta>(
+                                                             {TextureMeta{"diffuse",
+                                                                          assets.getFallbackTextureName()}})));
+            parent.makeParentOf(child1);
+            child1.move(Transform{glm::vec3{-2, -2, 0}, glm::vec3{0}, glm::vec3{1}});
+
+            auto child2 = scene.createEntity();
+            child2.setComponent<Meta>("Child entity 2");
+            child2.setComponent<Transform>(Transform{glm::vec3{0}, glm::vec3{0}, glm::vec3{1}});
+            child2.setComponent<RenderComponent>(
+                    assets.getTexturedMaterial().instantiate(
+                            &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
+                    assets.getQuadMesh()
+            );
+            child2.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
+                                                     assets.getTexturedMaterial()->getName(),
+                                                     std::make_optional(std::vector<TextureMeta>(
+                                                             {TextureMeta{"diffuse",
+                                                                          assets.getFallbackTextureName()}})));
+            child2.makeChildOf(parent);
+            child2.move(Transform{glm::vec3{2, -2, 0}, glm::vec3{0}, glm::vec3{1}});
+
+            auto child3 = scene.createEntity();
+            child3.setComponent<Meta>("Child entity 3");
+            child3.setComponent<Transform>(Transform{glm::vec3{0}, glm::vec3{0}, glm::vec3{1}});
+            child3.setComponent<RenderComponent>(
+                    assets.getTexturedMaterial().instantiate(
+                            &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
+                    assets.getQuadMesh()
+            );
+            child3.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
+                                                     assets.getTexturedMaterial()->getName(),
+                                                     std::make_optional(std::vector<TextureMeta>(
+                                                             {TextureMeta{"diffuse",
+                                                                          assets.getFallbackTextureName()}})));
+            child3.makeChildOf(parent);
+            child3.move(Transform{glm::vec3{0, -2.5, 0}, glm::vec3{0}, glm::vec3{1}});
+
+            auto child4 = scene.createEntity();
+            child4.setComponent<Meta>("Child entity 4");
+            child4.setComponent<Transform>(Transform{glm::vec3{0}, glm::vec3{0}, glm::vec3{1}});
+            child4.setComponent<RenderComponent>(
+                    assets.getTexturedMaterial().instantiate(
+                            &whiteTintColor, sizeof(whiteTintColor), {&assets.getFallbackTexture()}),
+                    assets.getQuadMesh()
+            );
+            child4.setComponent<RenderComponentMeta>(assets.getQuadMeshName(),
+                                                     assets.getTexturedMaterial()->getName(),
+                                                     std::make_optional(std::vector<TextureMeta>(
+                                                             {TextureMeta{"diffuse",
+                                                                          assets.getFallbackTextureName()}})));
+            child4.makeChildOf(child2);
+            child4.move(Transform{glm::vec3{0, -2.5, 0}, glm::vec3{0}, glm::vec3{1}});
+        }
+
+        // UI elements
+        {
             auto textTester = scene.createEntity();
             textTester.setComponent<Meta>("Text Tester Multiline");
             textTester.setComponent<Transform>(
@@ -157,7 +229,8 @@ namespace Editor {
                     uiMeshName, uiMaterial->getName(),
                     std::make_optional(std::vector<TextureMeta>({TextureMeta{"diffuse", "UI/Border"}})));
             button2.setComponent<UITextComponent>(UITextComponent{
-                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf", FontStyle::Regular,
+                    .font = assetManager.loadFont("OpenSauceSans", "fonts/OpenSauceSans-Regular.ttf",
+                                                  FontStyle::Regular,
                                                   18.0f, 95.0f),
                     .style = FontStyle::Bold,
                     .textColor = glm::vec4(0.0f, 0, 0.0f, 1),

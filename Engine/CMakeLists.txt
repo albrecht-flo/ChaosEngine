@@ -28,6 +28,7 @@ set(ENGINE_SOURCES
         src/core/physicsSystem/Physics2DBody.cpp
         src/core/audioSystem/AudioSystem.cpp
         src/core/audioSystem/OpenALHelpers.cpp
+        src/core/sceneGraphSystem/SceneGraphSystem.cpp
         src/core/assets/Font.cpp
         #     Audio Engine API classes
         src/core/audioSystem/api/AudioBuffer.cpp
@@ -84,7 +85,7 @@ set(ENGINE_SOURCES
         src/renderer/testRenderer/TestRenderPass.cpp
         src/renderer/testRenderer/TestFramebuffer.cpp
         src/renderer/testRenderer/TestTexture.cpp
-        )
+)
 
 add_library(Engine ${ENGINE_SOURCES})
 

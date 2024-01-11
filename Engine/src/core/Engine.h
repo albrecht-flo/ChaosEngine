@@ -9,6 +9,7 @@
 #include "Engine/src/core/uiSystem/UISystem.h"
 #include "Engine/src/core/physicsSystem/PhysicsSystem2D.h"
 #include "Engine/src/core/audioSystem/AudioSystem.h"
+#include "core/sceneGraphSystem/SceneGraphSystem.h"
 
 
 namespace ChaosEngine {
@@ -66,6 +67,7 @@ namespace ChaosEngine {
         NativeScriptSystem nativeScriptSystem;
         PhysicsSystem2D physicsSystem;
         AudioSystem audioSystem;
+        SceneGraphSystem sceneGraphSystem;
 
         // Scene Data
         std::shared_ptr<AssetManager> assetManager;

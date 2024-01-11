@@ -9,6 +9,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include <utility>
 #include <memory>
 
@@ -23,7 +25,6 @@ struct Meta {
     std::string name;
 };
 
-
 struct Transform {
     glm::vec3 position;
     glm::vec3 rotation;
@@ -34,6 +35,33 @@ struct Transform {
         ret *= glm::toMat4(glm::quat({glm::radians(rotation.x), glm::radians(rotation.y), glm::radians(rotation.z)}));
         return glm::scale(ret, scale);;
     }
+
+    inline Transform transform(const Transform &other) {
+        const auto t = other.getModelMatrix() * getModelMatrix();
+        glm::vec3 scale, position, skew;
+        glm::vec4 perspective;
+        glm::quat rotation;
+        glm::decompose(t, scale, rotation, position, skew, perspective);
+        return Transform{
+                position,
+                glm::degrees(glm::eulerAngles(rotation)),
+                scale
+        };
+    }
+
+};
+
+struct SceneGraphComponent {
+    // Local transform
+    Transform localTransform;
+    // Child relationship
+    entt::entity parent; // entt:null if there is no parent
+    // Parent relationship
+    entt::entity firstChild; // entt::null if this is not a parent
+    entt::entity lastChild; // entt::null if this is not a parent
+    // Double linked list of children
+    entt::entity next;
+    entt::entity prev;
 };
 
 struct RenderComponent {

@@ -16,6 +16,7 @@ Engine::Engine()
           nativeScriptSystem(),
           physicsSystem(),
           audioSystem(),
+          sceneGraphSystem(),
           assetManager(std::make_shared<AssetManager>()),
           scene(nullptr),
           debugRenderingEnabled(false),
@@ -38,6 +39,7 @@ void Engine::loadScene(std::unique_ptr<Scene> &&pScene) {
     renderingSys.createRenderer(config.rendererType, config.renderSceneToOffscreenBuffer, debugRenderingEnabled);
     physicsSystem.init(*scene);
     audioSystem.init(*scene);
+    sceneGraphSystem.init(*scene);
 
     scene->load();
 

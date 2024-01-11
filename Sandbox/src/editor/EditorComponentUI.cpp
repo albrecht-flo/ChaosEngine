@@ -6,6 +6,7 @@
 #include "Engine/src/core/utils/Logger.h"
 #include "Engine/src/core/utils/STDExtensions.h"
 #include "Engine/src/core/Components.h"
+#include "Engine/src/core/sceneGraphSystem/SceneGraphSystem.h"
 #include "EditorComponents.h"
 
 #include <imgui.h>
@@ -108,9 +109,9 @@ EditorComponentUI::addComponentToEntity(ChaosEngine::Entity &entity, const std::
             return;
         }
         glm::vec4 whiteTintColor(1, 1, 1, 1);
-        auto[mesh, meshName] = editorAssets.getDefaultMesh();
-        auto[material, materialInfo] = editorAssets.getDefaultMaterial();
-        auto[textureSet, textureSetInfo] = editorAssets.getDefaultTextureSet();
+        auto [mesh, meshName] = editorAssets.getDefaultMesh();
+        auto [material, materialInfo] = editorAssets.getDefaultMaterial();
+        auto [textureSet, textureSetInfo] = editorAssets.getDefaultTextureSet();
         entity.setComponent<RenderComponent>(
                 material.instantiate(&whiteTintColor, sizeof(whiteTintColor), textureSet),
                 mesh
@@ -213,11 +214,12 @@ void EditorComponentUI::renderMetaComponentUI(ChaosEngine::Entity &entity) {
     ImGui::InputText("##meta_name", &meta.name, input_text_flags);
 }
 
-void EditorComponentUI::renderTransformComponentUI(ChaosEngine::Entity &entity) {
-    auto &tc = entity.get<Transform>();
-    ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
-    ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
-    ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+bool EditorComponentUI::renderTransformComponentUI(Transform &tc) {
+    bool res = false;
+    res |= ImGui::DragFloat3("Position", &(tc.position.x), 0.25f * dragSpeed);
+    res |= ImGui::DragFloat3("Rotation", &(tc.rotation.x), 1.0f * dragSpeed);
+    res |= ImGui::DragFloat3("Scale", &(tc.scale.x), 0.25f * dragSpeed);
+    return res;
 }
 
 void EditorComponentUI::renderCameraComponentUI(ChaosEngine::Entity &entity) {
@@ -397,12 +399,26 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
     if (deleted)
         return true;
 
-    if (entity.has<Transform>()) {
-        renderTransformComponentUI(entity);
+
+    if (entity.has<SceneGraphComponent>()) {
+        auto &sgc = entity.get<SceneGraphComponent>();
+        ImGui::Text("Local transform");
+        bool update = renderTransformComponentUI(sgc.localTransform);
+        update |= ImGui::Button("Recalculate global transform");
+        if (update)
+            ChaosEngine::SceneGraphSystem::UpdateTransformWithChildren(entity);
+        ImGui::LabelText("Parent", "%u", static_cast<uint32_t>(sgc.parent));
+        ImGui::LabelText("First child", "%u", static_cast<uint32_t>(sgc.firstChild));
+        ImGui::LabelText("Next", "%u", static_cast<uint32_t>(sgc.next));
+        ImGui::LabelText("prev", "%u", static_cast<uint32_t>(sgc.prev));
+        ImGui::Separator();
+        ImGui::Spacing();
+    } else if (entity.has<Transform>()) {
+        renderTransformComponentUI(entity.get<Transform>());
         ImGui::Separator();
         ImGui::Spacing();
     } else {
-        LOG_WARN("Entity '{}' has not transform, are you sure this is right?", entity.get<Meta>().name);
+        LOG_WARN("Entity '{}' has no transform, are you sure this is right?", entity.get<Meta>().name);
     }
 
     if (entity.has<CameraComponent>()) {
@@ -433,6 +449,7 @@ bool EditorComponentUI::renderEntityComponentPanel(ChaosEngine::Entity &entity) 
         ImGui::Separator();
         ImGui::Spacing();
     }
+
     if (entity.has<UIComponent>()) {
         renderUIComponentComponentUI(entity);
         ImGui::Separator();

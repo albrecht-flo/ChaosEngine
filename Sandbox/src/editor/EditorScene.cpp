@@ -110,6 +110,28 @@ static ECS::entity_t selectedSceneElement = ECS::null;
 static_assert(std::is_same<uint32_t, std::underlying_type<entt::entity>::type>::value,
               "EnTT entity type does not match editor entity type!");
 
+static void recursiveTreeDraw(entt::registry &registry, entt::entity entity) {
+    using namespace CustomImGui;
+    auto &sgc = registry.get<SceneGraphComponent>(entity);
+    auto &meta = registry.get<Meta>(entity);
+    auto id = ECS::to_integral(entity);
+    if (sgc.firstChild != ECS::null) { // parent node
+        if (CoreImGui::TreeNodeBegin(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str())) {
+
+            entt::entity cur = sgc.firstChild;
+            SceneGraphComponent *curSGC = registry.try_get<SceneGraphComponent>(cur);
+            do {
+                recursiveTreeDraw(registry, cur);
+                cur = curSGC->next;
+                curSGC = registry.try_get<SceneGraphComponent>(cur);
+            } while (cur != sgc.firstChild);
+            CoreImGui::TreeNodeEnd();
+        }
+    } else {
+        CoreImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str());
+    }
+};
+
 void EditorScene::updateImGui() {
     using namespace CustomImGui;
     ImGui::NewFrame();
@@ -130,11 +152,24 @@ void EditorScene::updateImGui() {
             ImGui::EndPopup();
         }
 
-        auto entityView = ecs.getRegistry().view<Meta>();
-        entityView.each([](auto entity, Meta &meta) {
+        auto entityView = ecs.getRegistry().view<const Meta>(entt::exclude<SceneGraphComponent>);
+        for (const auto &[entity, meta]: entityView.each()) {
             const auto id = ECS::to_integral(entity);
             CoreImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), meta.name.c_str());
-        });
+        }
+
+
+        auto sgEntityView = ecs.getRegistry().view<const Meta, const SceneGraphComponent>();
+        for (const auto &[entity, meta, sgc]: sgEntityView.each()) {
+            const auto id = ECS::to_integral(entity);
+            if (sgc.firstChild != ECS::null && sgc.parent == ECS::null) { // Root parent node
+                recursiveTreeDraw(ecs.getRegistry(), entity);
+            } else if (sgc.parent == ECS::null) { // Orphan node
+                std::string label = meta.name + " (Orphan)";
+                CoreImGui::TreeLeaf(id, reinterpret_cast<uint32_t *>(&selectedSceneElement), label.c_str());
+            }
+            // Leaf nodes are in recursive tree draw
+        }
     }
     ImGui::End();
 

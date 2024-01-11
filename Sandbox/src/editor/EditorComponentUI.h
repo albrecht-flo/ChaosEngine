@@ -17,7 +17,7 @@ namespace Editor {
     private:
         void renderMetaComponentUI(ChaosEngine::Entity &entity);
 
-        void renderTransformComponentUI(ChaosEngine::Entity &entity);
+        bool renderTransformComponentUI(Transform& transform);
 
         void renderCameraComponentUI(ChaosEngine::Entity &entity);
 
